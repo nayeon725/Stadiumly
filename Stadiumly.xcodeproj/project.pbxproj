@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		390D6EDE2DDF261200E031FB /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 390D6EDD2DDF261200E031FB /* SnapKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		394A86832DDDD8840083A2CB /* Stadiumly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stadiumly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				390D6EDE2DDF261200E031FB /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 			);
 			name = Stadiumly;
 			packageProductDependencies = (
+				390D6EDD2DDF261200E031FB /* SnapKit */,
 			);
 			productName = Stadiumly;
 			productReference = 394A86832DDDD8840083A2CB /* Stadiumly.app */;
@@ -107,6 +113,9 @@
 			);
 			mainGroup = 394A867A2DDDD8840083A2CB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				390D6EDC2DDF261200E031FB /* XCRemoteSwiftPackageReference "SnapKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 394A86842DDDD8840083A2CB /* Products */;
 			projectDirPath = "";
@@ -145,6 +154,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VNW55K2UP;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Stadiumly/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -157,7 +167,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.test12.Stadiumly;
+				PRODUCT_BUNDLE_IDENTIFIER = org.test13.Stadiumly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -172,6 +182,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5VNW55K2UP;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Stadiumly/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -184,7 +195,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.test12.Stadiumly;
+				PRODUCT_BUNDLE_IDENTIFIER = org.test13.Stadiumly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -333,6 +344,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		390D6EDC2DDF261200E031FB /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		390D6EDD2DDF261200E031FB /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 390D6EDC2DDF261200E031FB /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 394A867B2DDDD8840083A2CB /* Project object */;
 }
