@@ -251,22 +251,30 @@ extension OutFieldFoodViewController {
         manager.addPoiStyle(poiStyle)
         
     }
-    
+    //지도에 마커찍을 위치 지정 + 해당마커 스타일, 뱃지 적용 + 지도에보여주기 역할
     func createPois() {
         guard let view = mapController?.getView("mapview") as? KakaoMap else {
             print("KakaoMap 뷰를 가져오기 실패!")
             return
         }
+        //라벨 관리하는 객체 가져오기
         let manager = view.getLabelManager()
+        //ID를 가진 라벨 레이어를 가져오기 이 레이어에 POI들을 추가
         let layer = manager.getLabelLayer(layerID: "PoiLayer")
+        //POI(마커)를 만들기 위한 옵션 설정, 줌 레벨에따라 마커 생김새가 달라지는 설정
         let poiOption = PoiOptions(styleID: "PerLevelStyle")
+        //POI우선순위 설정 낮을수록 우선순위
         poiOption.rank = 0
-        
+        //설정한 옵션, 좌표를 사용해서 POI를 추가
         let poi1 = layer?.addPoi(option:poiOption, at: MapPoint(longitude: 126.866788407, latitude: 37.496659317))
         // Poi 개별 Badge추가. 즉, 아래에서 생성된 Poi는 Style에 빌트인되어있는 badge와, Poi가 개별적으로 가지고 있는 Badge를 갖게 된다.
+        //뱃지에 ID만들어서 위치를 오프셋설정, Z0rder 로 우선순위 지정
         let badge = PoiBadge(badgeID: "noti", image: UIImage(named: "no4"), offset: CGPoint(x: 0, y: 0), zOrder: 1)
+        //만든 뱃지 POI추가
         poi1?.addBadge(badge)
+        //POI 지도에 표시하기
         poi1?.show()
+        //추가한 noti뱃지를 지도에 표시
         poi1?.showBadge(badgeID: "noti")
     }
 }
