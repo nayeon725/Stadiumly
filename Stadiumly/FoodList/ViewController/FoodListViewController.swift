@@ -8,25 +8,26 @@
 import UIKit
 import SnapKit
 
+//먹거리 페이지
 class FoodListViewController: UIViewController {
     
-    let xmarkButton = UIButton()
-    let searchBar = UISearchBar()
-    let searchBarView = UIView()
-    let foodTitleLabel = UILabel()
+    private let xmarkButton = UIButton()
+    private let searchBarView = UIView()
+    private let foodTitleLabel = UILabel()
     //커스텀 button 세그먼트
-    let foodMenuTitle = ["구장 내 먹거리", "야구 선수 추천", "구장 외 먹거리"]
-    var menuButton: [UIButton] = []
-    let selectorView = UIView()
-    var selectedButtonIndex = 0
-    let segmentBackgroundView = UIView()
-    let buttonStackView = UIStackView()
+    private let foodMenuTitle = ["구장 내 먹거리", "야구 선수 추천", "구장 외 먹거리"]
+    private var menuButton: [UIButton] = []
+    private let selectorView = UIView()
+    private var selectedButtonIndex = 0
+    private let segmentBackgroundView = UIView()
+    private let buttonStackView = UIStackView()
+    let searchBar = UISearchBar()
     //하단에 표시할 뷰컨들
     let infieldFoodVC = InFieldFoodViewController()
     let outfieldFoodVC = OutFieldFoodViewController()
     let playerRecommedVC = PlayerRecommedViewController()
     let containerView = UIView()
-    
+    var currentChildVC: UIViewController?
     
 
     override func viewDidLoad() {
@@ -36,6 +37,8 @@ class FoodListViewController: UIViewController {
         configureUI()
         setupProperty()
         setupSegement()
+        showChildViewController(infieldFoodVC)
+        updateSelector(animaited: false)
     }
     
     override func viewDidLayoutSubviews() {
@@ -44,7 +47,7 @@ class FoodListViewController: UIViewController {
     }
     //addSubview
     func setupAddSubview() {
-        [xmarkButton, searchBar, foodTitleLabel, segmentBackgroundView, searchBarView].forEach {
+        [xmarkButton, searchBar, foodTitleLabel, segmentBackgroundView, searchBarView, containerView].forEach {
             view.addSubview($0)
         }
         segmentBackgroundView.addSubview(buttonStackView)
@@ -82,6 +85,11 @@ class FoodListViewController: UIViewController {
             $0.bottom.equalToSuperview()
             $0.horizontalEdges.equalToSuperview()
         }
+        containerView.snp.makeConstraints {
+            $0.top.equalTo(buttonStackView.snp.bottom).offset(10)
+            $0.horizontalEdges.equalToSuperview()
+            $0.bottom.equalToSuperview()
+        }
     }
     //UI 속성
     func configureUI() {
@@ -117,6 +125,10 @@ class FoodListViewController: UIViewController {
         searchBar.delegate = self
     }
     
+}
+//커스텀 세그먼트 함수들
+extension FoodListViewController {
+    //버튼,타이틀
     func setupSegement() {
         for(index, title) in foodMenuTitle.enumerated() {
             let button = UIButton(type: .system)
@@ -129,7 +141,7 @@ class FoodListViewController: UIViewController {
             buttonStackView.addArrangedSubview(button)
         }
     }
-    
+    //커스텀 세그먼트 애니메이션, 텍스트컬러
     func updateSelector(animaited: Bool) {
         //텍스트 컬러 업데이트
         for (i, btn) in menuButton.enumerated() {
@@ -147,26 +159,34 @@ class FoodListViewController: UIViewController {
         } else {
             self.selectorView.frame = selectorFrame
         }
-        
     }
-    
+    //세그먼트 텝별로 다른 화면 보여주기
+    func showChildViewController(_ vc: UIViewController) {
+        if let current = currentChildVC {
+            current.willMove(toParent: nil)
+            current.view.removeFromSuperview()
+            current.removeFromParent()
+        }
+        addChild(vc)
+        containerView.addSubview(vc.view)
+        vc.view.frame = containerView.bounds
+        vc.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        vc.didMove(toParent: self)
+        currentChildVC = vc
+    }
+    //세그먼트 텝버튼 함수
     @objc func segementTapped(_ sender: UIButton) {
         selectedButtonIndex = sender.tag
         updateSelector(animaited: true)
+        switch sender.tag {
+        case 0: showChildViewController(infieldFoodVC)
+        case 1: showChildViewController(playerRecommedVC)
+        case 2: showChildViewController(outfieldFoodVC)
+        default: break
+        }
     }
-    
-    
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
+//서치바
 extension FoodListViewController: UISearchBarDelegate {
-    
+
 }
