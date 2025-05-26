@@ -54,7 +54,7 @@ class InFieldFoodViewController: UIViewController {
 }
 //MARK: - 컬렉션뷰 + 디테일 페이지 이동하기
 extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    
+    //디테일 페이지 이동부분
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedItem = testImageList[indexPath.row]
         let detailPageVC = DetailedPageViewController()

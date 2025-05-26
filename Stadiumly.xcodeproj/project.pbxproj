@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		390D6EDE2DDF261200E031FB /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 390D6EDD2DDF261200E031FB /* SnapKit */; };
+		39A151932DE4167000B0A728 /* KakaoMapsSDK-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 39A151922DE4167000B0A728 /* KakaoMapsSDK-SPM */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +42,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				390D6EDE2DDF261200E031FB /* SnapKit in Frameworks */,
+				39A151932DE4167000B0A728 /* KakaoMapsSDK-SPM in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +86,7 @@
 			name = Stadiumly;
 			packageProductDependencies = (
 				390D6EDD2DDF261200E031FB /* SnapKit */,
+				39A151922DE4167000B0A728 /* KakaoMapsSDK-SPM */,
 			);
 			productName = Stadiumly;
 			productReference = 394A86832DDDD8840083A2CB /* Stadiumly.app */;
@@ -115,6 +118,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				390D6EDC2DDF261200E031FB /* XCRemoteSwiftPackageReference "SnapKit" */,
+				39A151912DE4167000B0A728 /* XCRemoteSwiftPackageReference "KakaoMapsSDK-SPM" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 394A86842DDDD8840083A2CB /* Products */;
@@ -354,6 +358,14 @@
 				minimumVersion = 5.7.1;
 			};
 		};
+		39A151912DE4167000B0A728 /* XCRemoteSwiftPackageReference "KakaoMapsSDK-SPM" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kakao-mapsSDK/KakaoMapsSDK-SPM";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.12.5;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -361,6 +373,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 390D6EDC2DDF261200E031FB /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		39A151922DE4167000B0A728 /* KakaoMapsSDK-SPM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 39A151912DE4167000B0A728 /* XCRemoteSwiftPackageReference "KakaoMapsSDK-SPM" */;
+			productName = "KakaoMapsSDK-SPM";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

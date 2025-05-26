@@ -126,7 +126,7 @@ class FoodListViewController: UIViewController {
     }
     
 }
-//커스텀 세그먼트 함수들
+//MARK: - 커스텀 세그먼트 함수들
 extension FoodListViewController {
     //버튼,타이틀
     func setupSegement() {
@@ -186,7 +186,7 @@ extension FoodListViewController {
         }
     }
 }
-//서치바
+//MARK: - 서치바 설정
 extension FoodListViewController: UISearchBarDelegate {
 
 }
