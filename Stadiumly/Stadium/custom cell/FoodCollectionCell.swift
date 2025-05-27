@@ -64,12 +64,16 @@ class FoodCollectionCell: UICollectionViewCell {
 
         // 둥근 뷰 제약
         roundedContentView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(8)
+            make.edges.equalToSuperview().inset(5)
         }
 
         // 이미지 뷰 제약
         imageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(8)
+            make.edges.equalToSuperview()
         }
+    }
+    
+    func configure(with imageName: String) {
+        imageView.image = UIImage(named: imageName)
     }
 }

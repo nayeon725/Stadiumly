@@ -115,7 +115,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				FD95506C2DDF1CA000D097C9 /* XCRemoteSwiftPackageReference "SnapKit" */,
-
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 394A86842DDDD8840083A2CB /* Products */;
