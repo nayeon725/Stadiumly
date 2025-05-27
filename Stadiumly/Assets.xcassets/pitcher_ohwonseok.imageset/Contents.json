@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "STADIUMLY.png",
+      "filename" : "pitcher_ohwonseok.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -10,7 +10,6 @@
       "scale" : "2x"
     },
     {
-      "filename" : "STADIUMLY.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
