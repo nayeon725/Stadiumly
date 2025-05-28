@@ -7,31 +7,31 @@
 
 import UIKit
 import SnapKit
+import SideMenu
 
 class MainInfoViewController: UIViewController {
     
     let foodImages = ["크새", "fries"]
     var timer: Timer?
     
+    // 타이틀 설정용 데이터
+    var teamName: String = ""
+    // 날씨 서치용 데이터
     var lat: Double = 37.496659317
     var lon: Double = 126.866788407
-    let appid: String = "2692e89765ccfba179e8f09fc3810664"
+    // 날씨 표시용 데이터
+    var stadiumName: String = ""
     var imgData: Data?
     var rcText: String = ""
-    var stadiumName: String = "고척스카이돔"
     var temp: Double = 0.0
     
-    let titleImage: UIImageView = {
-        let image = UIImageView(image: UIImage(named: "STADIUMLY_short"))
-        image.contentMode = .scaleAspectFit
-        image.isUserInteractionEnabled = true
-        return image
-    }()
+    private var sideMenu: SideMenuNavigationController?
     
     let pitcherTitle: UILabel = {
         let label = UILabel()
         label.text = "⚾️ 오늘의 선발 투수"
         label.font = UIFont.systemFont(ofSize: 30, weight: .bold)
+        label.textColor = .darkGray
         return label
     }()
     
@@ -39,7 +39,7 @@ class MainInfoViewController: UIViewController {
         let label = UILabel()
         label.text = "🔍 먹거리 검색"
         label.font = UIFont.systemFont(ofSize: 30, weight: .bold)
-        label.textColor = .label
+        label.textColor = .darkGray
         return label
     }()
     
@@ -47,6 +47,7 @@ class MainInfoViewController: UIViewController {
         let label = UILabel()
         label.text = "☀️ 날씨 정보"
         label.font = UIFont.systemFont(ofSize: 30, weight: .bold)
+        label.textColor = .darkGray
         return label
     }()
     
@@ -78,6 +79,8 @@ class MainInfoViewController: UIViewController {
         return stack
     }()
     
+    let titleLabel = UILabel()
+    
     let weatherStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
@@ -86,46 +89,61 @@ class MainInfoViewController: UIViewController {
         return stackView
     }()
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: false)
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         view.backgroundColor = .white
-        searchWeather()
         
-        // 로고 이미지
-        view.addSubview(titleImage)
-        if let image = UIImage(named: "STADIUMLY_short") {
-            let imageRatio = image.size.height / image.size.width
-            
-            titleImage.snp.makeConstraints { make in
-                make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
-                make.centerX.equalToSuperview()
-                make.width.equalToSuperview().multipliedBy(0.5)
-                make.height.equalTo(titleImage.snp.width).multipliedBy(imageRatio)
-            }
-        }
+        title = "Main"
         
-        // 오늘의 선발 투수 부분
-        setupPitcherUI()
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: "Menu",
+            style: .plain,
+            target: self,
+            action: #selector(didTapMenu)
+        )
         
-        // 먹거리 검색 부분
-        setupCarouselView()
+        let menu = MenuListController()
+        sideMenu = SideMenuNavigationController(rootViewController: menu)
+        sideMenu?.leftSide = true
+        SideMenuManager.default.leftMenuNavigationController = sideMenu
         
-        // 날씨 정보 부분
-        setupWeatherUI()
+        // 스와이프 제스처
+        SideMenuManager.default.addPanGestureToPresent(toView: self.view)
+        
+        searchWeather() // 날씨 검색
+        setupTitle() // 타이틀 설정
+        setupPitcherUI() // 오늘의 선발 투수 부분 ui
+        setupFoodList() // 먹거리 검색 부분 ui
+        setupWeatherUI() // 날씨 정보 부분 ui
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
-        titleImage.addGestureRecognizer(tapGesture)
+        titleLabel.addGestureRecognizer(tapGesture)
     }
     
     @objc func logoTapped() {
         // 화면 전환 동작 (예: pull)
         navigationController?.popViewController(animated: true)
+    }
+    
+    @objc private func didTapMenu() {
+        if let sideMenu {
+            present(sideMenu, animated: true)
+        }
+    }
+    
+    private func setupTitle() {
+        // 네비게이션바에 타이틀
+        titleLabel.text = teamName
+        titleLabel.textColor = .label
+        titleLabel.textAlignment = .center
+        titleLabel.font = UIFont.systemFont(ofSize: 37, weight: .bold)
+        titleLabel.isUserInteractionEnabled = true
+        
+        view.addSubview(titleLabel)
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10)
+            make.leading.trailing.equalToSuperview()
+        }
     }
     
     // 선발투수 스택 아이템
@@ -205,7 +223,7 @@ class MainInfoViewController: UIViewController {
         return container
     }
     
-    private func setupCarouselView() {
+    private func setupFoodList() {
         view.addSubview(foodTitle)
         foodTitle.snp.makeConstraints { make in
             make.top.equalTo(pitcherStackView.snp.bottom).offset(20)
@@ -237,7 +255,7 @@ class MainInfoViewController: UIViewController {
     private func setupPitcherUI() {
         view.addSubview(pitcherTitle)
         pitcherTitle.snp.makeConstraints { make in
-            make.top.equalTo(titleImage.snp.bottom).offset(30)
+            make.top.equalTo(titleLabel.snp.bottom).offset(20)
             make.leading.equalTo(view.safeAreaLayoutGuide.snp.leading).offset(20)
         }
 
@@ -366,60 +384,66 @@ class MainInfoViewController: UIViewController {
     }
     
     func searchWeather() {
-        let endPt = "https://api.openweathermap.org/data/2.5/weather?lat=\(lat)&lon=\(lon)&appid=\(appid)&units=metric&lang=kr"
-        guard let url = URL(string: endPt) else { return }
-        let request = URLRequest(url: url)
-        
-        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            guard let self = self,
-                  let data else {
-                // alert 처리
-                print("데이터 정보를 가져올 수 없습니다.")
-                return
-            }
+        if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
+           let dict = NSDictionary(contentsOfFile: path),
+           let apiKey = dict["WEATHER_API_KEY"] as? String {
+            print("API 키: \(apiKey)")
             
-            do {
-                let root = try JSONDecoder().decode(WeatherRoot.self, from: data)
-                let weather = root.weather
-                let rain = root.rain
-                let main = root.main
-                
-                guard let weatherIcon = weather.first?.icon else { return }
-                
-                // 메인 스레드에서 온도 업데이트
-                DispatchQueue.main.async {
-                    self.temp = main.temp
+            let endPt = "https://api.openweathermap.org/data/2.5/weather?lat=\(lat)&lon=\(lon)&appid=\(apiKey)&units=metric&lang=kr"
+            guard let url = URL(string: endPt) else { return }
+            let request = URLRequest(url: url)
+            
+            URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+                guard let self = self,
+                      let data else {
+                    // alert 처리
+                    print("데이터 정보를 가져올 수 없습니다.")
+                    return
                 }
                 
-                // 우천 취소 텍스트 설정
-                let rainText = (rain?.oneHour ?? 0 >= 10.0) ?
-                    "우천 취소 확률이 있습니다. 관람에 유의하세요. ☔️" :
-                    "우천 취소 확률이 없습니다. 즐겁게 관람하세요 ☀️"
-                
-                // 이미지 데이터 가져오기
-                if let imageURL = URL(string: "https://openweathermap.org/img/wn/\(weatherIcon).png") {
-                    let request = URLRequest(url: imageURL)
+                do {
+                    let root = try JSONDecoder().decode(WeatherRoot.self, from: data)
+                    let weather = root.weather
+                    let rain = root.rain
+                    let main = root.main
                     
-                    URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-                        guard let self = self,
-                              let imageData = data else { return }
+                    guard let weatherIcon = weather.first?.icon else { return }
+                    
+                    // 메인 스레드에서 온도 업데이트
+                    DispatchQueue.main.async {
+                        self.temp = main.temp
+                    }
+                    
+                    // 우천 취소 텍스트 설정
+                    let rainText = (rain?.oneHour ?? 0 >= 10.0) ?
+                        "우천 취소 확률이 있습니다. 관람에 유의하세요. ☔️" :
+                        "우천 취소 확률이 없습니다. 즐겁게 관람하세요. ☀️"
+                    
+                    // 이미지 데이터 가져오기
+                    if let imageURL = URL(string: "https://openweathermap.org/img/wn/\(weatherIcon)@2x.png") {
+                        let request = URLRequest(url: imageURL)
                         
-                        // 메인 스레드에서 이미지 데이터와 텍스트 업데이트 후 UI 새로고침
-                        DispatchQueue.main.async {
-                            self.imgData = imageData
-                            self.rcText = rainText
+                        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+                            guard let self = self,
+                                  let imageData = data else { return }
                             
-                            // UI 업데이트를 위해 setupWeatherUI 다시 호출
-                            self.setupWeatherUI()
-                        }
-                    }.resume()
+                            // 메인 스레드에서 이미지 데이터와 텍스트 업데이트 후 UI 새로고침
+                            DispatchQueue.main.async {
+                                self.imgData = imageData
+                                self.rcText = rainText
+                                
+                                // UI 업데이트를 위해 setupWeatherUI 다시 호출
+                                self.setupWeatherUI()
+                            }
+                        }.resume()
+                    }
+                    
+                } catch {
+                    // alert 처리
+                    print("JSON 디코딩 실패: \(error.localizedDescription)")
                 }
-                
-            } catch {
-                // alert 처리
-                print("JSON 디코딩 실패: \(error.localizedDescription)")
-            }
-        }.resume()
+            }.resume()
+        }
     }
 }
 
@@ -438,6 +462,12 @@ extension MainInfoViewController: UICollectionViewDataSource, UICollectionViewDe
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: collectionView.bounds.height)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+            let nextVC = FoodListViewController()
+            navigationController?.pushViewController(nextVC, animated: true)
+            print(indexPath.item)
     }
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {

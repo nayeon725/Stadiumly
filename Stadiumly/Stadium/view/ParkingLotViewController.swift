@@ -13,9 +13,7 @@ class ParkingLotViewController: UIViewController {
     
     // 캐시 변수
     var geocodingCache: [String: CLLocationCoordinate2D] = [:]
-    
     let activityIndicator = UIActivityIndicatorView(style: .large)
-    
     var parkingAnnotations: [ParkingAnnotation] = []
     
     let titleLabel: UILabel = {
@@ -94,34 +92,40 @@ class ParkingLotViewController: UIViewController {
     }
     
     func parkingLotAnnotation() {
-        guard let endPt = "http://openapi.seoul.go.kr:8088/4965454f67736b6435354d516f646a/json/GetParkingInfo/1/200/구로구".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: endPt)
-        else {
-            print("URL 생성 실패")
-            return
-        }
-        
-        let request = URLRequest(url: url)
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data else {
-                print("데이터 없음")
+        if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
+           let dict = NSDictionary(contentsOfFile: path),
+           let apiKey = dict["PARKING_API_KEY"] as? String {
+            print("API 키: \(apiKey)")
+            
+            guard let endPt = "http://openapi.seoul.go.kr:8088/\(apiKey)/json/GetParkingInfo/1/200/구로구".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let url = URL(string: endPt)
+            else {
+                print("URL 생성 실패")
                 return
             }
             
-            do {
-                let root = try JSONDecoder().decode(ParkingLotRoot.self, from: data)
-                let getParkingInfo = root.GetParkingInfo
-                let parkingLots = root.GetParkingInfo.row
-                guard !getParkingInfo.row.isEmpty else {
-                    print("주차장 정보가 없습니다.")
+            let request = URLRequest(url: url)
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                guard let data else {
+                    print("데이터 없음")
                     return
                 }
                 
-                self.pinningParkingCoordinates(from: parkingLots)
-            } catch {
-                print("JSON 디코딩 실패: \(error.localizedDescription)")
-            }
-        }.resume()
+                do {
+                    let root = try JSONDecoder().decode(ParkingLotRoot.self, from: data)
+                    let getParkingInfo = root.GetParkingInfo
+                    let parkingLots = root.GetParkingInfo.row
+                    guard !getParkingInfo.row.isEmpty else {
+                        print("주차장 정보가 없습니다.")
+                        return
+                    }
+                    
+                    self.pinningParkingCoordinates(from: parkingLots)
+                } catch {
+                    print("JSON 디코딩 실패: \(error.localizedDescription)")
+                }
+            }.resume()
+        }
     }
     
     // API 주소 좌표로 변환해서 주차장 핀꼽기
