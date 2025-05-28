@@ -12,11 +12,14 @@ class MainInfoViewController: UIViewController {
     
     let foodImages = ["크새", "fries"]
     var timer: Timer?
-    var isInnititialScrollDone = false
     
     var lat: Double = 37.496659317
     var lon: Double = 126.866788407
     let appid: String = "2692e89765ccfba179e8f09fc3810664"
+    var imgData: Data?
+    var rcText: String = ""
+    var stadiumName: String = "고척스카이돔"
+    var temp: Double = 0.0
     
     let titleImage: UIImageView = {
         let image = UIImageView(image: UIImage(named: "STADIUMLY_short"))
@@ -27,21 +30,22 @@ class MainInfoViewController: UIViewController {
     
     let pitcherTitle: UILabel = {
         let label = UILabel()
-        label.text = "오늘의 선발 투수"
+        label.text = "⚾️ 오늘의 선발 투수"
         label.font = UIFont.systemFont(ofSize: 30, weight: .bold)
         return label
     }()
     
     let foodTitle: UILabel = {
         let label = UILabel()
-        label.text = "먹거리 검색"
+        label.text = "🔍 먹거리 검색"
         label.font = UIFont.systemFont(ofSize: 30, weight: .bold)
+        label.textColor = .label
         return label
     }()
     
     let weatherTitle: UILabel = {
         let label = UILabel()
-        label.text = "날씨 정보"
+        label.text = "☀️ 날씨 정보"
         label.font = UIFont.systemFont(ofSize: 30, weight: .bold)
         return label
     }()
@@ -59,20 +63,26 @@ class MainInfoViewController: UIViewController {
         return collectionView
     }()
     
-    let horizontalStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.distribution = .equalSpacing
-        stackView.alignment = .center
-        stackView.spacing = 0
-        return stackView
+    let pitcherStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 0
+        stack.backgroundColor = .systemGray6
+        stack.distribution = .equalCentering
+        stack.layer.cornerRadius = 12
+        stack.layer.shadowColor = UIColor.black.cgColor
+        stack.layer.shadowOpacity = 0.1
+        stack.layer.shadowOffset = CGSize(width: 0, height: 2)
+        stack.layer.shadowRadius = 4
+        stack.clipsToBounds = false
+        return stack
     }()
     
     let weatherStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
-        stackView.distribution = .fillEqually
-        stackView.spacing = 8
+        stackView.distribution = .fillProportionally
+        stackView.spacing = 0
         return stackView
     }()
     
@@ -101,28 +111,13 @@ class MainInfoViewController: UIViewController {
         }
         
         // 오늘의 선발 투수 부분
-        view.addSubview(pitcherTitle)
-        pitcherTitle.snp.makeConstraints { make in
-            make.top.equalTo(titleImage.snp.bottom).offset(30)
-            make.leading.equalTo(view.safeAreaLayoutGuide.snp.leading).offset(20)
-        }
-        
         setupPitcherUI()
         
         // 먹거리 검색 부분
-        view.addSubview(foodTitle)
-        foodTitle.snp.makeConstraints { make in
-            make.top.equalTo(horizontalStackView.snp.bottom).offset(30)
-            make.leading.equalTo(horizontalStackView.snp.leading)
-        }
         setupCarouselView()
         
-        // 날씨 정보 타이틀
-        view.addSubview(weatherTitle)
-        weatherTitle.snp.makeConstraints { make in
-            make.top.equalTo(carouselView.snp.bottom).offset(20)
-            make.leading.equalTo(horizontalStackView.snp.leading)
-        }
+        // 날씨 정보 부분
+        setupWeatherUI()
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         titleImage.addGestureRecognizer(tapGesture)
@@ -136,85 +131,89 @@ class MainInfoViewController: UIViewController {
     // 선발투수 스택 아이템
     private func createPitcherItem(imageName: String, pitcherName: String, pitcherERA: Double) -> UIView {
         let container = UIView()
-        
+        container.backgroundColor = .white
+        container.layer.cornerRadius = 12
+        container.layer.shadowColor = UIColor.black.cgColor
+        container.layer.shadowOpacity = 0.05
+        container.layer.shadowOffset = CGSize(width: 0, height: 2)
+        container.layer.shadowRadius = 4
+        container.clipsToBounds = false
+
         let imageView = UIImageView()
         imageView.image = UIImage(named: imageName)
         imageView.contentMode = .scaleAspectFit
-        
+
         let nameLabel = UILabel()
-        nameLabel.font = .systemFont(ofSize: 20, weight: .medium)
+        nameLabel.font = .systemFont(ofSize: 18, weight: .semibold)
         nameLabel.textAlignment = .center
         nameLabel.text = pitcherName
-        
+
         let eraLabel = UILabel()
-        eraLabel.font = .systemFont(ofSize: 20, weight: .regular)
+        eraLabel.font = .systemFont(ofSize: 16, weight: .regular)
         eraLabel.textAlignment = .center
-        eraLabel.text = String(pitcherERA)
-        
+        eraLabel.textColor = .darkGray
+        eraLabel.text = "ERA: \(pitcherERA)"
+
         let verticalStack = UIStackView(arrangedSubviews: [imageView, nameLabel, eraLabel])
         verticalStack.axis = .vertical
-        verticalStack.alignment = .fill
-        verticalStack.distribution = .equalCentering
-        
+        verticalStack.alignment = .center
+        verticalStack.distribution = .equalSpacing
+        verticalStack.spacing = 8
+
         container.addSubview(verticalStack)
-        
-        verticalStack.setCustomSpacing(10, after: imageView)
-        verticalStack.setCustomSpacing(5, after: nameLabel)
-        
         verticalStack.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.edges.equalToSuperview().inset(10)
         }
-        
+
         imageView.snp.makeConstraints { make in
-            make.width.height.equalTo(100)
+            make.height.equalTo(80)
+            make.width.equalTo(80)
         }
-        
+
         return container
     }
+
     
     // 날씨 스택 아이템
-    private func createWeatherItem(imageName: String, pitcherName: String, pitcherERA: Double) -> UIView {
+    private func createWeatherItem(stadiumName: String, temp: Double) -> UIView {
         let container = UIView()
         
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: imageName)
-        imageView.contentMode = .scaleAspectFit
-        
         let nameLabel = UILabel()
-        nameLabel.font = .systemFont(ofSize: 20, weight: .medium)
-        nameLabel.textAlignment = .center
-        nameLabel.text = pitcherName
+        nameLabel.text = stadiumName
+        nameLabel.font = .systemFont(ofSize: 25, weight: .bold)
+        nameLabel.textAlignment = .left
+        nameLabel.textColor = .label
         
-        let eraLabel = UILabel()
-        eraLabel.font = .systemFont(ofSize: 20, weight: .regular)
-        eraLabel.textAlignment = .center
-        eraLabel.text = String(pitcherERA)
+        let tempLabel = UILabel()
+        tempLabel.text = "현재 온도: \(temp)"
+        tempLabel.font = .systemFont(ofSize: 20, weight: .medium)
+        tempLabel.textAlignment = .left
+        tempLabel.textColor = .systemBlue
         
-        let verticalStack = UIStackView(arrangedSubviews: [imageView, nameLabel, eraLabel])
+        let verticalStack = UIStackView(arrangedSubviews: [nameLabel, tempLabel])
         verticalStack.axis = .vertical
-        verticalStack.alignment = .fill
+        verticalStack.alignment = .leading
         verticalStack.distribution = .equalCentering
+        verticalStack.spacing = 8
         
         container.addSubview(verticalStack)
         
-        verticalStack.setCustomSpacing(10, after: imageView)
-        verticalStack.setCustomSpacing(5, after: nameLabel)
-        
         verticalStack.snp.makeConstraints { make in
             make.edges.equalToSuperview()
-        }
-        
-        imageView.snp.makeConstraints { make in
-            make.width.height.equalTo(100)
         }
         
         return container
     }
     
     private func setupCarouselView() {
+        view.addSubview(foodTitle)
+        foodTitle.snp.makeConstraints { make in
+            make.top.equalTo(pitcherStackView.snp.bottom).offset(20)
+            make.leading.equalTo(pitcherStackView.snp.leading)
+        }
+        
         // 먹거리 검색 컬렉션 뷰
         view.addSubview(carouselView)
-        
         carouselView.register(FoodCollectionCell.self, forCellWithReuseIdentifier: "FoodCollection")
         carouselView.dataSource = self
         carouselView.delegate = self
@@ -222,7 +221,7 @@ class MainInfoViewController: UIViewController {
         // carouselView는 foodTitle 아래에 위치
         carouselView.snp.makeConstraints { make in
             make.top.equalTo(foodTitle.snp.bottom)
-            make.leading.trailing.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(10)
             make.height.equalTo(200)
         }
         
@@ -236,35 +235,112 @@ class MainInfoViewController: UIViewController {
     }
     
     private func setupPitcherUI() {
-        // 오늘의 선발 투수 스택뷰
-        view.addSubview(horizontalStackView)
-        horizontalStackView.snp.makeConstraints { make in
-            make.top.equalTo(pitcherTitle.snp.bottom).offset(15)
+        view.addSubview(pitcherTitle)
+        pitcherTitle.snp.makeConstraints { make in
+            make.top.equalTo(titleImage.snp.bottom).offset(30)
+            make.leading.equalTo(view.safeAreaLayoutGuide.snp.leading).offset(20)
+        }
+
+        view.addSubview(pitcherStackView)
+        pitcherStackView.snp.makeConstraints { make in
+            make.top.equalTo(pitcherTitle.snp.bottom).offset(10)
             make.left.equalTo(pitcherTitle.snp.left)
             make.right.equalToSuperview().inset(20)
-            make.height.equalTo(160)
+            make.height.equalTo(180)
         }
-        horizontalStackView.backgroundColor = .systemGray6
-        
+
+        pitcherStackView.axis = .horizontal
+        pitcherStackView.spacing = 0
+        pitcherStackView.distribution = .fillEqually
+        pitcherStackView.alignment = .center
+        pitcherStackView.backgroundColor = .clear
+
         let awayPitcher = createPitcherItem(imageName: "pitcher_ohwonseok.png", pitcherName: "오원석", pitcherERA: 2.54)
-        horizontalStackView.addArrangedSubview(awayPitcher)
-        
         let vsLabel = UILabel()
         vsLabel.text = "VS"
-        vsLabel.font = UIFont.systemFont(ofSize: 40, weight: .bold)
+        vsLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
         vsLabel.textAlignment = .center
-        horizontalStackView.addArrangedSubview(vsLabel)
-        
+        vsLabel.textColor = .darkGray
+
         let homePitcher = createPitcherItem(imageName: "pitcher_kimyoonha.png", pitcherName: "김윤하", pitcherERA: 7.23)
-        horizontalStackView.addArrangedSubview(homePitcher)
-        
-        let itemWidth = (UIScreen.main.bounds.width - 40) / 3
-        [awayPitcher, vsLabel, homePitcher].forEach { item in
-            item.snp.makeConstraints { make in
-                make.width.equalTo(itemWidth)
-            }
+
+        pitcherStackView.addArrangedSubview(awayPitcher)
+        pitcherStackView.addArrangedSubview(vsLabel)
+        pitcherStackView.addArrangedSubview(homePitcher)
+
+        // VS 라벨 비율 조정
+        vsLabel.snp.makeConstraints { make in
+            make.width.equalTo(40)
         }
     }
+
+    
+    private func setupWeatherUI() {
+        // 1. weatherTitle
+        view.addSubview(weatherTitle)
+        weatherTitle.snp.makeConstraints { make in
+            make.top.equalTo(carouselView.snp.bottom).offset(20)
+            make.leading.equalToSuperview().offset(20)
+        }
+
+        // 2. 날씨 카드 뷰
+        let weatherCardView = UIView()
+        weatherCardView.backgroundColor = .white
+        weatherCardView.layer.cornerRadius = 16
+        weatherCardView.layer.shadowColor = UIColor.black.cgColor
+        weatherCardView.layer.shadowOpacity = 0.08
+        weatherCardView.layer.shadowOffset = CGSize(width: 0, height: 4)
+        weatherCardView.layer.shadowRadius = 6
+        view.addSubview(weatherCardView)
+
+        weatherCardView.snp.makeConstraints { make in
+            make.top.equalTo(weatherTitle.snp.bottom).offset(12)
+            make.left.equalToSuperview().offset(20)
+            make.right.equalToSuperview().inset(20)
+            make.height.equalTo(140)
+        }
+
+        // 3. 아이콘
+        let weatherImage = UIImageView()
+        if let imgData, let img = UIImage(data: imgData) {
+            weatherImage.image = img
+        }
+        weatherImage.contentMode = .scaleAspectFit
+        weatherImage.snp.makeConstraints { make in
+            make.size.equalTo(80)
+        }
+
+        // 4. 온도/구장명 텍스트
+        let infoStack = createWeatherItem(stadiumName: stadiumName, temp: temp)
+
+        // 5. 상단 스택 구성
+        let topStack = UIStackView(arrangedSubviews: [weatherImage, infoStack])
+        topStack.axis = .horizontal
+        topStack.alignment = .center
+        topStack.spacing = 15
+        weatherCardView.addSubview(topStack)
+
+        topStack.snp.makeConstraints { make in
+            make.top.equalTo(weatherCardView.snp.top).offset(10)
+            make.leading.trailing.equalToSuperview().inset(15)
+        }
+
+        // 6. 우천 취소 안내 (텍스트만 예쁘게)
+        let rainLabel = UILabel()
+        rainLabel.text = rcText
+        rainLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        rainLabel.numberOfLines = 2
+
+        weatherCardView.addSubview(rainLabel)
+
+        rainLabel.snp.makeConstraints { make in
+            make.top.equalTo(topStack.snp.bottom).offset(5)
+            make.leading.trailing.equalToSuperview().inset(20)
+            make.bottom.equalTo(weatherCardView.snp.bottom).inset(15)
+        }
+    }
+
+
     
     private func startAutoScroll() {
         timer?.invalidate()
@@ -294,10 +370,12 @@ class MainInfoViewController: UIViewController {
         guard let url = URL(string: endPt) else { return }
         let request = URLRequest(url: url)
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data else {
-                // alert 처리f
-                fatalError("데이터 정보를 가져올 수 없습니다.")
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let self = self,
+                  let data else {
+                // alert 처리
+                print("데이터 정보를 가져올 수 없습니다.")
+                return
             }
             
             do {
@@ -306,17 +384,42 @@ class MainInfoViewController: UIViewController {
                 let rain = root.rain
                 let main = root.main
                 
-                if let rain = rain, rain.oneHour >= 10.0 {
-                    // 우천 취소 oo
-                } else {
-                    // 우천 취소 xx
+                guard let weatherIcon = weather.first?.icon else { return }
+                
+                // 메인 스레드에서 온도 업데이트
+                DispatchQueue.main.async {
+                    self.temp = main.temp
+                }
+                
+                // 우천 취소 텍스트 설정
+                let rainText = (rain?.oneHour ?? 0 >= 10.0) ?
+                    "우천 취소 확률이 있습니다. 관람에 유의하세요. ☔️" :
+                    "우천 취소 확률이 없습니다. 즐겁게 관람하세요 ☀️"
+                
+                // 이미지 데이터 가져오기
+                if let imageURL = URL(string: "https://openweathermap.org/img/wn/\(weatherIcon).png") {
+                    let request = URLRequest(url: imageURL)
+                    
+                    URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+                        guard let self = self,
+                              let imageData = data else { return }
+                        
+                        // 메인 스레드에서 이미지 데이터와 텍스트 업데이트 후 UI 새로고침
+                        DispatchQueue.main.async {
+                            self.imgData = imageData
+                            self.rcText = rainText
+                            
+                            // UI 업데이트를 위해 setupWeatherUI 다시 호출
+                            self.setupWeatherUI()
+                        }
+                    }.resume()
                 }
                 
             } catch {
                 // alert 처리
                 print("JSON 디코딩 실패: \(error.localizedDescription)")
             }
-        }
+        }.resume()
     }
 }
 

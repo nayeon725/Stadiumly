@@ -37,7 +37,7 @@ class StadiumCollectionCell: UICollectionViewCell {
     // roundedContentView: corner radius와 콘텐츠용 뷰
     private let roundedContentView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 10
+        view.layer.cornerRadius = 12
         view.layer.masksToBounds = true
         view.backgroundColor = .white
         return view
