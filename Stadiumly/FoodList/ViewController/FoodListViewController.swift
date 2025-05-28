@@ -8,8 +8,26 @@
 import UIKit
 import SnapKit
 
+
+struct KakaoSearch: Codable {
+    let documents: [Place]
+}
+
+struct Place: Codable {
+    let place_name: String
+    let place_url: String
+    let x: String
+    let y: String
+    
+}
+
 //먹거리 페이지
 class FoodListViewController: UIViewController {
+    
+    //데이터 전달예정 페이지 델리게이트
+    weak var delegate: FoodSearchDelegate?
+    
+    let apiKey = "a1ca20c12106778d413b69fdaace0b23"
     
     private let xmarkButton = UIButton()
     private let searchBarView = UIView()
@@ -29,7 +47,7 @@ class FoodListViewController: UIViewController {
     let containerView = UIView()
     var currentChildVC: UIViewController?
     
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupAddSubview()
@@ -39,6 +57,7 @@ class FoodListViewController: UIViewController {
         setupSegement()
         showChildViewController(infieldFoodVC)
         updateSelector(animaited: false)
+        
     }
     
     override func viewDidLayoutSubviews() {
@@ -108,7 +127,7 @@ class FoodListViewController: UIViewController {
         selectorView.backgroundColor = UIColor(white: 0.25, alpha: 1)
         selectorView.layer.cornerRadius = 20
         segmentBackgroundView.insertSubview(selectorView, at: 0)
-      
+        
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.backgroundColor = UIColor(white: 0.95, alpha: 1)
             textField.layer.cornerRadius = 20
@@ -123,6 +142,40 @@ class FoodListViewController: UIViewController {
     //property
     func setupProperty() {
         searchBar.delegate = self
+        self.delegate = outfieldFoodVC
+    }
+    
+}
+//MARK: - 푸드 검색 API
+extension FoodListViewController {
+    // longitude: Double, latitude: Double
+    func searchFood(query: String?) {
+        guard let query else { return }
+        let endPoint = "https://dapi.kakao.com/v2/local/search/keyword.json?query=\(query)&category_group_code=FD6&x=\(126.866788407)&y=\(37.496659317)"
+        guard let url = URL(string: endPoint) else { return }
+        var request = URLRequest(url: url)
+        request.addValue("KakaoAK \(apiKey)", forHTTPHeaderField: "Authorization")
+        let seesion = URLSession.shared
+        let task = seesion.dataTask(with: request) { data, _ , error in
+            if let error = error {
+                print("요청 실패 Error")
+                return
+            }
+            guard let data else {
+                print("데이터가 없습니다")
+                return
+            }
+//            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
+            do {
+                let decoded = try JSONDecoder().decode(KakaoSearch.self, from: data)
+                DispatchQueue.main.async {
+                    self.delegate?.didReceiveSearchResults(decoded.documents)
+                }
+            } catch {
+                print("디코딩 실패\(error)")
+            }
+        }
+        task.resume()
     }
     
 }
@@ -170,6 +223,7 @@ extension FoodListViewController {
         addChild(vc)
         containerView.addSubview(vc.view)
         vc.view.frame = containerView.bounds
+        vc.view.isUserInteractionEnabled = true
         vc.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         vc.didMove(toParent: self)
         currentChildVC = vc
@@ -188,5 +242,8 @@ extension FoodListViewController {
 }
 //MARK: - 서치바 설정
 extension FoodListViewController: UISearchBarDelegate {
-
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchFood(query: searchBar.text)
+        searchBar.resignFirstResponder()
+    }
 }
