@@ -15,7 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        SDKInitializer.InitSDK(appKey: "7e6e75503425a149d7e47bb7e360543c")
+        SDKInitializer.InitSDK(appKey: "")
         return true
     }
 
