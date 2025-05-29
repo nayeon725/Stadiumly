@@ -57,7 +57,7 @@ class FoodListViewController: UIViewController {
         setupSegement()
         showChildViewController(infieldFoodVC)
         updateSelector(animaited: false)
-        
+   
     }
     
     override func viewDidLayoutSubviews() {
@@ -144,6 +144,8 @@ class FoodListViewController: UIViewController {
         searchBar.delegate = self
         self.delegate = outfieldFoodVC
     }
+
+
     
 }
 //MARK: - 푸드 검색 API
@@ -158,7 +160,7 @@ extension FoodListViewController {
         let seesion = URLSession.shared
         let task = seesion.dataTask(with: request) { data, _ , error in
             if let error = error {
-                print("요청 실패 Error")
+                print("요청 실패 Error: \(error.localizedDescription)")
                 return
             }
             guard let data else {
