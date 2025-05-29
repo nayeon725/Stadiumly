@@ -201,7 +201,6 @@ extension FoodListViewController {
             viewControllers.forEach { vc in
             addChild(vc)
                 if let vcView = vc.view {
-                    containerView.addSubview(vcView)
                     vcView.frame = containerView.bounds
                     vcView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
                     vcView.isHidden = true
@@ -215,6 +214,9 @@ extension FoodListViewController {
         orderControllers.forEach { vc in
             if let vcview = vc.view {
                 containerView.addSubview(vcview)
+                vcview.snp.makeConstraints {
+                    $0.edges.equalToSuperview()
+                }
                 vcview.isHidden = true
             }
         }
@@ -285,7 +287,9 @@ extension FoodListViewController {
 //MARK: - 서치바 설정
 extension FoodListViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchFood(query: searchBar.text)
+        if currentChildVC == outfieldFoodVC {
+            searchFood(query: searchBar.text)
+        }
         searchBar.resignFirstResponder()
     }
 }

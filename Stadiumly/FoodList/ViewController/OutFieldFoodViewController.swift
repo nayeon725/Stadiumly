@@ -70,7 +70,7 @@ class OutFieldFoodViewController: UIViewController {
     //오토 레이아웃
     func setupConstraints() {
         outFieldMapView.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(10)
+            $0.top.equalTo(view.safeAreaLayoutGuide).offset(10)
             $0.bottom.equalToSuperview().inset(10)
             $0.leading.equalToSuperview().offset(20)
             $0.trailing.equalToSuperview().inset(20)
@@ -89,8 +89,6 @@ class OutFieldFoodViewController: UIViewController {
         //KMcontroller 생성
         mapController = KMController(viewContainer: outFieldMapView)
         mapController!.delegate = self
-        
-        
         mapController?.prepareEngine()  //엔진 초기화. 엔진 내부 객체 생성 및 초기화가 진행된다
     }
     
@@ -170,7 +168,7 @@ extension OutFieldFoodViewController: MapControllerDelegate {
     func addViewSucceeded(_ viewName: String, viewInfoName: String) {
         let view = mapController?.getView("mapview") as! KakaoMap
         view.viewRect = outFieldMapView.bounds  //뷰 add 도중에 resize 이벤트가 발생한 경우 이벤트를 받지 못했을 수 있음. 원하는 뷰 사이즈로 재조정.
-        //설마 너냐?
+        //중요한 마크 터치 delegate
         view.eventDelegate = self
         viewInit(viewName: viewName)
         createLabelLayer()
@@ -351,7 +349,10 @@ extension OutFieldFoodViewController: FoodSearchDelegate, KakaoMapEventDelegate 
         
         // 새 레이어 생성
         let layerOption = LabelLayerOptions(layerID: "PoiLayer", competitionType: .none, competitionUnit: .symbolFirst, orderType: .rank, zOrder: 0)
-        guard let newLayer = manager.addLabelLayer(option: layerOption) else { return }
+        guard let newLayer = manager.addLabelLayer(option: layerOption) else {
+            print("새 레이어 생성 실패")
+            return
+        }
         
         // poiList 초기화(마커리셋)
         poiURLMap.removeAll()
