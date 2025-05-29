@@ -31,22 +31,26 @@ class InFieldFoodViewController: UIViewController {
         configureUI()
         setupProperty()
     }
+    
     //addSubView
     func setupAddSubview() {
         [inFieldCollectionView].forEach {
             view.addSubview($0)
         }
     }
+    
     //오토 레이아웃
     func setupConstraints() {
         inFieldCollectionView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
     }
+    
     //UI 속성
     func configureUI() {
         
     }
+    
     //property
     func setupProperty() {
         inFieldCollectionView.delegate = self
@@ -77,6 +81,7 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return testImageList.count
     }
+    
     //셀 정의 - 재사용셀
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: InFieldCollectionViewCell.identifier, for: indexPath) as? InFieldCollectionViewCell
@@ -87,10 +92,12 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
         cell.configure(with: imageName)
         return cell
     }
+    
     //셀 크기 설정
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: 160, height: 175)
     }
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,
         insetForSectionAt section: Int) -> UIEdgeInsets {
         let totalCellWidth: CGFloat = 160 * 2
@@ -100,6 +107,7 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
         
         return UIEdgeInsets(top: 10, left: inset, bottom: 30, right: inset)
     }
+    
     // 셀 세로 간격
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 30

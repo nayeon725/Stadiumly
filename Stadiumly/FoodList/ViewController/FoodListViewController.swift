@@ -58,14 +58,17 @@ class FoodListViewController: UIViewController {
         setupViewControllers()
         showChildViewController(infieldFoodVC)
         updateSelector(animaited: false)
-   
-   
+
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
+        xmarkButton.addGestureRecognizer(tapGesture)
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updateSelector(animaited: true)
     }
+    
     //addSubview
     func setupAddSubview() {
         [xmarkButton, searchBar, foodTitleLabel, segmentBackgroundView, searchBarView, containerView].forEach {
@@ -75,6 +78,7 @@ class FoodListViewController: UIViewController {
         searchBarView.addSubview(searchBar)
         
     }
+    
     //오토레이아웃
     func setupConstraints() {
         foodTitleLabel.snp.makeConstraints {
@@ -112,6 +116,7 @@ class FoodListViewController: UIViewController {
             $0.bottom.equalToSuperview()
         }
     }
+    
     //UI 속성
     func configureUI() {
         view.backgroundColor = .white
@@ -137,6 +142,7 @@ class FoodListViewController: UIViewController {
             textField.layer.masksToBounds = true
             textField.borderStyle = .none
         }
+        
         searchBarView.layer.shadowRadius = 0.5
         searchBarView.layer.shadowOpacity = 0.1
         searchBarView.layer.shadowColor = UIColor.black.cgColor
@@ -180,6 +186,11 @@ extension FoodListViewController {
             }
         }
         task.resume()
+    }
+    
+    @objc func logoTapped() {
+        // 화면 전환 동작 (예: pull)
+        navigationController?.popViewController(animated: true)
     }
     
 }
@@ -235,6 +246,7 @@ extension FoodListViewController {
             buttonStackView.addArrangedSubview(button)
         }
     }
+    
     //커스텀 세그먼트 애니메이션, 텍스트컬러
     func updateSelector(animaited: Bool) {
         //텍스트 컬러 업데이트
@@ -254,6 +266,7 @@ extension FoodListViewController {
             self.selectorView.frame = selectorFrame
         }
     }
+    
     //세그먼트 텝별로 다른 화면 보여주기
     func showChildViewController(_ vc: UIViewController) {
         //현재 보이는 뷰컨 처리
@@ -266,12 +279,16 @@ extension FoodListViewController {
         vc.view.isUserInteractionEnabled = true
         containerView.bringSubviewToFront(vc.view)
         currentChildVC = vc
+
         
         // delegate 재설정
         if vc === outfieldFoodVC {
             self.delegate = outfieldFoodVC
         }
       }
+    }
+    
+
     //세그먼트 텝버튼 함수
     @objc func segementTapped(_ sender: UIButton) {
         selectedButtonIndex = sender.tag
@@ -286,10 +303,12 @@ extension FoodListViewController {
 }
 //MARK: - 서치바 설정
 extension FoodListViewController: UISearchBarDelegate {
+
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if currentChildVC == outfieldFoodVC {
             searchFood(query: searchBar.text)
         }
         searchBar.resignFirstResponder()
     }
+
 }

@@ -7,8 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		390D6EDE2DDF261200E031FB /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 390D6EDD2DDF261200E031FB /* SnapKit */; };
+
 		39A151932DE4167000B0A728 /* KakaoMapsSDK-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 39A151922DE4167000B0A728 /* KakaoMapsSDK-SPM */; };
+		FD95506E2DDF1CA000D097C9 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = FD95506D2DDF1CA000D097C9 /* SnapKit */; };
+		FDD29C382DE6991500A81A54 /* SideMenu in Frameworks */ = {isa = PBXBuildFile; productRef = FDD29C372DE6991500A81A54 /* SideMenu */; };
+
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,8 +44,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				390D6EDE2DDF261200E031FB /* SnapKit in Frameworks */,
+
+
 				39A151932DE4167000B0A728 /* KakaoMapsSDK-SPM in Frameworks */,
+				FDD29C382DE6991500A81A54 /* SideMenu in Frameworks */,
+				FD95506E2DDF1CA000D097C9 /* SnapKit in Frameworks */,
+
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,8 +92,11 @@
 			);
 			name = Stadiumly;
 			packageProductDependencies = (
-				390D6EDD2DDF261200E031FB /* SnapKit */,
+
 				39A151922DE4167000B0A728 /* KakaoMapsSDK-SPM */,
+				FD95506D2DDF1CA000D097C9 /* SnapKit */,
+				FDD29C372DE6991500A81A54 /* SideMenu */,
+
 			);
 			productName = Stadiumly;
 			productReference = 394A86832DDDD8840083A2CB /* Stadiumly.app */;
@@ -100,7 +110,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
-				LastUpgradeCheck = 1620;
+				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					394A86822DDDD8840083A2CB = {
 						CreatedOnToolsVersion = 16.2;
@@ -117,8 +127,11 @@
 			mainGroup = 394A867A2DDDD8840083A2CB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				390D6EDC2DDF261200E031FB /* XCRemoteSwiftPackageReference "SnapKit" */,
+
 				39A151912DE4167000B0A728 /* XCRemoteSwiftPackageReference "KakaoMapsSDK-SPM" */,
+				FD95506C2DDF1CA000D097C9 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				FDD29C362DE6991500A81A54 /* XCRemoteSwiftPackageReference "SideMenu" */,
+
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 394A86842DDDD8840083A2CB /* Products */;
@@ -158,9 +171,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5VNW55K2UP;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Stadiumly/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -186,9 +200,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5VNW55K2UP;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Stadiumly/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -350,7 +365,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		390D6EDC2DDF261200E031FB /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+		FD95506C2DDF1CA000D097C9 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
 			requirement = {
@@ -358,26 +373,42 @@
 				minimumVersion = 5.7.1;
 			};
 		};
+
 		39A151912DE4167000B0A728 /* XCRemoteSwiftPackageReference "KakaoMapsSDK-SPM" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kakao-mapsSDK/KakaoMapsSDK-SPM";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.12.5;
+
+		FDD29C362DE6991500A81A54 /* XCRemoteSwiftPackageReference "SideMenu" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jonkykong/SideMenu.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.5.0;
+
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		390D6EDD2DDF261200E031FB /* SnapKit */ = {
+		FD95506D2DDF1CA000D097C9 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 390D6EDC2DDF261200E031FB /* XCRemoteSwiftPackageReference "SnapKit" */;
+			package = FD95506C2DDF1CA000D097C9 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
 		};
+
 		39A151922DE4167000B0A728 /* KakaoMapsSDK-SPM */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 39A151912DE4167000B0A728 /* XCRemoteSwiftPackageReference "KakaoMapsSDK-SPM" */;
 			productName = "KakaoMapsSDK-SPM";
+
+		FDD29C372DE6991500A81A54 /* SideMenu */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FDD29C362DE6991500A81A54 /* XCRemoteSwiftPackageReference "SideMenu" */;
+			productName = SideMenu;
+
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
