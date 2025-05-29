@@ -27,7 +27,7 @@ class FoodListViewController: UIViewController {
     //데이터 전달예정 페이지 델리게이트
     weak var delegate: FoodSearchDelegate?
     
-    let apiKey = ""
+    let apiKey = "a1ca20c12106778d413b69fdaace0b23"
     
     private let xmarkButton = UIButton()
     private let searchBarView = UIView()
@@ -41,9 +41,9 @@ class FoodListViewController: UIViewController {
     private let buttonStackView = UIStackView()
     let searchBar = UISearchBar()
     //하단에 표시할 뷰컨들
-    let infieldFoodVC = InFieldFoodViewController()
-    let outfieldFoodVC = OutFieldFoodViewController()
-    let playerRecommedVC = PlayerRecommedViewController()
+    private var infieldFoodVC = InFieldFoodViewController()
+    private var outfieldFoodVC = OutFieldFoodViewController()
+    private var playerRecommedVC = PlayerRecommedViewController()
     let containerView = UIView()
     var currentChildVC: UIViewController?
     
@@ -55,8 +55,10 @@ class FoodListViewController: UIViewController {
         configureUI()
         setupProperty()
         setupSegement()
+        setupViewControllers()
         showChildViewController(infieldFoodVC)
         updateSelector(animaited: false)
+   
    
     }
     
@@ -183,7 +185,42 @@ extension FoodListViewController {
 }
 //MARK: - 커스텀 세그먼트 함수들
 extension FoodListViewController {
-    //버튼,타이틀
+    
+    private func setupViewControllers() {
+        //각 뷰컨 초기화
+        infieldFoodVC = InFieldFoodViewController()
+        outfieldFoodVC = OutFieldFoodViewController()
+        playerRecommedVC = PlayerRecommedViewController()
+        
+        //delegate
+        self.delegate = outfieldFoodVC
+   
+        let viewControllers: [UIViewController] = [infieldFoodVC, outfieldFoodVC, playerRecommedVC]
+        
+        //각 뷰컨트롤러 자식으로 추가
+            viewControllers.forEach { vc in
+            addChild(vc)
+                if let vcView = vc.view {
+                    containerView.addSubview(vcView)
+                    vcView.frame = containerView.bounds
+                    vcView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                    vcView.isHidden = true
+                }
+                vc.didMove(toParent: self)
+        }
+        //모든 뷰를 제거하고 다시 순서대로 추가 하는것
+        containerView.subviews.forEach { $0.removeFromSuperview() }
+        //뷰들을 추가
+        let orderControllers: [UIViewController] = [infieldFoodVC, outfieldFoodVC, playerRecommedVC]
+        orderControllers.forEach { vc in
+            if let vcview = vc.view {
+                containerView.addSubview(vcview)
+                vcview.isHidden = true
+            }
+        }
+    }
+    
+    //버튼,타이틀 UI
     func setupSegement() {
         for(index, title) in foodMenuTitle.enumerated() {
             let button = UIButton(type: .system)
@@ -217,19 +254,22 @@ extension FoodListViewController {
     }
     //세그먼트 텝별로 다른 화면 보여주기
     func showChildViewController(_ vc: UIViewController) {
+        //현재 보이는 뷰컨 처리
         if let current = currentChildVC {
-            current.willMove(toParent: nil)
-            current.view.removeFromSuperview()
-            current.removeFromParent()
+            current.view.isHidden = true
+            current.view.isUserInteractionEnabled = false
         }
-        addChild(vc)
-        containerView.addSubview(vc.view)
-        vc.view.frame = containerView.bounds
+        //새로운 뷰컨 표시
+        vc.view.isHidden = false
         vc.view.isUserInteractionEnabled = true
-        vc.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        vc.didMove(toParent: self)
+        containerView.bringSubviewToFront(vc.view)
         currentChildVC = vc
-    }
+        
+        // delegate 재설정
+        if vc === outfieldFoodVC {
+            self.delegate = outfieldFoodVC
+        }
+      }
     //세그먼트 텝버튼 함수
     @objc func segementTapped(_ sender: UIButton) {
         selectedButtonIndex = sender.tag
