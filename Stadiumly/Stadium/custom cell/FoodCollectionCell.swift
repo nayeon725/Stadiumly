@@ -1,15 +1,15 @@
 //
-//  StadiumCollectionCell.swift
+//  FoodCollectionCell.swift
 //  Stadiumly
 //
-//  Created by 김나연 on 5/22/25.
+//  Created by 김나연 on 5/26/25.
 //
 
 import UIKit
 import SnapKit
 
-class StadiumCollectionCell: UICollectionViewCell {
-    static let identifier = "Stadium"
+class FoodCollectionCell: UICollectionViewCell {
+    static let identifier = "FoodCollection"
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -37,7 +37,7 @@ class StadiumCollectionCell: UICollectionViewCell {
     // roundedContentView: corner radius와 콘텐츠용 뷰
     private let roundedContentView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 10
+        view.layer.cornerRadius = 12
         view.layer.masksToBounds = true
         view.backgroundColor = .white
         return view
@@ -45,7 +45,7 @@ class StadiumCollectionCell: UICollectionViewCell {
     
     let imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         return imageView
     }()
@@ -59,17 +59,21 @@ class StadiumCollectionCell: UICollectionViewCell {
 
         // 그림자 뷰 제약
         shadowView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(8)
+            make.edges.equalToSuperview().inset(5)
         }
 
         // 둥근 뷰 제약
         roundedContentView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(8)
+            make.edges.equalToSuperview().inset(5)
         }
 
         // 이미지 뷰 제약
         imageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(8)
+            make.edges.equalToSuperview()
         }
+    }
+    
+    func configure(with imageName: String) {
+        imageView.image = UIImage(named: imageName)
     }
 }

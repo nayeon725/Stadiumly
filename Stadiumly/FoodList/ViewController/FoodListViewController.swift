@@ -29,7 +29,7 @@ class FoodListViewController: UIViewController {
     let containerView = UIView()
     var currentChildVC: UIViewController?
     
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupAddSubview()
@@ -39,12 +39,16 @@ class FoodListViewController: UIViewController {
         setupSegement()
         showChildViewController(infieldFoodVC)
         updateSelector(animaited: false)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
+        xmarkButton.addGestureRecognizer(tapGesture)
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updateSelector(animaited: true)
     }
+    
     //addSubview
     func setupAddSubview() {
         [xmarkButton, searchBar, foodTitleLabel, segmentBackgroundView, searchBarView, containerView].forEach {
@@ -54,6 +58,7 @@ class FoodListViewController: UIViewController {
         searchBarView.addSubview(searchBar)
         
     }
+    
     //오토레이아웃
     func setupConstraints() {
         foodTitleLabel.snp.makeConstraints {
@@ -91,6 +96,7 @@ class FoodListViewController: UIViewController {
             $0.bottom.equalToSuperview()
         }
     }
+    
     //UI 속성
     func configureUI() {
         view.backgroundColor = .white
@@ -108,7 +114,7 @@ class FoodListViewController: UIViewController {
         selectorView.backgroundColor = UIColor(white: 0.25, alpha: 1)
         selectorView.layer.cornerRadius = 20
         segmentBackgroundView.insertSubview(selectorView, at: 0)
-      
+        
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
             textField.backgroundColor = UIColor(white: 0.95, alpha: 1)
             textField.layer.cornerRadius = 20
@@ -116,6 +122,7 @@ class FoodListViewController: UIViewController {
             textField.layer.masksToBounds = true
             textField.borderStyle = .none
         }
+        
         searchBarView.layer.shadowRadius = 0.5
         searchBarView.layer.shadowOpacity = 0.1
         searchBarView.layer.shadowColor = UIColor.black.cgColor
@@ -123,6 +130,11 @@ class FoodListViewController: UIViewController {
     //property
     func setupProperty() {
         searchBar.delegate = self
+    }
+    
+    @objc func logoTapped() {
+        // 화면 전환 동작 (예: pull)
+        navigationController?.popViewController(animated: true)
     }
     
 }
@@ -141,6 +153,7 @@ extension FoodListViewController {
             buttonStackView.addArrangedSubview(button)
         }
     }
+    
     //커스텀 세그먼트 애니메이션, 텍스트컬러
     func updateSelector(animaited: Bool) {
         //텍스트 컬러 업데이트
@@ -160,6 +173,7 @@ extension FoodListViewController {
             self.selectorView.frame = selectorFrame
         }
     }
+    
     //세그먼트 텝별로 다른 화면 보여주기
     func showChildViewController(_ vc: UIViewController) {
         if let current = currentChildVC {
@@ -174,6 +188,7 @@ extension FoodListViewController {
         vc.didMove(toParent: self)
         currentChildVC = vc
     }
+    
     //세그먼트 텝버튼 함수
     @objc func segementTapped(_ sender: UIButton) {
         selectedButtonIndex = sender.tag
@@ -188,5 +203,5 @@ extension FoodListViewController {
 }
 //서치바
 extension FoodListViewController: UISearchBarDelegate {
-
+    
 }

@@ -11,14 +11,15 @@ import MapKit
 
 class ViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
-    let space: CGFloat = 10
-    let columns: CGFloat = 2
-    let sectionInset: CGFloat = 10
+    private let space: CGFloat = 10
+    private let columns: CGFloat = 2
+    private let sectionInset: CGFloat = 10
     
-    let clubImages = ["kiwoom", "doosanbears", "giants", "ktwiz", "ssglanders", "hanwhaeagles", "samsunglions", "lgtwins", "ncdinos", "kiatigers" ]
-    //    let clubNames = ["키움 히어로즈", "두산 베어스", "롯데 자이언츠", "케이티 위즈", "SSG 랜더스", "한화 이글스", "삼성 라이온즈", "엘지 트윈스", "엔씨 다이노스", "기아 타이거즈"]
+    private let clubImages = ["kiwoom", "ssglanders", "giants", "ktwiz", "samsunglions", "ncdinos", "doosanbears", "lgtwins", "kiatigers", "hanwhaeagles" ]
     
-    let titleImage: UIImageView = {
+    private var stadiums: [Stadium] = []
+    
+    private let titleImage: UIImageView = {
         let title = UIImageView()
         title.image = UIImage(named: "STADIUMLY_short")
         title.contentMode = .scaleAspectFit
@@ -41,14 +42,13 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.setNavigationBarHidden(true, animated: animated)
+        self.navigationController?.isNavigationBarHidden = true
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        
-        self.navigationController?.navigationBar.isHidden = true
+        findStadium()
         
         view.backgroundColor = .white
         view.addSubview(titleImage)
@@ -71,17 +71,58 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         }
     }
     
+    private func findStadium() {
+        let endPt = "http://localhost:3000/stadium"
+        guard let url = URL(string: endPt) else { return }
+        let request = URLRequest(url: url)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid response")
+                return
+            }
+            
+            print("Status code: \(httpResponse.statusCode)")  // 200 OK인지 확인
+            
+            guard let data = data else {
+                print("데이터 없음")
+                return
+            }
+            print("받은 데이터 크기: \(data.count)")
+
+            do {
+                let stadiums = try JSONDecoder().decode([Stadium].self, from: data)
+                print("디코딩 성공: \(stadiums.count)개")
+                DispatchQueue.main.async {
+                    self.stadiums = stadiums
+                    self.collectionView.reloadData()
+                }
+            } catch {
+                print("디코딩 에러: \(error)")
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("받은 JSON 문자열: \(jsonString)")
+                } else {
+                    print("JSON 문자열 변환 실패")
+                }
+            }
+        }.resume()
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         clubImages.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: StadiumCollectionCell.identifier, for: indexPath) as! StadiumCollectionCell
-        cell.imageView.image = UIImage(named: clubImages[indexPath.item])
+        cell.stadiumImageView.image = UIImage(named: clubImages[indexPath.item])
         
         return cell
     }
-    
     
     //셀 크기
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -100,13 +141,11 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         space
     }
     
-    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let nextVC = MainInfoViewController()
-        navigationController?.pushViewController(nextVC, animated: true)
+        let selectedStadium = stadiums[indexPath.item]
+        DataManager.shared.setSelectedStadium(selectedStadium)
+        
+        let mainInfoVC = MainInfoViewController()
+        navigationController?.pushViewController(mainInfoVC, animated: true)
     }
-    
-//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//        <#code#>
-//    }
 }

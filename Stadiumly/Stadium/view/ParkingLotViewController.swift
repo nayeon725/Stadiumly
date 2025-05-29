@@ -13,12 +13,10 @@ class ParkingLotViewController: UIViewController {
     
     // 캐시 변수
     var geocodingCache: [String: CLLocationCoordinate2D] = [:]
-    
     let activityIndicator = UIActivityIndicatorView(style: .large)
-    
     var parkingAnnotations: [ParkingAnnotation] = []
     
-    let titleLabel: UILabel = {
+    private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "구장 주변 주차장"
         label.font = UIFont.systemFont(ofSize: 30, weight: .bold)
@@ -27,7 +25,8 @@ class ParkingLotViewController: UIViewController {
         return label
     }()
     
-    let mapView: MKMapView = {
+    
+    private let mapView: MKMapView = {
         let map = MKMapView()
         map.layer.cornerRadius = 10
         map.clipsToBounds = true
@@ -45,12 +44,22 @@ class ParkingLotViewController: UIViewController {
         return view
     }()
     
+    private var xmarkButton = UIButton()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setupXmarkButton()
         configureUI()
         centerMapOnLocation()
         parkingLotAnnotation()
+        
+        // 이미지가 제대로 설정되었는지 확인
+        print("Button image: \(String(describing: xmarkButton.image(for: .normal)))")
+        print("Button constraints: \(xmarkButton.constraints)")
+        
+        // 뷰 계층 구조 출력
+        print("View hierarchy: \(view.subviews)")
         
         view.backgroundColor = .white
         
@@ -59,6 +68,27 @@ class ParkingLotViewController: UIViewController {
         annotation.title = "고척 스카이돔"
         mapView.addAnnotation(annotation)
         mapView.delegate = self
+    }
+    
+    @objc func logoTapped() {
+        print("Tapped!")
+        // 화면 전환 동작 (예: pull)
+        let mainVC = MainInfoViewController()
+        navigationController?.popViewController(animated: true)
+    }
+    
+    private func setupXmarkButton() {
+        print("테스트~~")
+        xmarkButton.setImage(UIImage(named: "xmark"), for: .normal)
+        xmarkButton.isUserInteractionEnabled = true
+        xmarkButton.addTarget(self, action: #selector(logoTapped), for: .touchUpInside)
+        view.addSubview(xmarkButton)
+        
+        xmarkButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(20)
+            make.trailing.equalToSuperview().inset(20)
+            make.width.height.equalTo(20)
+        }
     }
     
     private func configureUI() {
@@ -74,7 +104,11 @@ class ParkingLotViewController: UIViewController {
         
         // 그림자 뷰 제약
         shadowView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.top.equalTo(titleLabel.snp.bottom).offset(30)
+            make.leading.equalTo(view.safeAreaLayoutGuide.snp.leading)
+            make.trailing.equalTo(view.safeAreaLayoutGuide.snp.trailing)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+            
         }
         
         mapView.snp.makeConstraints { make in
@@ -94,34 +128,40 @@ class ParkingLotViewController: UIViewController {
     }
     
     func parkingLotAnnotation() {
-        guard let endPt = "http://openapi.seoul.go.kr:8088/4965454f67736b6435354d516f646a/json/GetParkingInfo/1/200/구로구".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: endPt)
-        else {
-            print("URL 생성 실패")
-            return
-        }
-        
-        let request = URLRequest(url: url)
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data else {
-                print("데이터 없음")
+        if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
+           let dict = NSDictionary(contentsOfFile: path),
+           let apiKey = dict["PARKING_API_KEY"] as? String {
+            print("API 키: \(apiKey)")
+            
+            guard let endPt = "http://openapi.seoul.go.kr:8088/\(apiKey)/json/GetParkingInfo/1/200/구로구".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let url = URL(string: endPt)
+            else {
+                print("URL 생성 실패")
                 return
             }
             
-            do {
-                let root = try JSONDecoder().decode(ParkingLotRoot.self, from: data)
-                let getParkingInfo = root.GetParkingInfo
-                let parkingLots = root.GetParkingInfo.row
-                guard !getParkingInfo.row.isEmpty else {
-                    print("주차장 정보가 없습니다.")
+            let request = URLRequest(url: url)
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                guard let data else {
+                    print("데이터 없음")
                     return
                 }
                 
-                self.pinningParkingCoordinates(from: parkingLots)
-            } catch {
-                print("JSON 디코딩 실패: \(error.localizedDescription)")
-            }
-        }.resume()
+                do {
+                    let root = try JSONDecoder().decode(ParkingLotRoot.self, from: data)
+                    let getParkingInfo = root.GetParkingInfo
+                    let parkingLots = root.GetParkingInfo.row
+                    guard !getParkingInfo.row.isEmpty else {
+                        print("주차장 정보가 없습니다.")
+                        return
+                    }
+                    
+                    self.pinningParkingCoordinates(from: parkingLots)
+                } catch {
+                    print("JSON 디코딩 실패: \(error.localizedDescription)")
+                }
+            }.resume()
+        }
     }
     
     // API 주소 좌표로 변환해서 주차장 핀꼽기

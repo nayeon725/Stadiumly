@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		FD95506E2DDF1CA000D097C9 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = FD95506D2DDF1CA000D097C9 /* SnapKit */; };
+		FDD29C382DE6991500A81A54 /* SideMenu in Frameworks */ = {isa = PBXBuildFile; productRef = FDD29C372DE6991500A81A54 /* SideMenu */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FDD29C382DE6991500A81A54 /* SideMenu in Frameworks */,
 				FD95506E2DDF1CA000D097C9 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -84,6 +86,7 @@
 			name = Stadiumly;
 			packageProductDependencies = (
 				FD95506D2DDF1CA000D097C9 /* SnapKit */,
+				FDD29C372DE6991500A81A54 /* SideMenu */,
 			);
 			productName = Stadiumly;
 			productReference = 394A86832DDDD8840083A2CB /* Stadiumly.app */;
@@ -97,7 +100,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
-				LastUpgradeCheck = 1620;
+				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					394A86822DDDD8840083A2CB = {
 						CreatedOnToolsVersion = 16.2;
@@ -115,7 +118,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				FD95506C2DDF1CA000D097C9 /* XCRemoteSwiftPackageReference "SnapKit" */,
-
+				FDD29C362DE6991500A81A54 /* XCRemoteSwiftPackageReference "SideMenu" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 394A86842DDDD8840083A2CB /* Products */;
@@ -155,7 +158,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = CAL34QCCSR;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Stadiumly/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
@@ -184,7 +187,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = CAL34QCCSR;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Stadiumly/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
@@ -357,6 +360,14 @@
 				minimumVersion = 5.7.1;
 			};
 		};
+		FDD29C362DE6991500A81A54 /* XCRemoteSwiftPackageReference "SideMenu" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jonkykong/SideMenu.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.5.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -364,6 +375,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FD95506C2DDF1CA000D097C9 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		FDD29C372DE6991500A81A54 /* SideMenu */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FDD29C362DE6991500A81A54 /* XCRemoteSwiftPackageReference "SideMenu" */;
+			productName = SideMenu;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
