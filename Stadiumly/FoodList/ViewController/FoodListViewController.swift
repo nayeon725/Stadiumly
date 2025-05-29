@@ -27,7 +27,7 @@ class FoodListViewController: UIViewController {
     //데이터 전달예정 페이지 델리게이트
     weak var delegate: FoodSearchDelegate?
     
-    let apiKey = "a1ca20c12106778d413b69fdaace0b23"
+    let apiKey = ""
     
     private let xmarkButton = UIButton()
     private let searchBarView = UIView()
