@@ -91,7 +91,7 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,
         insetForSectionAt section: Int) -> UIEdgeInsets {
         let totalCellWidth: CGFloat = 160 * 2
-        let totalSpacing: CGFloat = 40  // 셀 사이 간격
+        let totalSpacing: CGFloat = 30  // 셀 사이 간격
         let availableWidth = collectionView.bounds.width
         let inset = max((availableWidth - totalCellWidth - totalSpacing) / 2, 0)
         

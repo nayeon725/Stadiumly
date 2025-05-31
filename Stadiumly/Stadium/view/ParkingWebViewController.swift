@@ -9,9 +9,9 @@ import UIKit
 import SnapKit
 import WebKit
 
-class OutFieldWebViewController: UIViewController {
+class ParkingWebViewController: UIViewController {
 
-    var urlString: String?
+    var parkingurlString: String?
     private let webVeiw = WKWebView()
     
     override func viewDidLoad() {
@@ -41,8 +41,8 @@ class OutFieldWebViewController: UIViewController {
         view.backgroundColor = .white
     }
     func urlstrRequest() {
-        guard let urlString,
-              let url = URL(string: urlString)
+        guard let parkingurlString,
+              let url = URL(string: parkingurlString)
         else { return }
         let request = URLRequest(url: url)
         webVeiw.load(request)

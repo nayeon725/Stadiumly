@@ -1,5 +1,5 @@
 {
-  "originHash" : "ab8efe246e47612ff9cc34206eb5f6e957d0c38c1525de0c1a8dfbbb440418bc",
+  "originHash" : "395c88d15c0014181fdcd7acdc77c69e73848ddae9389ab76fc424a74ea1dc58",
   "pins" : [
     {
       "identity" : "kakaomapssdk-spm",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "d44bc7365bee88f66964a14168a42910ac092d38",
         "version" : "2.12.5"
+      }
+    },
+    {
+      "identity" : "sidemenu",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jonkykong/SideMenu.git",
+      "state" : {
+        "revision" : "8bd4fd128923cf5494fa726839af8afe12908ad9",
+        "version" : "6.5.0"
       }
     },
     {

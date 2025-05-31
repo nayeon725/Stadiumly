@@ -28,6 +28,8 @@ class OutFieldFoodViewController: UIViewController {
         let view = KMViewContainer()
         view.isUserInteractionEnabled = true
         view.isMultipleTouchEnabled = true
+        view.layer.cornerRadius = 10
+        view.clipsToBounds = true
         return view
     }()
     var mapController: KMController?

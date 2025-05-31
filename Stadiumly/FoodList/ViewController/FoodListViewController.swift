@@ -9,17 +9,6 @@ import UIKit
 import SnapKit
 
 
-struct KakaoSearch: Codable {
-    let documents: [Place]
-}
-
-struct Place: Codable {
-    let place_name: String
-    let place_url: String
-    let x: String
-    let y: String
-    
-}
 
 //먹거리 페이지
 class FoodListViewController: UIViewController {
@@ -27,13 +16,12 @@ class FoodListViewController: UIViewController {
     //데이터 전달예정 페이지 델리게이트
     weak var delegate: FoodSearchDelegate?
     
-    let apiKey = ""
+    private let apiKey = ""
     
-    private let xmarkButton = UIButton()
     private let searchBarView = UIView()
     private let foodTitleLabel = UILabel()
     //커스텀 button 세그먼트
-    private let foodMenuTitle = ["구장 내 먹거리", "야구 선수 추천", "구장 외 먹거리"]
+    private let foodMenuTitle = ["구장 내 먹거리", "야구선수의메뉴추천", "구장 외 먹거리"]
     private var menuButton: [UIButton] = []
     private let selectorView = UIView()
     private var selectedButtonIndex = 0
@@ -44,8 +32,8 @@ class FoodListViewController: UIViewController {
     private var infieldFoodVC = InFieldFoodViewController()
     private var outfieldFoodVC = OutFieldFoodViewController()
     private var playerRecommedVC = PlayerRecommedViewController()
-    let containerView = UIView()
-    var currentChildVC: UIViewController?
+    private let containerView = UIView()
+    private var currentChildVC: UIViewController?
     
     
     override func viewDidLoad() {
@@ -57,11 +45,9 @@ class FoodListViewController: UIViewController {
         setupSegement()
         setupViewControllers()
         showChildViewController(infieldFoodVC)
-        updateSelector(animaited: false)
-
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
-        xmarkButton.addGestureRecognizer(tapGesture)
+        DispatchQueue.main.async {
+            self.updateSelector(animaited: false)
+        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -71,12 +57,11 @@ class FoodListViewController: UIViewController {
     
     //addSubview
     func setupAddSubview() {
-        [xmarkButton, searchBar, foodTitleLabel, segmentBackgroundView, searchBarView, containerView].forEach {
+        [searchBar, foodTitleLabel, segmentBackgroundView, searchBarView, containerView].forEach {
             view.addSubview($0)
         }
         segmentBackgroundView.addSubview(buttonStackView)
         searchBarView.addSubview(searchBar)
-        
     }
     
     //오토레이아웃
@@ -84,11 +69,6 @@ class FoodListViewController: UIViewController {
         foodTitleLabel.snp.makeConstraints {
             $0.top.equalToSuperview().offset(80)
             $0.centerX.equalToSuperview()
-        }
-        xmarkButton.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(80)
-            $0.trailing.equalToSuperview().inset(20)
-            $0.width.height.equalTo(20)
         }
         searchBar.snp.makeConstraints {
             $0.top.equalTo(foodTitleLabel.snp.bottom).offset(20)
@@ -100,7 +80,7 @@ class FoodListViewController: UIViewController {
             $0.horizontalEdges.equalToSuperview()
         }
         segmentBackgroundView.snp.makeConstraints {
-            $0.top.equalTo(searchBar.snp.bottom).offset(15)
+            $0.top.equalTo(searchBar.snp.bottom).offset(0)
             $0.centerX.equalToSuperview()
             $0.width.equalTo(385)
             $0.height.equalTo(50)
@@ -122,17 +102,14 @@ class FoodListViewController: UIViewController {
         view.backgroundColor = .white
         foodTitleLabel.text = "먹거리"
         foodTitleLabel.font = .systemFont(ofSize: 20)
-        xmarkButton.setImage(UIImage(named: "xmark"), for: .normal)
         searchBar.searchBarStyle = .minimal
         searchBar.placeholder = "먹거리를 검색해 주세요"
         searchBar.backgroundColor = .clear
         searchBar.setImage(UIImage(systemName: "xmark")?.withTintColor(.black, renderingMode: .alwaysOriginal), for: .clear, state: .normal)
-        segmentBackgroundView.backgroundColor = UIColor(white: 0.1, alpha: 1)
-        segmentBackgroundView.layer.cornerRadius = 24
+        segmentBackgroundView.backgroundColor = .white
         buttonStackView.axis = .horizontal
         buttonStackView.distribution = .fillEqually
-        selectorView.backgroundColor = UIColor(white: 0.25, alpha: 1)
-        selectorView.layer.cornerRadius = 20
+        selectorView.backgroundColor = .black
         segmentBackgroundView.insertSubview(selectorView, at: 0)
         
         if let textField = searchBar.value(forKey: "searchField") as? UITextField {
@@ -146,14 +123,15 @@ class FoodListViewController: UIViewController {
         searchBarView.layer.shadowRadius = 0.5
         searchBarView.layer.shadowOpacity = 0.1
         searchBarView.layer.shadowColor = UIColor.black.cgColor
+        
     }
     //property
     func setupProperty() {
         searchBar.delegate = self
         self.delegate = outfieldFoodVC
     }
-
-
+    
+    
     
 }
 //MARK: - 푸드 검색 API
@@ -175,7 +153,7 @@ extension FoodListViewController {
                 print("데이터가 없습니다")
                 return
             }
-//            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
+            //            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
             do {
                 let decoded = try JSONDecoder().decode(KakaoSearch.self, from: data)
                 DispatchQueue.main.async {
@@ -186,11 +164,6 @@ extension FoodListViewController {
             }
         }
         task.resume()
-    }
-    
-    @objc func logoTapped() {
-        // 화면 전환 동작 (예: pull)
-        navigationController?.popViewController(animated: true)
     }
     
 }
@@ -205,18 +178,18 @@ extension FoodListViewController {
         
         //delegate
         self.delegate = outfieldFoodVC
-   
+        
         let viewControllers: [UIViewController] = [infieldFoodVC, outfieldFoodVC, playerRecommedVC]
         
         //각 뷰컨트롤러 자식으로 추가
-            viewControllers.forEach { vc in
+        viewControllers.forEach { vc in
             addChild(vc)
-                if let vcView = vc.view {
-                    vcView.frame = containerView.bounds
-                    vcView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-                    vcView.isHidden = true
-                }
-                vc.didMove(toParent: self)
+            if let vcView = vc.view {
+                vcView.frame = containerView.bounds
+                vcView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                vcView.isHidden = true
+            }
+            vc.didMove(toParent: self)
         }
         //모든 뷰를 제거하고 다시 순서대로 추가 하는것
         containerView.subviews.forEach { $0.removeFromSuperview() }
@@ -230,15 +203,15 @@ extension FoodListViewController {
                 }
                 vcview.isHidden = true
             }
+            
         }
     }
-    
     //버튼,타이틀 UI
     func setupSegement() {
         for(index, title) in foodMenuTitle.enumerated() {
             let button = UIButton(type: .system)
             button.setTitle(title, for: .normal)
-            button.setTitleColor(index == selectedButtonIndex ? .white : .lightGray, for: .normal)
+//            button.setTitleColor(index == selectedButtonIndex ? .white : .lightGray, for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
             button.tag = index
             button.addTarget(self, action: #selector(segementTapped(_:)), for: .touchUpInside)
@@ -251,12 +224,13 @@ extension FoodListViewController {
     func updateSelector(animaited: Bool) {
         //텍스트 컬러 업데이트
         for (i, btn) in menuButton.enumerated() {
-            btn.setTitleColor(i == selectedButtonIndex ? .white : .lightGray , for: .normal)
+            btn.setTitleColor(i == selectedButtonIndex ? .black : .black , for: .normal)
         }
         
         //selectorView 애니메이션
         let selectedButton = menuButton[selectedButtonIndex]
-        let selectorFrame = selectedButton.frame.insetBy(dx: 4, dy: 6)
+        let underlineHeight: CGFloat = 3
+        let selectorFrame = CGRect(x: selectedButton.frame.origin.x, y: selectedButton.frame.maxY-underlineHeight, width: selectedButton.frame.width, height: underlineHeight)
         
         if animaited {
             UIView.animate(withDuration: 0.25) {
@@ -279,16 +253,14 @@ extension FoodListViewController {
         vc.view.isUserInteractionEnabled = true
         containerView.bringSubviewToFront(vc.view)
         currentChildVC = vc
-
         
         // delegate 재설정
         if vc === outfieldFoodVC {
             self.delegate = outfieldFoodVC
         }
-      }
     }
     
-
+    
     //세그먼트 텝버튼 함수
     @objc func segementTapped(_ sender: UIButton) {
         selectedButtonIndex = sender.tag
@@ -301,14 +273,14 @@ extension FoodListViewController {
         }
     }
 }
-//MARK: - 서치바 설정
-extension FoodListViewController: UISearchBarDelegate {
-
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        if currentChildVC == outfieldFoodVC {
-            searchFood(query: searchBar.text)
+    //MARK: - 서치바 설정
+    extension FoodListViewController: UISearchBarDelegate {
+        
+        func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+            if currentChildVC == outfieldFoodVC {
+                searchFood(query: searchBar.text)
+            }
+            searchBar.resignFirstResponder()
         }
-        searchBar.resignFirstResponder()
+        
     }
-
-}
