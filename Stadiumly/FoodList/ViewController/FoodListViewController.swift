@@ -16,7 +16,15 @@ class FoodListViewController: UIViewController {
     //데이터 전달예정 페이지 델리게이트
     weak var delegate: FoodSearchDelegate?
     
-    private let apiKey = ""
+    
+    private lazy var apiKey: String = {
+        if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
+           let dict = NSDictionary(contentsOfFile: path),
+           let key = dict["KAKAO_API_KEY_NY"] as? String {
+            return key
+        }
+        return ""
+    }()
     
     private let searchBarView = UIView()
     private let foodTitleLabel = UILabel()

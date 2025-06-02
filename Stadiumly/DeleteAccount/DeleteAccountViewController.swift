@@ -77,7 +77,15 @@ class DeleteAccountViewController: UIViewController {
 
     func configureUI() {
         view.backgroundColor = .white
-        deleteLabel.text = "STADLUMLY를"
+        let fullText = "STADLUMLY를\n탈퇴 하시나요?"
+        let attributedString = NSMutableAttributedString(string: fullText)
+        if let range = fullText.range(of: "탈퇴") {
+            let nsRange = NSRange(range, in: fullText)
+            attributedString.addAttribute(.foregroundColor, value: UIColor.red, range: nsRange)
+        }
+        deleteLabel.font = UIFont.systemFont(ofSize: 24)
+        deleteLabel.attributedText = attributedString
+        deleteLabel.numberOfLines = 0
         deleteSubLabel.text = "탈퇴하시는 이유를 알려주세요."
         deleteAccountButton.setTitle("회원탈퇴", for: .normal)
         deleteAccountButton.setTitleColor(.black, for: .normal)
