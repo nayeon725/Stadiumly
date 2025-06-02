@@ -13,7 +13,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		394A86832DDDD8840083A2CB /* Stadiumly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stadiumly.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		395716642DEAEB9C005073E9 /* Stadiumly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stadiumly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -55,16 +55,8 @@
 			isa = PBXGroup;
 			children = (
 				394A86852DDDD8840083A2CB /* Stadiumly */,
-				394A86842DDDD8840083A2CB /* Products */,
+				395716642DEAEB9C005073E9 /* Stadiumly.app */,
 			);
-			sourceTree = "<group>";
-		};
-		394A86842DDDD8840083A2CB /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				394A86832DDDD8840083A2CB /* Stadiumly.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -92,7 +84,7 @@
 				39D5AE3E2DE859B40063D578 /* SideMenu */,
 			);
 			productName = Stadiumly;
-			productReference = 394A86832DDDD8840083A2CB /* Stadiumly.app */;
+			productReference = 395716642DEAEB9C005073E9 /* Stadiumly.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -125,7 +117,7 @@
 				39D5AE3D2DE859B40063D578 /* XCRemoteSwiftPackageReference "SideMenu" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 394A86842DDDD8840083A2CB /* Products */;
+			productRefGroup = 394A867A2DDDD8840083A2CB;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (

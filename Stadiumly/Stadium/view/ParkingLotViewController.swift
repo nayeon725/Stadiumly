@@ -270,9 +270,6 @@ extension ParkingLotViewController: MapControllerDelegate {
 extension ParkingLotViewController: KakaoMapEventDelegate {
     
         func poiDidTapped(kakaoMap: KakaoMap, layerID: String, poiID: String, position: MapPoint) {
-            print(" ✔️ 마커 POI 클릭됨")
-            print("   POI ID: \(poiID)")
-            // 매핑된 URL 찾기
             guard let url = poiURLMap[poiID] else {
                 print("❌ POI ID '\(poiID)'에 해당하는 URL을 찾을 수 없습니다.")
                 for (id, url) in poiURLMap {
@@ -280,7 +277,6 @@ extension ParkingLotViewController: KakaoMapEventDelegate {
                 }
                 return
             }
-            print("✅ 선택된 URL: \(url)")
             let webVC = ParkingWebViewController()
             webVC.parkingurlString = url
             present(webVC, animated: true)
