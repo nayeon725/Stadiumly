@@ -116,6 +116,7 @@ class LoginPageViewController: UIViewController {
         infoButton.setTitle("로그인 없이 이용 하시겠습니까?", for: .normal)
         singUpButton.addTarget(self, action: #selector(signUpMoveVC), for: .touchUpInside)
         infoButton.addTarget(self, action: #selector(mainVC), for: .touchUpInside)
+        self.navigationItem.hidesBackButton = true
     }
     
     func setupProperty() {

@@ -272,6 +272,7 @@ class SignUpPageViewController: UIViewController {
         dropdownTableView.delegate = self
         dropdownTableView.dataSource = self
         dropdownTableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+        passwordTextField.delegate = self
     }
     //비밀번호 정규식
     func isValidPassword(_ password: String) -> Bool {
@@ -281,7 +282,12 @@ class SignUpPageViewController: UIViewController {
     
 }
 //MARK: - UI 설정 함수들
-extension SignUpPageViewController {
+extension SignUpPageViewController: UITextFieldDelegate{
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
     
     private func configureLabel(_ label: UILabel, text: String, fontSize: CGFloat) {
         label.text = text
