@@ -8,8 +8,6 @@
 import UIKit
 import SnapKit
 
-
-
 //먹거리 페이지
 class FoodListViewController: UIViewController {
     

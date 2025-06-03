@@ -28,13 +28,13 @@ class DetailedPageViewController: UIViewController {
         configureUI()
     }
     
-    //addSubView
+
     func setupAddSubview() {
         [imageView, nameLabel, locationLabel, menuLabel, operatingHoursLabel, recommendedNumber].forEach {
             view.addSubview($0)
         }
     }
-    //오토 레이아웃
+    
     func setupConstraints() {
         nameLabel.snp.makeConstraints {
             $0.top.equalToSuperview().offset(30)
@@ -63,7 +63,7 @@ class DetailedPageViewController: UIViewController {
             $0.leading.equalToSuperview().offset(20)
         }
     }
-    //UI 속성
+
     func configureUI() {
         guard let fooddata = detailData else { return }
         view.backgroundColor = .white

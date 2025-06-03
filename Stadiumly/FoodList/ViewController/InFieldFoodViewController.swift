@@ -54,7 +54,6 @@ class InFieldFoodViewController: UIViewController {
         updateSelector(animaited: true)
     }
     
-    //addSubView
     func setupAddSubview() {
         [inFieldCollectionView, segmentBackgroundView, dropdownButton, dropdownTableView].forEach {
             view.addSubview($0)
@@ -62,7 +61,6 @@ class InFieldFoodViewController: UIViewController {
         segmentBackgroundView.addSubview(buttonStackView)
     }
     
-    //오토 레이아웃
     func setupConstraints() {
         segmentBackgroundView.snp.makeConstraints {
             $0.top.equalToSuperview()
@@ -92,7 +90,6 @@ class InFieldFoodViewController: UIViewController {
         }
     }
     
-    //UI 속성
     func configureUI() {
         segmentBackgroundView.addSubview(buttonStackView)
         segmentBackgroundView.backgroundColor = UIColor(white: 0.1, alpha: 1)
@@ -119,7 +116,6 @@ class InFieldFoodViewController: UIViewController {
         dropdownButton.addTarget(self, action: #selector(toggleDropdown), for: .touchUpInside)
     }
     
-    //property
     func setupProperty() {
         inFieldCollectionView.delegate = self
         inFieldCollectionView.dataSource = self

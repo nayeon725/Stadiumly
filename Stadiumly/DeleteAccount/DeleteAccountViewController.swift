@@ -16,7 +16,7 @@ class NoHighlightButton: UIButton {
 }
 class DeleteAccountViewController: UIViewController {
     
-    private var dropdownButton = UIButton(type: .custom)
+    private let dropdownButton = UIButton(type: .custom)
     private let dropdownTableView = UITableView()
     private let options = ["앱이 싫어서", "이제 야구가꼴보기싫어서", "앱이 불편해서", "다른앱을 깔려고", "앱이 불친절해서"]
     private var isDropdownVisible = false
@@ -25,6 +25,7 @@ class DeleteAccountViewController: UIViewController {
     private let deleteLabel = UILabel()
     private let deleteSubLabel = UILabel()
     private let deleteAccountButton = UIButton()
+    private let backButton = UIButton()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -114,6 +115,7 @@ class DeleteAccountViewController: UIViewController {
         dropdownTableView.layer.borderWidth = 0.5
         dropdownTableView.rowHeight = 44
         dropdownTableView.separatorInset = .zero
+        backButton.setImage(UIImage(systemName: "arrow.left"), for: .normal)
     }
 
     func setupProperty() {

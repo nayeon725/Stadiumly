@@ -14,7 +14,7 @@ class DeleteDetailPageViewController: UIViewController {
     private let deleteLabel = UILabel()
     private let informationLabel = UILabel()
     private let deleteButton = UIButton()
-    private let backButton = UIButton()
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,13 +23,13 @@ class DeleteDetailPageViewController: UIViewController {
         configureUI()
     }
     
-    //addSubView
+ 
     func setupAddSubview() {
         [titleLabel, deleteLabel, informationLabel, deleteButton].forEach {
             view.addSubview($0)
         }
     }
-    //오토 레이아웃
+    
     func setupConstraints() {
         titleLabel.snp.makeConstraints {
             $0.top.equalToSuperview().offset(50)
@@ -47,9 +47,9 @@ class DeleteDetailPageViewController: UIViewController {
         }
         
     }
+    
     func configureUI() {
         view.backgroundColor = .white
-        backButton.setImage(UIImage(systemName: "arrow.left"), for: .normal)
         titleLabel.text = "회원탈퇴"
         titleLabel.font = UIFont.systemFont(ofSize: 20)
         informationLabel.text = "정말로 탈퇴 하시나요? \n\n 정보가 다 날라가고 \n 어쩌고저쩌고 블라블랍 블라블라블랍"
