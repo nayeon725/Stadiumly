@@ -298,7 +298,7 @@ extension SignUpPageViewController: UITextFieldDelegate{
         let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: idTextField.frame.height))
         textField.leftView = paddingView
         textField.leftViewMode = .always
-        textField.layer.borderWidth = 0.5
+        textField.layer.borderWidth = 0.8
         textField.layer.borderColor = UIColor.gray.cgColor
         textField.layer.cornerRadius = 20
     }

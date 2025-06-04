@@ -35,9 +35,9 @@ class LoginPageCollectionViewCell: UICollectionViewCell {
         }
     }
     func configureUI() {
-        contentView.backgroundColor = .lightGray
         contentView.layer.cornerRadius = 15
         contentView.layer.masksToBounds = true
+        imageView.contentMode = .scaleAspectFit
     }
     
     func configure(with imageName: String) {
