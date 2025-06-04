@@ -16,6 +16,27 @@ protocol FoodSearchDelegate: AnyObject {
 //구장 외 먹거리
 class OutFieldFoodViewController: UIViewController {
     
+    //데이터 받아오기
+    var searchPlace: [Place]?
+    
+    var delegate: FoodSearchDelegate?
+    
+    //마커 정보 저장
+    private var poiURLMap: [String: String] = [:]
+    
+    private lazy var outFieldMapView: KMViewContainer = {
+        let view = KMViewContainer()
+        view.isUserInteractionEnabled = true
+        view.isMultipleTouchEnabled = true
+        view.layer.cornerRadius = 10
+        view.clipsToBounds = true
+        return view
+    }()
+    var mapController: KMController?
+    var _observerAdded: Bool = false
+    var _auth: Bool = false
+    var _appear: Bool = false
+
     
     let outFieldMapView = MKMapView()
 //    var mapView: MTMapView!

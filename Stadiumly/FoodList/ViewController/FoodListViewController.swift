@@ -8,26 +8,21 @@
 import UIKit
 import SnapKit
 
-
-struct KakaoSearch: Codable {
-    let documents: [Place]
-}
-
-struct Place: Codable {
-    let place_name: String
-    let place_url: String
-    let x: String
-    let y: String
-    
-}
-
 //먹거리 페이지
 class FoodListViewController: UIViewController {
     
     //데이터 전달예정 페이지 델리게이트
     weak var delegate: FoodSearchDelegate?
     
-    private let apiKey = ""
+    private lazy var apiKey: String = {
+        if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
+           let dict = NSDictionary(contentsOfFile: path),
+           let key = dict["KAKAO_API_KEY_NY"] as? String {
+            return key
+        }
+        return ""
+    }()
+    
     private let xmarkButton = UIButton()
     private let searchBarView = UIView()
     private let foodTitleLabel = UILabel()
@@ -57,6 +52,7 @@ class FoodListViewController: UIViewController {
         setupSegement()
         setupViewControllers()
         showChildViewController(infieldFoodVC)
+
 
         DispatchQueue.main.async {
             self.updateSelector(animaited: false)
@@ -145,6 +141,12 @@ class FoodListViewController: UIViewController {
     func setupProperty() {
         searchBar.delegate = self
         self.delegate = outfieldFoodVC
+
+    }
+    
+    
+}
+
 //MARK: - 푸드 검색 API
 extension FoodListViewController {
     // longitude: Double, latitude: Double
@@ -164,7 +166,7 @@ extension FoodListViewController {
                 print("데이터가 없습니다")
                 return
             }
-//            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
+            //            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
             do {
                 let decoded = try JSONDecoder().decode(KakaoSearch.self, from: data)
                 DispatchQueue.main.async {
@@ -176,9 +178,7 @@ extension FoodListViewController {
         }
         task.resume()
     }
-    
-    
-    
+
 }
 //MARK: - 푸드 검색 API
 extension FoodListViewController {
@@ -212,6 +212,7 @@ extension FoodListViewController {
         task.resume()
     }
     
+
 }
 //MARK: - 커스텀 세그먼트 함수들
 extension FoodListViewController {
@@ -249,6 +250,7 @@ extension FoodListViewController {
                 }
                 vcview.isHidden = true
             }
+            
         }
     }
     //버튼,타이틀 UI
@@ -303,7 +305,10 @@ extension FoodListViewController {
         if vc === outfieldFoodVC {
             self.delegate = outfieldFoodVC
         }
-        
+    }
+    
+    
+
     //세그먼트 텝버튼 함수
     @objc func segementTapped(_ sender: UIButton) {
         selectedButtonIndex = sender.tag

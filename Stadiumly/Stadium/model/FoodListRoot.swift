@@ -2,7 +2,7 @@
 //  FoodListRoot.swift
 //  Stadiumly
 //
-//  Created by 김나연 on 5/31/25.
+//  Created by Hee  on 5/29/25.
 //
 
 import Foundation
