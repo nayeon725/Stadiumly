@@ -52,7 +52,7 @@ class MainInfoViewController: UIViewController {
         label.textColor = .darkGray
         return label
     }()
-    
+    //캐러셀 참고
     private lazy var carouselView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.minimumInteritemSpacing = 0 // 셀 간의 가로 간격 - 셀들이 옆으로 나란히 있을 때의 간격
@@ -255,7 +255,7 @@ class MainInfoViewController: UIViewController {
         
         return container
     }
-    
+    //캐러셀 참고
     private func setupFoodList() {
         view.addSubview(foodTitle)
         foodTitle.snp.makeConstraints { make in
@@ -392,7 +392,7 @@ class MainInfoViewController: UIViewController {
     }
 
 
-    
+    //서치웨더 뺴고 밑으로 쭉 캐러셀 참고
     private func startAutoScroll() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(autoScroll), userInfo: nil, repeats: true)

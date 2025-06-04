@@ -16,10 +16,14 @@ class DetailedPageViewController: UIViewController {
     
     private let imageView = UIImageView()
     private let nameLabel = UILabel()
+    private let locationButton = UIButton()
     private let locationLabel = UILabel()
     private let menuLabel = UILabel()
+    private let menuButton = UIButton()
     private let operatingHoursLabel = UILabel()
-    private let recommendedNumber = UILabel()
+    private let hoursButton = UIButton()
+    private let xmarkButton = UIButton()
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,7 +34,7 @@ class DetailedPageViewController: UIViewController {
     
 
     func setupAddSubview() {
-        [imageView, nameLabel, locationLabel, menuLabel, operatingHoursLabel, recommendedNumber].forEach {
+        [imageView, nameLabel, locationLabel, menuLabel, operatingHoursLabel, locationButton, menuButton, hoursButton, xmarkButton].forEach {
             view.addSubview($0)
         }
     }
@@ -40,9 +44,10 @@ class DetailedPageViewController: UIViewController {
             $0.top.equalToSuperview().offset(30)
             $0.leading.equalToSuperview().offset(20)
         }
-        recommendedNumber.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(38)
+        xmarkButton.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(35)
             $0.trailing.equalToSuperview().inset(30)
+            $0.width.height.equalTo(20)
         }
         imageView.snp.makeConstraints {
             $0.top.equalTo(nameLabel.snp.bottom).offset(5)
@@ -50,17 +55,29 @@ class DetailedPageViewController: UIViewController {
             $0.width.equalTo(250)
             $0.height.equalTo(200)
         }
+        locationButton.snp.makeConstraints {
+            $0.top.equalTo(imageView.snp.bottom).offset(20)
+            $0.leading.equalToSuperview().offset(10)
+        }
         locationLabel.snp.makeConstraints {
             $0.top.equalTo(imageView.snp.bottom).offset(20)
-            $0.leading.equalToSuperview().offset(20)
+            $0.leading.equalTo(locationButton.snp.trailing).offset(5)
+        }
+        menuButton.snp.makeConstraints {
+            $0.top.equalTo(locationLabel.snp.bottom).offset(20)
+            $0.leading.equalToSuperview().offset(10)
         }
         menuLabel.snp.makeConstraints {
             $0.top.equalTo(locationLabel.snp.bottom).offset(20)
-            $0.leading.equalToSuperview().offset(20)
+            $0.leading.equalTo(menuButton.snp.trailing).offset(5)
+        }
+        hoursButton.snp.makeConstraints {
+            $0.top.equalTo(menuLabel.snp.bottom).offset(20)
+            $0.leading.equalToSuperview().offset(10)
         }
         operatingHoursLabel.snp.makeConstraints {
             $0.top.equalTo(menuLabel.snp.bottom).offset(20)
-            $0.leading.equalToSuperview().offset(20)
+            $0.leading.equalTo(hoursButton.snp.trailing).offset(5)
         }
     }
 
@@ -70,11 +87,18 @@ class DetailedPageViewController: UIViewController {
         imageView.image = UIImage(named: fooddata)
         nameLabel.text = "식당 이름"
         nameLabel.font = UIFont.boldSystemFont(ofSize: 30)
-        recommendedNumber.text = "추천수 : ???"
         locationLabel.text = "주소 : 서울 서초구 서초대로74길 33 "
         menuLabel.text = "메뉴 : 돈까스"
         operatingHoursLabel.text = "운영시간 : 10:00 ~ 20:00"
+        locationButton.setImage(UIImage(named: "location"), for: .normal)
+        menuButton.setImage(UIImage(named: "menu"), for: .normal)
+        hoursButton.setImage(UIImage(named: "clock"), for: .normal)
+        xmarkButton.setImage(UIImage(named: "xmark"), for: .normal)
+        xmarkButton.addTarget(self, action: #selector(dismissPage), for: .touchUpInside)
         
     }
   
+    @objc private func dismissPage() {
+        dismiss(animated: true)
+    }
 }
