@@ -301,13 +301,13 @@ extension SignUpPageViewController: UITextFieldDelegate{
         textField.leftView = paddingView
         textField.leftViewMode = .always
         textField.layer.borderWidth = 0.8
-        textField.layer.borderColor = UIColor.gray.cgColor
+        textField.layer.borderColor = UIColor.systemGray4.cgColor
         textField.layer.cornerRadius = 20
     }
     private func configureButton(_ button: UIButton, title: String, titleColor: UIColor, bgColor: UIColor) {
         button.setTitle(title, for: .normal)
         button.setTitleColor(titleColor, for: .normal)
-        button.backgroundColor = bgColor
+        button.backgroundColor = .systemGray4
         button.layer.cornerRadius = 20
         button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .medium)
     }
@@ -321,8 +321,9 @@ extension SignUpPageViewController: UITextFieldDelegate{
         buttonConfiguration.imagePadding = 10
         buttonConfiguration.baseBackgroundColor = .clear
         
-        eyeButton.setImage(UIImage(named: "eye"), for: .normal)
-        eyeButton.setImage(UIImage(named: "eyehide"), for: .selected)
+        eyeButton.setImage(UIImage(systemName: "eye"), for: .normal)
+        eyeButton.setImage(UIImage(systemName: "eye.slash"), for: .selected)
+        eyeButton.tintColor = .black
         eyeButton.configuration = buttonConfiguration
         passwordTextField.rightView = eyeButton
         passwordTextField.rightViewMode = .always

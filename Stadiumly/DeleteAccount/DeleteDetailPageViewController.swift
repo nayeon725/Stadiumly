@@ -80,7 +80,7 @@ class DeleteDetailPageViewController: UIViewController {
         titleLabel.text = "회원탈퇴 완료"
         informationLabel.text = "회원 탈퇴가 완료되었습니다.\n\n 더 나은 서비스로 보답하겠습니다 \n감사합니다"
       
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             let loginPage = LoginPageViewController()
             let nav = UINavigationController(rootViewController: loginPage)
             nav.modalPresentationStyle = .fullScreen
