@@ -79,12 +79,13 @@ class DeleteDetailPageViewController: UIViewController {
         deleteButton.setAttributedTitle(newTitle, for: .normal)
         titleLabel.text = "회원탈퇴 완료"
         informationLabel.text = "회원 탈퇴가 완료되었습니다.\n\n 더 나은 서비스로 보답하겠습니다 \n감사합니다"
-        
-        //닫히면 로그인 페이지로 이동하는 루트를 짜야함
-        //let loginPage = DeleteDetailPageViewController()
-        //loginPage.modalPresentationStyle = .pageSheet
-          //present(loginPage, animated: true)
-    
+      
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            let loginPage = LoginPageViewController()
+            let nav = UINavigationController(rootViewController: loginPage)
+            nav.modalPresentationStyle = .fullScreen
+            self.present(nav, animated: true, completion: nil)
+        }
         //추가로 버튼누르면 계정정보를 삭제하는것도 구현해야함
     }
 

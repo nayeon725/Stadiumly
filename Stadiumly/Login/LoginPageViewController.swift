@@ -12,6 +12,7 @@ import SnapKit
 class LoginPageViewController: UIViewController {
     
     private var mascotImageList = ["mascot_doosanbears","mascot_hanhwaeagles","mascot_kiatigers","mascot_kiwoomheroes","mascot_ktwiz","mascot_lgtwins","mascot_lottegiants","mascot_ncdinos","mascot_samsunglions","mascot_ssglanders"]
+    
     private var timer: Timer?
     
     private let stadiumlyLogo = UIImageView()
@@ -123,11 +124,19 @@ class LoginPageViewController: UIViewController {
         carouselCollectionView.delegate = self
         carouselCollectionView.dataSource = self
         carouselCollectionView.register(LoginPageCollectionViewCell.self, forCellWithReuseIdentifier: "loginCell")
+        idTextField.delegate = self
+        passwordTextField.delegate = self
+        
     }
    
 }
-//MARK: - 버튼 함수들 + 화면이동 
-extension LoginPageViewController {
+//MARK: - 화면이동, 텍스트필드
+extension LoginPageViewController: UITextFieldDelegate {
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
 
     private func leftPadding(to textField:UITextField, width: CGFloat = 10) {
         let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: idTextField.frame.height))
@@ -243,3 +252,4 @@ extension LoginPageViewController: UICollectionViewDataSource, UICollectionViewD
     }
     
 }
+

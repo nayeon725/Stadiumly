@@ -71,6 +71,7 @@ class SignUpPageViewController: UIViewController {
             contentView.addSubview($0)
         }
     }
+    
     func setupConstraints() {
         contentScrollView.snp.makeConstraints {
             $0.edges.equalTo(view.safeAreaLayoutGuide)
@@ -190,6 +191,7 @@ class SignUpPageViewController: UIViewController {
         }
         
     }
+    
     func configureUI() {
         view.backgroundColor = .white
         configureLabel(idLabel, text: "아이디", fontSize: 20)
