@@ -41,10 +41,7 @@ class ParkingLotViewController: UIViewController {
     @objc func logoTapped() {
         print("Tapped!")
         // 화면 전환 동작 (예: pull)
-<<<<<<< HEAD
-=======
         let mainVC = MainInfoViewController()
->>>>>>> 64b23f150462bbaa6aed5f9d92642dc1ed6fe2fa
         navigationController?.popViewController(animated: true)
     }
     
@@ -116,10 +113,12 @@ class ParkingLotViewController: UIViewController {
     func configureUI() {
         view.backgroundColor = .white
     }
+    
     func setupProperty() {
         view.isUserInteractionEnabled = true
         mapView.isUserInteractionEnabled = true
     }
+    
     func setupMapProperty() {
         mapController = KMController(viewContainer: mapView)
         mapController!.delegate = self
@@ -146,6 +145,7 @@ class ParkingLotViewController: UIViewController {
         mapController?.resetEngine()
     }
 }
+
 //MARK: - 카카오 맵 띄우기
 extension ParkingLotViewController: MapControllerDelegate {
     

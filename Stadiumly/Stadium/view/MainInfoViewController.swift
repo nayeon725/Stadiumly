@@ -102,23 +102,17 @@ class MainInfoViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.isNavigationBarHidden = true
-<<<<<<< HEAD
         
         updateStadiumInfo()
         updateUIAfterStadiumChange()
-=======
->>>>>>> 64b23f150462bbaa6aed5f9d92642dc1ed6fe2fa
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         
-<<<<<<< HEAD
-=======
         updateStadiumInfo()
         searchWeather() // 날씨 검색
->>>>>>> 64b23f150462bbaa6aed5f9d92642dc1ed6fe2fa
         setupTitle() // 타이틀 설정
         setupPitcherUI() // 오늘의 선발 투수 부분 ui
         setupFoodList() // 먹거리 검색 부분 ui
@@ -136,7 +130,6 @@ class MainInfoViewController: UIViewController {
         navigationController?.popViewController(animated: true)
     }
     
-<<<<<<< HEAD
     private func updateUIAfterStadiumChange() {
         // 타이틀만 텍스트만 바꿔줌 (레이아웃 재설정 없이)
         titleLabel.text = teamName
@@ -145,8 +138,6 @@ class MainInfoViewController: UIViewController {
         searchWeather()
     }
     
-=======
->>>>>>> 64b23f150462bbaa6aed5f9d92642dc1ed6fe2fa
     private func updateStadiumInfo() {
         if let stadium = DataManager.shared.selectedStadium {
             teamName = stadium.team

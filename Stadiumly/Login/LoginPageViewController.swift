@@ -148,11 +148,13 @@ extension LoginPageViewController: UITextFieldDelegate {
     }
     
     @objc private func findIdMoveVC() {
-        
+        let findIdVC = FindIDViewController()
+        navigationController?.pushViewController(findIdVC, animated: true)
     }
     
     @objc private func findPasswordMoveVC() {
-        
+        let findPWVC = FindPWViewController()
+        navigationController?.pushViewController(findPWVC, animated: true)
     }
     
     @objc private func signUpMoveVC() {

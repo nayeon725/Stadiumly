@@ -35,6 +35,15 @@ class FindIDViewController: UIViewController {
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         findIDTitle.addGestureRecognizer(tapGesture)
+        
+        // 👇 키보드 내리는 제스처 등록
+        let tapToDismiss = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapToDismiss.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapToDismiss)
+    }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     @objc func logoTapped() {

@@ -49,6 +49,15 @@ class FindPWViewController: UIViewController {
         
         emailTF.addTarget(self, action: #selector(emailTFDidChange), for: .editingChanged)
         passwordTF.addTarget(self, action: #selector(pwTFDidChange), for: .editingChanged)
+        
+        // 👇 키보드 내리는 제스처 등록
+        let tapToDismiss = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapToDismiss.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapToDismiss)
+    }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     func validateEmail(_ text: String) {
@@ -72,6 +81,15 @@ class FindPWViewController: UIViewController {
         pwValidateLabel.isHidden = false
         pwValidateLabel.textAlignment = .left
     }
+    
+//    private func configureTextField(to textField:UITextField, width: CGFloat = 10) {
+//            let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: idTextField.frame.height))
+//            textField.leftView = paddingView
+//            textField.leftViewMode = .always
+//            textField.layer.borderWidth = 0.8
+//            textField.layer.borderColor = UIColor.gray.cgColor
+//            textField.layer.cornerRadius = 20
+//        }
     
     @objc private func logoTapped() {
         // 화면 전환 동작 (예: pull)
@@ -156,12 +174,16 @@ class FindPWViewController: UIViewController {
         
         emailTF.placeholder = "이메일 입력"
         emailTF.borderStyle = .roundedRect
+        emailTF.layer.cornerRadius = 20
+        emailTF.layer.borderWidth = 0.8
+        emailTF.layer.borderColor = UIColor.systemGray4.cgColor
+        emailTF.layer.masksToBounds = true
         
         let emailButton = UIButton()
         emailButton.setTitle("인증번호 받기", for: .normal)
         emailButton.setTitleColor(.black, for: .normal)
         emailButton.backgroundColor = .systemGray4
-        emailButton.layer.cornerRadius = 5
+        emailButton.layer.cornerRadius = 20
         emailButton.layer.masksToBounds = true
         
         emailTF.setContentHuggingPriority(.defaultLow, for: .horizontal)
@@ -199,12 +221,14 @@ class FindPWViewController: UIViewController {
         let codeTF = UITextField()
         codeTF.placeholder = "인증번호 입력"
         codeTF.borderStyle = .roundedRect
+        codeTF.layer.cornerRadius = 20
+        codeTF.layer.masksToBounds = true
         
         let codeButton = UIButton()
         codeButton.setTitle("인증번호 확인", for: .normal)
         codeButton.setTitleColor(.black, for: .normal)
         codeButton.backgroundColor = .systemGray4
-        codeButton.layer.cornerRadius = 5
+        codeButton.layer.cornerRadius = 20
         codeButton.layer.masksToBounds = true
         
         codeTF.setContentHuggingPriority(.defaultLow, for: .horizontal)

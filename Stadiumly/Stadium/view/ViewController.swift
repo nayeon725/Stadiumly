@@ -15,15 +15,9 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     private let columns: CGFloat = 2
     private let sectionInset: CGFloat = 10
     
-<<<<<<< HEAD
     private var stadiums: [Stadium] = []
     
     private var imageURL: String = ""
-=======
-    private let clubImages = ["kiwoom", "ssglanders", "giants", "ktwiz", "samsunglions", "ncdinos", "doosanbears", "lgtwins", "kiatigers", "hanwhaeagles" ]
-    
-    private var stadiums: [Stadium] = []
->>>>>>> 64b23f150462bbaa6aed5f9d92642dc1ed6fe2fa
     
     private let titleImage: UIImageView = {
         let title = UIImageView()
@@ -78,7 +72,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     }
     
     private func findStadium() {
-        let endPt = "http://localhost:3000/stadium"
+        let endPt = "http://40.82.137.87/stadium"
         guard let url = URL(string: endPt) else { return }
         let request = URLRequest(url: url)
         
@@ -126,17 +120,12 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: StadiumCollectionCell.identifier, for: indexPath) as! StadiumCollectionCell
-<<<<<<< HEAD
         let stadium = stadiums[indexPath.item]
         if let url = URL(string: stadium.image) {
             cell.stadiumImageView.kf.setImage(with: url)
         } else {
             cell.stadiumImageView.image = UIImage(named: "placeholder")
         }
-=======
-        cell.stadiumImageView.image = UIImage(named: clubImages[indexPath.item])
-        
->>>>>>> 64b23f150462bbaa6aed5f9d92642dc1ed6fe2fa
         return cell
     }
     
