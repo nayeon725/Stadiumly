@@ -11,7 +11,7 @@ import SnapKit
 //야구 선수 추천
 class PlayerRecommedViewController: UIViewController {
     
-    var testImageList = ["doosanbears","giants","hanwhaeagles","kiatigers","kiwoom","ktwiz","lgtwins","ncdinos","samsunglions","ssglanders"]
+   private var testImageList = ["doosanbears","giants","hanwhaeagles","kiatigers","kiwoom","ktwiz","lgtwins","ncdinos","samsunglions","ssglanders"]
     
     private let apiKey = ""
     
@@ -91,7 +91,7 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,
         insetForSectionAt section: Int) -> UIEdgeInsets {
         let totalCellWidth: CGFloat = 160 * 2
-        let totalSpacing: CGFloat = 40  // 셀 사이 간격
+        let totalSpacing: CGFloat = 30  // 셀 사이 간격
         let availableWidth = collectionView.bounds.width
         let inset = max((availableWidth - totalCellWidth - totalSpacing) / 2, 0)
         
@@ -103,7 +103,7 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
     }
     
 }
-//API 데이터 받는거 > 수정해야함
+//MARK: - API 데이터 받는거 > 수정해야함
 extension PlayerRecommedViewController {
     //수정해야함
     func playerRecommed(longitude: Double, latitude: Double) {
