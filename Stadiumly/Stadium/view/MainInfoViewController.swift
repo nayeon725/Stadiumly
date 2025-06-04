@@ -11,23 +11,25 @@ import SideMenu
 
 class MainInfoViewController: UIViewController {
     
-    let foodImages = ["크새", "fries"]
-    var timer: Timer?
+    private let foodImages = ["크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries"]
+    private var timer: Timer?
     
     // 타이틀 설정용 데이터
-    var teamName: String = ""
+    private var teamName: String = ""
     // 날씨 서치용 데이터
-    var lat: Double = 37.496659317
-    var lon: Double = 126.866788407
+    private var lat: Double = 37.496659317
+    private var lon: Double = 126.866788407
     // 날씨 표시용 데이터
-    var stadiumName: String = ""
-    var imgData: Data?
-    var rcText: String = ""
-    var temp: Double = 0.0
+    private var stadiumName: String = ""
+    private var imgData: Data?
+    private var rcText: String = ""
+    private var temp: Double = 0.0
+    // 사이드메뉴 설정 관련
+    private let sideMenuWidth: CGFloat = 250
+    private let sideMenuView = UIView()
+    private var isSideMenuVisible = false
     
-    private var sideMenu: SideMenuNavigationController?
-    
-    let pitcherTitle: UILabel = {
+    private let pitcherTitle: UILabel = {
         let label = UILabel()
         label.text = "⚾️ 오늘의 선발 투수"
         label.font = UIFont.systemFont(ofSize: 30, weight: .bold)
@@ -35,7 +37,7 @@ class MainInfoViewController: UIViewController {
         return label
     }()
     
-    let foodTitle: UILabel = {
+    private let foodTitle: UILabel = {
         let label = UILabel()
         label.text = "🔍 먹거리 검색"
         label.font = UIFont.systemFont(ofSize: 30, weight: .bold)
@@ -43,7 +45,7 @@ class MainInfoViewController: UIViewController {
         return label
     }()
     
-    let weatherTitle: UILabel = {
+    private let weatherTitle: UILabel = {
         let label = UILabel()
         label.text = "☀️ 날씨 정보"
         label.font = UIFont.systemFont(ofSize: 30, weight: .bold)
@@ -64,7 +66,7 @@ class MainInfoViewController: UIViewController {
         return collectionView
     }()
     
-    let pitcherStackView: UIStackView = {
+    private let pitcherStackView: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
         stack.spacing = 0
@@ -79,9 +81,9 @@ class MainInfoViewController: UIViewController {
         return stack
     }()
     
-    let titleLabel = UILabel()
+    private let titleLabel = UILabel()
     
-    let weatherStackView: UIStackView = {
+    private let weatherStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.distribution = .fillProportionally
@@ -89,32 +91,33 @@ class MainInfoViewController: UIViewController {
         return stackView
     }()
     
+    private lazy var openMenuButton: UIButton = {
+        let openMenuButton = UIButton(type: .system)
+        openMenuButton.setImage(UIImage(systemName: "line.3.horizontal"), for: .normal)
+        openMenuButton.tintColor = .label
+        openMenuButton.addTarget(self, action: #selector(openMenu), for: .touchUpInside)
+        return openMenuButton
+    }()
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.isNavigationBarHidden = true
+        
+        updateStadiumInfo()
+        updateUIAfterStadiumChange()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        title = "Main"
-        
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            title: "Menu",
-            style: .plain,
-            target: self,
-            action: #selector(didTapMenu)
-        )
-        
-        let menu = MenuListController()
-        sideMenu = SideMenuNavigationController(rootViewController: menu)
-        sideMenu?.leftSide = true
-        SideMenuManager.default.leftMenuNavigationController = sideMenu
-        
-        // 스와이프 제스처
-        SideMenuManager.default.addPanGestureToPresent(toView: self.view)
-        
-        searchWeather() // 날씨 검색
         setupTitle() // 타이틀 설정
         setupPitcherUI() // 오늘의 선발 투수 부분 ui
         setupFoodList() // 먹거리 검색 부분 ui
         setupWeatherUI() // 날씨 정보 부분 ui
+        // sidemenu
+        setupSideMenu()
+        setupUI()
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         titleLabel.addGestureRecognizer(tapGesture)
@@ -125,10 +128,49 @@ class MainInfoViewController: UIViewController {
         navigationController?.popViewController(animated: true)
     }
     
-    @objc private func didTapMenu() {
-        if let sideMenu {
-            present(sideMenu, animated: true)
+    private func updateUIAfterStadiumChange() {
+        // 타이틀만 텍스트만 바꿔줌 (레이아웃 재설정 없이)
+        titleLabel.text = teamName
+        
+        // 날씨 정보 새로 검색
+        searchWeather()
+    }
+    
+    private func updateStadiumInfo() {
+        if let stadium = DataManager.shared.selectedStadium {
+            teamName = stadium.team
+            stadiumName = stadium.name
+            lat = stadium.latitude
+            lon = stadium.longitude
         }
+    }
+    
+    private func setupUI() {
+        view.addSubview(openMenuButton)
+        openMenuButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(25)
+            make.leading.equalToSuperview().offset(30)
+        }
+    }
+
+    @objc private func openMenu() {
+        if let menu = SideMenuManager.default.leftMenuNavigationController {
+            present(menu, animated: true)
+        }
+    }
+
+    private func setupSideMenu() {
+        let menuVC = SideMenuViewController()
+        let menu = SideMenuNavigationController(rootViewController: menuVC)
+        menu.leftSide = true
+        menu.presentationStyle = .menuSlideIn
+
+        var settings = SideMenuSettings()
+        settings.menuWidth = min(view.frame.width, view.frame.height) * 0.5
+        menu.settings = settings
+
+        SideMenuManager.default.leftMenuNavigationController = menu
+        SideMenuManager.default.addPanGestureToPresent(toView: self.view)
     }
     
     private func setupTitle() {
@@ -136,7 +178,7 @@ class MainInfoViewController: UIViewController {
         titleLabel.text = teamName
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
-        titleLabel.font = UIFont.systemFont(ofSize: 37, weight: .bold)
+        titleLabel.font = UIFont.systemFont(ofSize: 30, weight: .bold)
         titleLabel.isUserInteractionEnabled = true
         
         view.addSubview(titleLabel)
@@ -357,8 +399,6 @@ class MainInfoViewController: UIViewController {
             make.bottom.equalTo(weatherCardView.snp.bottom).inset(15)
         }
     }
-
-
     
     private func startAutoScroll() {
         timer?.invalidate()
@@ -383,7 +423,7 @@ class MainInfoViewController: UIViewController {
         stopAutoScroll()
     }
     
-    func searchWeather() {
+    private func searchWeather() {
         if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
            let dict = NSDictionary(contentsOfFile: path),
            let apiKey = dict["WEATHER_API_KEY"] as? String {

@@ -43,7 +43,7 @@ class StadiumCollectionCell: UICollectionViewCell {
         return view
     }()
     
-    let imageView: UIImageView = {
+    let stadiumImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
@@ -55,7 +55,7 @@ class StadiumCollectionCell: UICollectionViewCell {
 
         contentView.addSubview(shadowView)
         shadowView.addSubview(roundedContentView)
-        roundedContentView.addSubview(imageView)
+        roundedContentView.addSubview(stadiumImageView)
 
         // 그림자 뷰 제약
         shadowView.snp.makeConstraints { make in
@@ -68,7 +68,7 @@ class StadiumCollectionCell: UICollectionViewCell {
         }
 
         // 이미지 뷰 제약
-        imageView.snp.makeConstraints { make in
+        stadiumImageView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(8)
         }
     }

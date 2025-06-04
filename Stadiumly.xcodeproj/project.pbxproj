@@ -6,11 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		FD95506E2DDF1CA000D097C9 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = FD95506D2DDF1CA000D097C9 /* SnapKit */; };
-		FDD29C382DE6991500A81A54 /* SideMenu in Frameworks */ = {isa = PBXBuildFile; productRef = FDD29C372DE6991500A81A54 /* SideMenu */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
 		394A86832DDDD8840083A2CB /* Stadiumly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stadiumly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -41,8 +36,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FDD29C382DE6991500A81A54 /* SideMenu in Frameworks */,
-				FD95506E2DDF1CA000D097C9 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,8 +78,6 @@
 			);
 			name = Stadiumly;
 			packageProductDependencies = (
-				FD95506D2DDF1CA000D097C9 /* SnapKit */,
-				FDD29C372DE6991500A81A54 /* SideMenu */,
 			);
 			productName = Stadiumly;
 			productReference = 394A86832DDDD8840083A2CB /* Stadiumly.app */;
@@ -100,7 +91,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
-				LastUpgradeCheck = 1620;
+				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					394A86822DDDD8840083A2CB = {
 						CreatedOnToolsVersion = 16.2;
@@ -117,8 +108,6 @@
 			mainGroup = 394A867A2DDDD8840083A2CB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				FD95506C2DDF1CA000D097C9 /* XCRemoteSwiftPackageReference "SnapKit" */,
-				FDD29C362DE6991500A81A54 /* XCRemoteSwiftPackageReference "SideMenu" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 394A86842DDDD8840083A2CB /* Products */;
@@ -350,38 +339,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		FD95506C2DDF1CA000D097C9 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.7.1;
-			};
-		};
-		FDD29C362DE6991500A81A54 /* XCRemoteSwiftPackageReference "SideMenu" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/jonkykong/SideMenu.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.5.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		FD95506D2DDF1CA000D097C9 /* SnapKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FD95506C2DDF1CA000D097C9 /* XCRemoteSwiftPackageReference "SnapKit" */;
-			productName = SnapKit;
-		};
-		FDD29C372DE6991500A81A54 /* SideMenu */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FDD29C362DE6991500A81A54 /* XCRemoteSwiftPackageReference "SideMenu" */;
-			productName = SideMenu;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 394A867B2DDDD8840083A2CB /* Project object */;
 }

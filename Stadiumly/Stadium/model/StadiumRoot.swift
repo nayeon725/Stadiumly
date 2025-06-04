@@ -13,6 +13,7 @@ struct Stadium: Codable {
     let team: String
     let latitude: Double
     let longitude: Double
+    let image: String
 
     enum CodingKeys: String, CodingKey {
         case id = "sta_id"
@@ -20,5 +21,44 @@ struct Stadium: Codable {
         case team = "sta_team"
         case latitude = "sta_lati"
         case longitude = "sta_long"
+        case image = "sta_image"
+    }
+}
+
+// MARK: - DataManager
+class DataManager {
+    static let shared = DataManager()
+    
+    private(set) var stadiums: [Stadium] = []
+    
+    private(set) var selectedStadium: Stadium?
+    private(set) var userPassword: String = "password123"
+    private(set) var userNickname: String = "박주홍쇼헤이"
+    
+    func setSelectedStadium(_ stadium: Stadium) {
+        selectedStadium = stadium
+    }
+    
+    func updateNickname(_ nickname: String) {
+        userNickname = nickname
+        print("닉네임 업데이트: \(nickname)")
+    }
+    
+    func updatePassword(_ password: String) {
+        userPassword = password
+        print("비밀번호 업데이트")
+    }
+    
+    func setStadiums(_ stadiums: [Stadium]) {
+        self.stadiums = stadiums
+    }
+    
+    // 선택 id로 stadium 찾기
+    func selectStadium(byID id: Int) {
+        if let stadium = stadiums.first(where: { $0.id == id }) {
+            selectedStadium = stadium
+        } else {
+            print("Stadium with id \(id) not found")
+        }
     }
 }
