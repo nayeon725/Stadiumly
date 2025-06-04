@@ -2,8 +2,6 @@
 //  OutFieldWebViewController.swift
 //  Stadiumly
 //
-//  Created by Hee  on 5/27/25.
-//
 
 import UIKit
 import SnapKit

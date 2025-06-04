@@ -23,6 +23,7 @@ class FoodListViewController: UIViewController {
         return ""
     }()
     
+    private let xmarkButton = UIButton()
     private let searchBarView = UIView()
     private let foodTitleLabel = UILabel()
     //커스텀 button 세그먼트
@@ -39,6 +40,7 @@ class FoodListViewController: UIViewController {
     private var playerRecommedVC = PlayerRecommedViewController()
     private let containerView = UIView()
     private var currentChildVC: UIViewController?
+
     
     
     override func viewDidLoad() {
@@ -50,9 +52,14 @@ class FoodListViewController: UIViewController {
         setupSegement()
         setupViewControllers()
         showChildViewController(infieldFoodVC)
+
+
         DispatchQueue.main.async {
             self.updateSelector(animaited: false)
         }
+
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
+        xmarkButton.addGestureRecognizer(tapGesture)
     }
     
     override func viewDidLayoutSubviews() {
@@ -134,10 +141,44 @@ class FoodListViewController: UIViewController {
     func setupProperty() {
         searchBar.delegate = self
         self.delegate = outfieldFoodVC
+
     }
     
     
-    
+}
+
+//MARK: - 푸드 검색 API
+extension FoodListViewController {
+    // longitude: Double, latitude: Double
+    func searchFood(query: String?) {
+        guard let query else { return }
+        let endPoint = "https://dapi.kakao.com/v2/local/search/keyword.json?query=\(query)&category_group_code=FD6&x=\(126.866788407)&y=\(37.496659317)"
+        guard let url = URL(string: endPoint) else { return }
+        var request = URLRequest(url: url)
+        request.addValue("KakaoAK \(apiKey)", forHTTPHeaderField: "Authorization")
+        let seesion = URLSession.shared
+        let task = seesion.dataTask(with: request) { data, _ , error in
+            if let error = error {
+                print("요청 실패 Error: \(error.localizedDescription)")
+                return
+            }
+            guard let data else {
+                print("데이터가 없습니다")
+                return
+            }
+            //            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
+            do {
+                let decoded = try JSONDecoder().decode(KakaoSearch.self, from: data)
+                DispatchQueue.main.async {
+                    self.delegate?.didReceiveSearchResults(decoded.documents)
+                }
+            } catch {
+                print("디코딩 실패\(error)")
+            }
+        }
+        task.resume()
+    }
+
 }
 //MARK: - 푸드 검색 API
 extension FoodListViewController {
@@ -171,6 +212,7 @@ extension FoodListViewController {
         task.resume()
     }
     
+
 }
 //MARK: - 커스텀 세그먼트 함수들
 extension FoodListViewController {
@@ -266,6 +308,7 @@ extension FoodListViewController {
     }
     
     
+
     //세그먼트 텝버튼 함수
     @objc func segementTapped(_ sender: UIButton) {
         selectedButtonIndex = sender.tag

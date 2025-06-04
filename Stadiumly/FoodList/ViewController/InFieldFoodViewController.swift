@@ -260,7 +260,6 @@ extension InFieldFoodViewController {
         }
         task.resume()
     }
-    
 }
 //MARK: - 드롭다운메뉴 테이블뷰
 extension InFieldFoodViewController: UITableViewDataSource, UITableViewDelegate {
