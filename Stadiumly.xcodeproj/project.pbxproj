@@ -6,12 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		390D6EDE2DDF261200E031FB /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 390D6EDD2DDF261200E031FB /* SnapKit */; };
-		39A151932DE4167000B0A728 /* KakaoMapsSDK-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 39A151922DE4167000B0A728 /* KakaoMapsSDK-SPM */; };
-		39D5AE3F2DE859B40063D578 /* SideMenu in Frameworks */ = {isa = PBXBuildFile; productRef = 39D5AE3E2DE859B40063D578 /* SideMenu */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
 		395716642DEAEB9C005073E9 /* Stadiumly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stadiumly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -42,9 +36,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				390D6EDE2DDF261200E031FB /* SnapKit in Frameworks */,
-				39D5AE3F2DE859B40063D578 /* SideMenu in Frameworks */,
-				39A151932DE4167000B0A728 /* KakaoMapsSDK-SPM in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,9 +70,6 @@
 			);
 			name = Stadiumly;
 			packageProductDependencies = (
-				390D6EDD2DDF261200E031FB /* SnapKit */,
-				39A151922DE4167000B0A728 /* KakaoMapsSDK-SPM */,
-				39D5AE3E2DE859B40063D578 /* SideMenu */,
 			);
 			productName = Stadiumly;
 			productReference = 395716642DEAEB9C005073E9 /* Stadiumly.app */;
@@ -112,9 +100,6 @@
 			mainGroup = 394A867A2DDDD8840083A2CB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				390D6EDC2DDF261200E031FB /* XCRemoteSwiftPackageReference "SnapKit" */,
-				39A151912DE4167000B0A728 /* XCRemoteSwiftPackageReference "KakaoMapsSDK-SPM" */,
-				39D5AE3D2DE859B40063D578 /* XCRemoteSwiftPackageReference "SideMenu" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 394A867A2DDDD8840083A2CB;
@@ -344,51 +329,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		390D6EDC2DDF261200E031FB /* XCRemoteSwiftPackageReference "SnapKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.7.1;
-			};
-		};
-		39A151912DE4167000B0A728 /* XCRemoteSwiftPackageReference "KakaoMapsSDK-SPM" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kakao-mapsSDK/KakaoMapsSDK-SPM";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.12.5;
-			};
-		};
-		39D5AE3D2DE859B40063D578 /* XCRemoteSwiftPackageReference "SideMenu" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/jonkykong/SideMenu.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 6.5.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		390D6EDD2DDF261200E031FB /* SnapKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 390D6EDC2DDF261200E031FB /* XCRemoteSwiftPackageReference "SnapKit" */;
-			productName = SnapKit;
-		};
-		39A151922DE4167000B0A728 /* KakaoMapsSDK-SPM */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 39A151912DE4167000B0A728 /* XCRemoteSwiftPackageReference "KakaoMapsSDK-SPM" */;
-			productName = "KakaoMapsSDK-SPM";
-		};
-		39D5AE3E2DE859B40063D578 /* SideMenu */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 39D5AE3D2DE859B40063D578 /* XCRemoteSwiftPackageReference "SideMenu" */;
-			productName = SideMenu;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 394A867B2DDDD8840083A2CB /* Project object */;
 }
