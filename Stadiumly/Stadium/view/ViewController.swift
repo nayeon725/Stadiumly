@@ -7,7 +7,7 @@
 
 import UIKit
 import SnapKit
-import MapKit
+import Kingfisher
 
 class ViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
@@ -15,9 +15,15 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     private let columns: CGFloat = 2
     private let sectionInset: CGFloat = 10
     
+<<<<<<< HEAD
+    private var stadiums: [Stadium] = []
+    
+    private var imageURL: String = ""
+=======
     private let clubImages = ["kiwoom", "ssglanders", "giants", "ktwiz", "samsunglions", "ncdinos", "doosanbears", "lgtwins", "kiatigers", "hanwhaeagles" ]
     
     private var stadiums: [Stadium] = []
+>>>>>>> 64b23f150462bbaa6aed5f9d92642dc1ed6fe2fa
     
     private let titleImage: UIImageView = {
         let title = UIImageView()
@@ -100,6 +106,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
                 print("디코딩 성공: \(stadiums.count)개")
                 DispatchQueue.main.async {
                     self.stadiums = stadiums
+                    DataManager.shared.setStadiums(self.stadiums)
                     self.collectionView.reloadData()
                 }
             } catch {
@@ -114,13 +121,22 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        clubImages.count
+        stadiums.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: StadiumCollectionCell.identifier, for: indexPath) as! StadiumCollectionCell
+<<<<<<< HEAD
+        let stadium = stadiums[indexPath.item]
+        if let url = URL(string: stadium.image) {
+            cell.stadiumImageView.kf.setImage(with: url)
+        } else {
+            cell.stadiumImageView.image = UIImage(named: "placeholder")
+        }
+=======
         cell.stadiumImageView.image = UIImage(named: clubImages[indexPath.item])
         
+>>>>>>> 64b23f150462bbaa6aed5f9d92642dc1ed6fe2fa
         return cell
     }
     
