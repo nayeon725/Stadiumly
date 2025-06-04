@@ -8,7 +8,7 @@
    Copyright (c) 2025 ___ORGANIZATIONNAME___. All rights reserved.
 -->
 <plist version="1.0">
-    <dick>
+    <dict>
             <key>WEATHER_API_KEY</key>
             <string>2692e89765ccfba179e8f09fc3810664</string>
             
@@ -20,5 +20,5 @@
             
             <key>KAKAO_API_KEY_MH</key>
             <string>7e6e75503425a149d7e47bb7e360543c</string>
-    </dick>
+    </dict>
 </plist>

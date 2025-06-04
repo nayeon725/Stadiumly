@@ -13,6 +13,7 @@ class PlayerRecommedViewController: UIViewController {
     
     var testImageList = ["doosanbears","giants","hanwhaeagles","kiatigers","kiwoom","ktwiz","lgtwins","ncdinos","samsunglions","ssglanders"]
     
+    private let apiKey = ""
     
     lazy var playerRecommedCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -55,7 +56,7 @@ class PlayerRecommedViewController: UIViewController {
 }
 //MARK: - 컬렉션뷰 + 디테일 페이지 이동하기
 extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-   
+   //디테일 페이지 이동 부분 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedItem = testImageList[indexPath.row]
         let detailPageVC = DetailedPageViewController()
@@ -99,6 +100,38 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
     // 셀 세로 간격
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 30
+    }
+    
+}
+//API 데이터 받는거 > 수정해야함
+extension PlayerRecommedViewController {
+    //수정해야함
+    func playerRecommed(longitude: Double, latitude: Double) {
+        let endPoint = ""
+        guard let url = URL(string: endPoint) else { return }
+        var request = URLRequest(url: url)
+        request.addValue("\(apiKey)", forHTTPHeaderField: "")
+        let seesion = URLSession.shared
+        let task = seesion.dataTask(with: request) { data, _ , error in
+            if let error = error {
+                print("요청 실패 Error: \(error.localizedDescription)")
+                return
+            }
+            guard let data else {
+                print("데이터가 없습니다")
+                return
+            }
+            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
+            do {
+                _ = try JSONDecoder().decode(KakaoSearch.self, from: data)
+                DispatchQueue.main.async {
+                    self.playerRecommedCollectionView.reloadData()
+                }
+            } catch {
+                print("디코딩 실패\(error)")
+            }
+        }
+        task.resume()
     }
     
 }

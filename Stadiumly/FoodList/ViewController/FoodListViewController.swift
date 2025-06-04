@@ -8,8 +8,26 @@
 import UIKit
 import SnapKit
 
+
+struct KakaoSearch: Codable {
+    let documents: [Place]
+}
+
+struct Place: Codable {
+    let place_name: String
+    let place_url: String
+    let x: String
+    let y: String
+    
+}
+
 //먹거리 페이지
 class FoodListViewController: UIViewController {
+    
+    //데이터 전달예정 페이지 델리게이트
+    weak var delegate: FoodSearchDelegate?
+    
+    let apiKey = ""
     
     private let xmarkButton = UIButton()
     private let searchBarView = UIView()
@@ -23,9 +41,9 @@ class FoodListViewController: UIViewController {
     private let buttonStackView = UIStackView()
     let searchBar = UISearchBar()
     //하단에 표시할 뷰컨들
-    let infieldFoodVC = InFieldFoodViewController()
-    let outfieldFoodVC = OutFieldFoodViewController()
-    let playerRecommedVC = PlayerRecommedViewController()
+    private var infieldFoodVC = InFieldFoodViewController()
+    private var outfieldFoodVC = OutFieldFoodViewController()
+    private var playerRecommedVC = PlayerRecommedViewController()
     let containerView = UIView()
     var currentChildVC: UIViewController?
     
@@ -37,8 +55,10 @@ class FoodListViewController: UIViewController {
         configureUI()
         setupProperty()
         setupSegement()
+        setupViewControllers()
         showChildViewController(infieldFoodVC)
         updateSelector(animaited: false)
+
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         xmarkButton.addGestureRecognizer(tapGesture)
@@ -130,6 +150,42 @@ class FoodListViewController: UIViewController {
     //property
     func setupProperty() {
         searchBar.delegate = self
+        self.delegate = outfieldFoodVC
+    }
+
+
+    
+}
+//MARK: - 푸드 검색 API
+extension FoodListViewController {
+    // longitude: Double, latitude: Double
+    func searchFood(query: String?) {
+        guard let query else { return }
+        let endPoint = "https://dapi.kakao.com/v2/local/search/keyword.json?query=\(query)&category_group_code=FD6&x=\(126.866788407)&y=\(37.496659317)"
+        guard let url = URL(string: endPoint) else { return }
+        var request = URLRequest(url: url)
+        request.addValue("KakaoAK \(apiKey)", forHTTPHeaderField: "Authorization")
+        let seesion = URLSession.shared
+        let task = seesion.dataTask(with: request) { data, _ , error in
+            if let error = error {
+                print("요청 실패 Error: \(error.localizedDescription)")
+                return
+            }
+            guard let data else {
+                print("데이터가 없습니다")
+                return
+            }
+//            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
+            do {
+                let decoded = try JSONDecoder().decode(KakaoSearch.self, from: data)
+                DispatchQueue.main.async {
+                    self.delegate?.didReceiveSearchResults(decoded.documents)
+                }
+            } catch {
+                print("디코딩 실패\(error)")
+            }
+        }
+        task.resume()
     }
     
     @objc func logoTapped() {
@@ -138,9 +194,46 @@ class FoodListViewController: UIViewController {
     }
     
 }
-//커스텀 세그먼트 함수들
+//MARK: - 커스텀 세그먼트 함수들
 extension FoodListViewController {
-    //버튼,타이틀
+    
+    private func setupViewControllers() {
+        //각 뷰컨 초기화
+        infieldFoodVC = InFieldFoodViewController()
+        outfieldFoodVC = OutFieldFoodViewController()
+        playerRecommedVC = PlayerRecommedViewController()
+        
+        //delegate
+        self.delegate = outfieldFoodVC
+   
+        let viewControllers: [UIViewController] = [infieldFoodVC, outfieldFoodVC, playerRecommedVC]
+        
+        //각 뷰컨트롤러 자식으로 추가
+            viewControllers.forEach { vc in
+            addChild(vc)
+                if let vcView = vc.view {
+                    vcView.frame = containerView.bounds
+                    vcView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                    vcView.isHidden = true
+                }
+                vc.didMove(toParent: self)
+        }
+        //모든 뷰를 제거하고 다시 순서대로 추가 하는것
+        containerView.subviews.forEach { $0.removeFromSuperview() }
+        //뷰들을 추가
+        let orderControllers: [UIViewController] = [infieldFoodVC, outfieldFoodVC, playerRecommedVC]
+        orderControllers.forEach { vc in
+            if let vcview = vc.view {
+                containerView.addSubview(vcview)
+                vcview.snp.makeConstraints {
+                    $0.edges.equalToSuperview()
+                }
+                vcview.isHidden = true
+            }
+        }
+    }
+    
+    //버튼,타이틀 UI
     func setupSegement() {
         for(index, title) in foodMenuTitle.enumerated() {
             let button = UIButton(type: .system)
@@ -176,19 +269,26 @@ extension FoodListViewController {
     
     //세그먼트 텝별로 다른 화면 보여주기
     func showChildViewController(_ vc: UIViewController) {
+        //현재 보이는 뷰컨 처리
         if let current = currentChildVC {
-            current.willMove(toParent: nil)
-            current.view.removeFromSuperview()
-            current.removeFromParent()
+            current.view.isHidden = true
+            current.view.isUserInteractionEnabled = false
         }
-        addChild(vc)
-        containerView.addSubview(vc.view)
-        vc.view.frame = containerView.bounds
-        vc.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        vc.didMove(toParent: self)
+        //새로운 뷰컨 표시
+        vc.view.isHidden = false
+        vc.view.isUserInteractionEnabled = true
+        containerView.bringSubviewToFront(vc.view)
         currentChildVC = vc
+
+        
+        // delegate 재설정
+        if vc === outfieldFoodVC {
+            self.delegate = outfieldFoodVC
+        }
+      }
     }
     
+
     //세그먼트 텝버튼 함수
     @objc func segementTapped(_ sender: UIButton) {
         selectedButtonIndex = sender.tag
@@ -201,7 +301,14 @@ extension FoodListViewController {
         }
     }
 }
-//서치바
+//MARK: - 서치바 설정
 extension FoodListViewController: UISearchBarDelegate {
-    
+
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        if currentChildVC == outfieldFoodVC {
+            searchFood(query: searchBar.text)
+        }
+        searchBar.resignFirstResponder()
+    }
+
 }
