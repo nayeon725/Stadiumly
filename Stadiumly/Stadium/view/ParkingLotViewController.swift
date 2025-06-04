@@ -12,8 +12,20 @@ import CoreLocation
 
 class ParkingLotViewController: UIViewController {
 
-    private let apiKey = "a1ca20c12106778d413b69fdaace0b23"
+    private let xmarkButton = UIButton()
+    
+    private lazy var apiKey: String = {
+        if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
+           let dict = NSDictionary(contentsOfFile: path),
+           let key = dict["KAKAO_API_KEY_NY"] as? String {
+            return key
+        }
+        return ""
+    }()
 
+    var lat: Double = 0.0
+    var lon: Double = 0.0
+    
     var parkingPlace: [ParkingPlace]?
     
     private var poiURLMap: [String: String] = [:]
@@ -61,6 +73,7 @@ class ParkingLotViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        updateStadiumInfo()
         setupAddSubview()
         setupConstraints()
         configureUI()
@@ -70,6 +83,12 @@ class ParkingLotViewController: UIViewController {
         searchParking()
     }
     
+    private func updateStadiumInfo() {
+        if let stadium = DataManager.shared.selectedStadium {
+            lat = stadium.latitude
+            lon = stadium.longitude
+        }
+    }
     
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -85,7 +104,7 @@ class ParkingLotViewController: UIViewController {
         print("deinit")
     }
     func setupAddSubview() {
-        [mapView, titleLabel, shadowView].forEach {
+        [mapView, titleLabel, shadowView, xmarkButton].forEach {
             view.addSubview($0)
         }
         shadowView.addSubview(mapView)
@@ -102,6 +121,11 @@ class ParkingLotViewController: UIViewController {
             $0.leading.trailing.equalToSuperview().inset(16)
             $0.height.equalTo(30)
         }
+        xmarkButton.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(27)
+            $0.trailing.equalToSuperview().inset(20)
+            $0.width.height.equalTo(25)
+        }
         shadowView.snp.makeConstraints {
             $0.top.equalTo(titleLabel.snp.bottom).offset(30)
             $0.leading.equalTo(view.safeAreaLayoutGuide.snp.leading)
@@ -112,6 +136,8 @@ class ParkingLotViewController: UIViewController {
     }
     func configureUI() {
         view.backgroundColor = .white
+        xmarkButton.setImage(UIImage(named: "xmark"), for: .normal)
+        xmarkButton.addTarget(self, action: #selector(moveMainInfoVC), for: .touchUpInside)
     }
     
     func setupProperty() {
@@ -144,13 +170,17 @@ class ParkingLotViewController: UIViewController {
         removeObservers()
         mapController?.resetEngine()
     }
+    @objc private func moveMainInfoVC() {
+        let mainInfoVC = MainInfoViewController()
+        navigationController?.popViewController(animated: true)
+    }
 }
 
 //MARK: - 카카오 맵 띄우기
 extension ParkingLotViewController: MapControllerDelegate {
     
     func addViews() {
-        let defaultPosition: MapPoint = MapPoint(longitude: 126.866788407, latitude: 37.496659317)
+        let defaultPosition: MapPoint = MapPoint(longitude: lon, latitude: lat)
         let mapviewInfo: MapviewInfo = MapviewInfo(viewName: "mapview", viewInfoName: "map", defaultPosition: defaultPosition, defaultLevel: 6)
         mapController?.addView(mapviewInfo)
     }
@@ -340,7 +370,7 @@ extension ParkingLotViewController: KakaoMapEventDelegate {
 extension ParkingLotViewController {
     
     func searchParking() {
-        let endPoint = "https://dapi.kakao.com/v2/local/search/keyword.json?query=주차장&category_group_code=PK6&x=\(126.866788407)&y=\(37.496659317)"
+        let endPoint = "https://dapi.kakao.com/v2/local/search/keyword.json?query=주차장&category_group_code=PK6&x=\(lon)&y=\(lat)"
         guard let url = URL(string: endPoint) else { return }
         var request = URLRequest(url: url)
         request.addValue("KakaoAK \(apiKey)", forHTTPHeaderField: "Authorization")

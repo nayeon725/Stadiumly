@@ -19,6 +19,9 @@ class OutFieldFoodViewController: UIViewController {
     //데이터 받아오기
     var searchPlace: [Place]?
     
+    var lat: Double = 0.0
+    var lon: Double = 0.0
+    
     var delegate: FoodSearchDelegate?
     
     //마커 정보 저장
@@ -39,6 +42,7 @@ class OutFieldFoodViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        updateStadiumInfo()
         setupAddSubview()
         setupConstraints()
         configureUI()
@@ -47,6 +51,12 @@ class OutFieldFoodViewController: UIViewController {
         addViews()
     }
     
+    private func updateStadiumInfo() {
+        if let stadium = DataManager.shared.selectedStadium {
+            lat = stadium.latitude
+            lon = stadium.longitude
+        }
+    }
     
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -119,7 +129,7 @@ class OutFieldFoodViewController: UIViewController {
 extension OutFieldFoodViewController: MapControllerDelegate {
     
     func addViews() {
-        let defaultPosition: MapPoint = MapPoint(longitude: 126.866788407, latitude: 37.496659317)
+        let defaultPosition: MapPoint = MapPoint(longitude: lon, latitude: lat)
         // MapviewInfo생성.
         // viewName과 사용할 viewInfoName, defaultPosition과 level을 설정한다.
         let mapviewInfo: MapviewInfo = MapviewInfo(viewName: "mapview", viewInfoName: "map",

@@ -23,6 +23,9 @@ class FoodListViewController: UIViewController {
         return ""
     }()
     
+    var lat: Double = 0.0
+    var lon: Double = 0.0
+    
     private let xmarkButton = UIButton()
     private let searchBarView = UIView()
     private let foodTitleLabel = UILabel()
@@ -45,6 +48,7 @@ class FoodListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        updateStadiumInfo()
         setupAddSubview()
         setupConstraints()
         configureUI()
@@ -140,6 +144,13 @@ class FoodListViewController: UIViewController {
         self.delegate = outfieldFoodVC
 
     }
+    
+    private func updateStadiumInfo() {
+        if let stadium = DataManager.shared.selectedStadium {
+            lat = stadium.latitude
+            lon = stadium.longitude
+        }
+    }
 }
 
 //MARK: - 푸드 검색 API
@@ -147,7 +158,7 @@ extension FoodListViewController {
     // longitude: Double, latitude: Double
     func searchFood(query: String?) {
         guard let query else { return }
-        let endPoint = "https://dapi.kakao.com/v2/local/search/keyword.json?query=\(query)&category_group_code=FD6&x=\(126.866788407)&y=\(37.496659317)"
+        let endPoint = "https://dapi.kakao.com/v2/local/search/keyword.json?query=\(query)&category_group_code=FD6&x=\(lon)&y=\(lat)"
         guard let url = URL(string: endPoint) else { return }
         var request = URLRequest(url: url)
         request.addValue("KakaoAK \(apiKey)", forHTTPHeaderField: "Authorization")
