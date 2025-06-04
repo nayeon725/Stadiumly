@@ -73,6 +73,10 @@ class ParkingLotViewController: UIViewController {
     @objc func logoTapped() {
         print("Tapped!")
         // 화면 전환 동작 (예: pull)
+<<<<<<< HEAD
+=======
+        let mainVC = MainInfoViewController()
+>>>>>>> 64b23f150462bbaa6aed5f9d92642dc1ed6fe2fa
         navigationController?.popViewController(animated: true)
     }
     

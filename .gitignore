@@ -1,3 +1,4 @@
 .DS_Store
 *.xcodeproj
 APIKeys.plist
+Stadiumly.xcodeproj/project.pbxproj

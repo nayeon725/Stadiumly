@@ -34,7 +34,10 @@ class SideMenuViewController: UIViewController {
         menuList.register(MenuListCell.self, forCellReuseIdentifier: MenuListCell.identifier)
         menuList.backgroundColor = .clear
         menuList.separatorStyle = .singleLine
+<<<<<<< HEAD
         menuList.separatorInset = .zero
+=======
+>>>>>>> 64b23f150462bbaa6aed5f9d92642dc1ed6fe2fa
         view.addSubview(menuList)
         
         titleImage.snp.makeConstraints { make in
@@ -82,7 +85,11 @@ extension SideMenuViewController: UITableViewDelegate, UITableViewDataSource {
             let nextVC = ParkingLotViewController()
             navigationController?.pushViewController(nextVC, animated: false)
         case 3:
+<<<<<<< HEAD
             let nextVC = MyPageViewController()
+=======
+            let nextVC = MainInfoViewController()
+>>>>>>> 64b23f150462bbaa6aed5f9d92642dc1ed6fe2fa
             navigationController?.pushViewController(nextVC, animated: false)
         default : break
         }

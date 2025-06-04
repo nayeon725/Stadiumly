@@ -6,5 +6,6 @@ target 'Stadiumly' do
   use_frameworks!
 
   # Pods for Stadiumly
+ pod 'KakaoMapsSDK', :modular_headers => true
 
 end
