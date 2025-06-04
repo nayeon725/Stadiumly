@@ -11,18 +11,11 @@ import KakaoMapsSDK
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    private lazy var apiKey: String = {
-        if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
-           let dict = NSDictionary(contentsOfFile: path),
-           let key = dict["KAKAO_API_KEY_MH"] as? String {
-            return key
-        }
-        return ""
-    }()
+
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        SDKInitializer.InitSDK(appKey: apiKey)
+        SDKInitializer.InitSDK(appKey: "")
         return true
     }
 

@@ -8,7 +8,6 @@
 import UIKit
 import SnapKit
 
-//구장 내 먹거리 컬렉션뷰 셀
 class InFieldCollectionViewCell: UICollectionViewCell {
     
     static let identifier = "inFieldcell"
@@ -48,7 +47,7 @@ class InFieldCollectionViewCell: UICollectionViewCell {
         contentView.layer.masksToBounds = true
         nameLabel.text = "구장 내 먹거리"
     }
-
+    //외부에서 셀을 구성할 때 이미지 이름으로 이미지를 설정해주는 역할
     func configure(with imageName: String) {
         imageView.image = UIImage(named: imageName)
     }

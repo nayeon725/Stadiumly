@@ -3,9 +3,23 @@
 //  Stadiumly
 //
 //  Created by Hee  on 5/22/25.
+//
 
 import UIKit
 import SnapKit
+
+
+struct KakaoSearch: Codable {
+    let documents: [Place]
+}
+
+struct Place: Codable {
+    let place_name: String
+    let place_url: String
+    let x: String
+    let y: String
+    
+}
 
 //먹거리 페이지
 class FoodListViewController: UIViewController {
@@ -13,18 +27,7 @@ class FoodListViewController: UIViewController {
     //데이터 전달예정 페이지 델리게이트
     weak var delegate: FoodSearchDelegate?
     
-    private lazy var apiKey: String = {
-        if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
-           let dict = NSDictionary(contentsOfFile: path),
-           let key = dict["KAKAO_API_KEY_NY"] as? String {
-            return key
-        }
-        return ""
-    }()
-    
-    var lat: Double = 0.0
-    var lon: Double = 0.0
-    
+    private let apiKey = ""
     private let xmarkButton = UIButton()
     private let searchBarView = UIView()
     private let foodTitleLabel = UILabel()
@@ -47,8 +50,6 @@ class FoodListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        updateStadiumInfo()
-        print("\(lon),\(lat)")
         setupAddSubview()
         setupConstraints()
         configureUI()
@@ -56,23 +57,13 @@ class FoodListViewController: UIViewController {
         setupSegement()
         setupViewControllers()
         showChildViewController(infieldFoodVC)
+
         DispatchQueue.main.async {
             self.updateSelector(animaited: false)
         }
-        
+
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         xmarkButton.addGestureRecognizer(tapGesture)
-    }
-    
-    private func updateStadiumInfo() {
-        if let stadium = DataManager.shared.selectedStadium {
-            lat = stadium.latitude
-            lon = stadium.longitude
-        }
-    }
-        
-    @objc private func logoTapped() {
-        navigationController?.popViewController(animated: true)
     }
     
     override func viewDidLayoutSubviews() {
@@ -80,6 +71,7 @@ class FoodListViewController: UIViewController {
         updateSelector(animaited: true)
     }
     
+    //addSubview
     func setupAddSubview() {
         [searchBar, foodTitleLabel, segmentBackgroundView, searchBarView, containerView].forEach {
             view.addSubview($0)
@@ -88,6 +80,7 @@ class FoodListViewController: UIViewController {
         searchBarView.addSubview(searchBar)
     }
     
+    //오토레이아웃
     func setupConstraints() {
         foodTitleLabel.snp.makeConstraints {
             $0.top.equalToSuperview().offset(80)
@@ -119,6 +112,8 @@ class FoodListViewController: UIViewController {
             $0.bottom.equalToSuperview()
         }
     }
+    
+    //UI 속성
     func configureUI() {
         view.backgroundColor = .white
         foodTitleLabel.text = "먹거리"
@@ -146,20 +141,51 @@ class FoodListViewController: UIViewController {
         searchBarView.layer.shadowColor = UIColor.black.cgColor
         
     }
+    //property
     func setupProperty() {
         searchBar.delegate = self
         self.delegate = outfieldFoodVC
-
-    }
-    
-}
-
 //MARK: - 푸드 검색 API
 extension FoodListViewController {
     // longitude: Double, latitude: Double
     func searchFood(query: String?) {
         guard let query else { return }
-        let endPoint = "https://dapi.kakao.com/v2/local/search/keyword.json?query=\(query)&category_group_code=FD6&x=\(lon)&y=\(lat)"
+        let endPoint = "https://dapi.kakao.com/v2/local/search/keyword.json?query=\(query)&category_group_code=FD6&x=\(126.866788407)&y=\(37.496659317)"
+        guard let url = URL(string: endPoint) else { return }
+        var request = URLRequest(url: url)
+        request.addValue("KakaoAK \(apiKey)", forHTTPHeaderField: "Authorization")
+        let seesion = URLSession.shared
+        let task = seesion.dataTask(with: request) { data, _ , error in
+            if let error = error {
+                print("요청 실패 Error: \(error.localizedDescription)")
+                return
+            }
+            guard let data else {
+                print("데이터가 없습니다")
+                return
+            }
+//            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
+            do {
+                let decoded = try JSONDecoder().decode(KakaoSearch.self, from: data)
+                DispatchQueue.main.async {
+                    self.delegate?.didReceiveSearchResults(decoded.documents)
+                }
+            } catch {
+                print("디코딩 실패\(error)")
+            }
+        }
+        task.resume()
+    }
+    
+    
+    
+}
+//MARK: - 푸드 검색 API
+extension FoodListViewController {
+    // longitude: Double, latitude: Double
+    func searchFood(query: String?) {
+        guard let query else { return }
+        let endPoint = "https://dapi.kakao.com/v2/local/search/keyword.json?query=\(query)&category_group_code=FD6&x=\(126.866788407)&y=\(37.496659317)"
         guard let url = URL(string: endPoint) else { return }
         var request = URLRequest(url: url)
         request.addValue("KakaoAK \(apiKey)", forHTTPHeaderField: "Authorization")
@@ -185,7 +211,7 @@ extension FoodListViewController {
         }
         task.resume()
     }
-
+    
 }
 //MARK: - 커스텀 세그먼트 함수들
 extension FoodListViewController {
@@ -223,7 +249,6 @@ extension FoodListViewController {
                 }
                 vcview.isHidden = true
             }
-            
         }
     }
     //버튼,타이틀 UI
@@ -278,10 +303,7 @@ extension FoodListViewController {
         if vc === outfieldFoodVC {
             self.delegate = outfieldFoodVC
         }
-    }
-    
-    
-
+        
     //세그먼트 텝버튼 함수
     @objc func segementTapped(_ sender: UIButton) {
         selectedButtonIndex = sender.tag

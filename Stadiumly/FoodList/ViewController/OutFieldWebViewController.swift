@@ -7,11 +7,10 @@ import UIKit
 import SnapKit
 import WebKit
 
-//구장 외 먹거리 웹뷰
 class OutFieldWebViewController: UIViewController {
 
     var urlString: String?
-    private let webVeiw = WKWebView()
+    let webVeiw = WKWebView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
