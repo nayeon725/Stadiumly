@@ -63,14 +63,12 @@ class FoodListViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         xmarkButton.addGestureRecognizer(tapGesture)
     }
-    
     private func updateStadiumInfo() {
         if let stadium = DataManager.shared.selectedStadium {
             lat = stadium.latitude
             lon = stadium.longitude
         }
     }
-        
     @objc private func logoTapped() {
         navigationController?.popViewController(animated: true)
     }
@@ -151,7 +149,6 @@ class FoodListViewController: UIViewController {
         self.delegate = outfieldFoodVC
 
     }
-    
 }
 
 //MARK: - 푸드 검색 API

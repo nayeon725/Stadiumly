@@ -113,10 +113,12 @@ class ParkingLotViewController: UIViewController {
     func configureUI() {
         view.backgroundColor = .white
     }
+    
     func setupProperty() {
         view.isUserInteractionEnabled = true
         mapView.isUserInteractionEnabled = true
     }
+    
     func setupMapProperty() {
         mapController = KMController(viewContainer: mapView)
         mapController!.delegate = self
@@ -143,6 +145,7 @@ class ParkingLotViewController: UIViewController {
         mapController?.resetEngine()
     }
 }
+
 //MARK: - 카카오 맵 띄우기
 extension ParkingLotViewController: MapControllerDelegate {
     

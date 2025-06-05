@@ -23,7 +23,7 @@ class DetailedPageViewController: UIViewController {
     private let operatingHoursLabel = UILabel()
     private let hoursButton = UIButton()
     private let xmarkButton = UIButton()
-
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,7 +32,7 @@ class DetailedPageViewController: UIViewController {
         configureUI()
     }
     
-
+    
     func setupAddSubview() {
         [imageView, nameLabel, locationLabel, menuLabel, operatingHoursLabel, locationButton, menuButton, hoursButton, xmarkButton].forEach {
             view.addSubview($0)
@@ -80,7 +80,7 @@ class DetailedPageViewController: UIViewController {
             $0.leading.equalTo(hoursButton.snp.trailing).offset(5)
         }
     }
-
+    
     func configureUI() {
         guard let fooddata = detailData else { return }
         view.backgroundColor = .white
@@ -97,7 +97,7 @@ class DetailedPageViewController: UIViewController {
         xmarkButton.addTarget(self, action: #selector(dismissPage), for: .touchUpInside)
         
     }
-  
+    
     @objc private func dismissPage() {
         dismiss(animated: true)
     }

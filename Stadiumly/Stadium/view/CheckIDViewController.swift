@@ -18,6 +18,14 @@ class CheckIDViewController: UIViewController {
     private var findIDStack = UIStackView()
     private let loginButton = UIButton()
     
+    private let backButton: UIButton = {
+        let backButton = UIButton()
+        backButton.setImage(UIImage(named: "back"), for: .normal)
+        backButton.backgroundColor = .clear
+        backButton.tintColor = .black
+        return backButton
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
