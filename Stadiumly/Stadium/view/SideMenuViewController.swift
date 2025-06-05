@@ -35,6 +35,7 @@ class SideMenuViewController: UIViewController {
         menuList.backgroundColor = .clear
         menuList.separatorStyle = .singleLine
         menuList.separatorInset = .zero
+      
         view.addSubview(menuList)
         
         titleImage.snp.makeConstraints { make in

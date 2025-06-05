@@ -67,6 +67,14 @@ class MyPageViewController: UIViewController {
             }
         }
     }
+    
+    private let backButton: UIButton = {
+        let backButton = UIButton()
+        backButton.setImage(UIImage(named: "back"), for: .normal)
+        backButton.backgroundColor = .clear
+        backButton.tintColor = .black
+        return backButton
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -94,8 +102,15 @@ class MyPageViewController: UIViewController {
         setupFooterDivider()
         setupTableView()
         
+        view.addSubview(backButton)
+        backButton.snp.makeConstraints { make in
+            make.centerY.equalTo(mypageTitle.snp.centerY)
+            make.left.equalTo(view.safeAreaLayoutGuide).inset(20)
+            make.width.height.equalTo(25)
+        }
+        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
-        mypageTitle.addGestureRecognizer(tapGesture)
+        backButton.addGestureRecognizer(tapGesture)
     }
     
     @objc func logoTapped() {

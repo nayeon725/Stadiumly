@@ -23,6 +23,10 @@ class OutFieldFoodViewController: UIViewController {
     
     var delegate: FoodSearchDelegate?
     
+
+    var lat: Double = 0.0
+    var lon: Double = 0.0
+
     private var poiURLMap: [String: String] = [:]
     
     private lazy var outFieldMapView: KMViewContainer = {
@@ -47,14 +51,14 @@ class OutFieldFoodViewController: UIViewController {
         setupMapProperty()
         addViews()
     }
-    
+
     private func updateStadiumInfo() {
         if let stadium = DataManager.shared.selectedStadium {
             lat = stadium.latitude
             lon = stadium.longitude
         }
     }
-    
+
     init() {
         super.init(nibName: nil, bundle: nil)
     }
@@ -122,7 +126,7 @@ extension OutFieldFoodViewController: MapControllerDelegate {
     
     func addViews() {
         let defaultPosition: MapPoint = MapPoint(longitude: lon, latitude: lat)
-        
+
         let mapviewInfo: MapviewInfo = MapviewInfo(viewName: "mapview", viewInfoName: "map",
                                                    defaultPosition: defaultPosition, defaultLevel: 6)
     

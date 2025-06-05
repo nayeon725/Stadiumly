@@ -154,3 +154,4 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
         navigationController?.pushViewController(mainInfoVC, animated: true)
     }
 }
+

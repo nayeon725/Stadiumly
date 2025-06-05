@@ -54,7 +54,7 @@ class SignUpCompletionViewController: UIViewController {
         completionLabel.font = UIFont.boldSystemFont(ofSize: 40)
         completionLabel.numberOfLines = 0
         completionLabel.textAlignment = .center
-        singUpButton.backgroundColor = .gray
+        singUpButton.backgroundColor = .systemGray4
         singUpButton.setTitle("메인 화면으로", for: .normal)
         singUpButton.setTitleColor(.black, for: .normal)
         singUpButton.layer.cornerRadius = 20

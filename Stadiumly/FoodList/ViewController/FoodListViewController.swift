@@ -3,7 +3,6 @@
 //  Stadiumly
 //
 //  Created by Hee  on 5/22/25.
-//
 
 import UIKit
 import SnapKit
@@ -63,7 +62,12 @@ class FoodListViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         xmarkButton.addGestureRecognizer(tapGesture)
     }
-    
+    private func updateStadiumInfo() {
+        if let stadium = DataManager.shared.selectedStadium {
+            lat = stadium.latitude
+            lon = stadium.longitude
+        }
+    }
     @objc private func logoTapped() {
         navigationController?.popViewController(animated: true)
     }
