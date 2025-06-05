@@ -8,11 +8,14 @@
 import UIKit
 import SnapKit
 import SideMenu
+import Kingfisher
 
 class MainInfoViewController: UIViewController {
     
     private let foodImages = ["크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries"]
     private var timer: Timer?
+    
+    private var stadiums: [Stadium] = []
     
     // 타이틀 설정용 데이터
     private var teamName: String = ""
@@ -28,6 +31,13 @@ class MainInfoViewController: UIViewController {
     private let sideMenuWidth: CGFloat = 250
     private let sideMenuView = UIView()
     private var isSideMenuVisible = false
+    // 선발투수 데이터용
+    private var homePitcherName: String = ""
+    private var homePitcherImage: URL?
+    private var homeTeamName: String = ""
+    private var awayPitcherName: String = ""
+    private var awayPitcherImage: URL?
+    private var awayTeamName: String = ""
     
     private let pitcherTitle: UILabel = {
         let label = UILabel()
@@ -111,8 +121,6 @@ class MainInfoViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        updateStadiumInfo()
-        searchWeather() // 날씨 검색
         setupTitle() // 타이틀 설정
         setupPitcherUI() // 오늘의 선발 투수 부분 ui
         setupFoodList() // 먹거리 검색 부분 ui
@@ -134,6 +142,8 @@ class MainInfoViewController: UIViewController {
         // 타이틀만 텍스트만 바꿔줌 (레이아웃 재설정 없이)
         titleLabel.text = teamName
         
+        // 구장 정보 리셋
+        findStadium()
         // 날씨 정보 새로 검색
         searchWeather()
     }
@@ -145,6 +155,68 @@ class MainInfoViewController: UIViewController {
             lat = stadium.latitude
             lon = stadium.longitude
         }
+    }
+    
+    private func findStadium() {
+        let endPt = "http://40.82.137.87/stadium/detail"
+        guard let url = URL(string: endPt) else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let teamShort: String = teamName.components(separatedBy: " ").first ?? ""
+        print("팀이름: \(teamName), 자른 팀 이름: \(teamShort)..")
+        
+        let parameters = ["teamname" : teamShort]
+        let jsonData = try? JSONSerialization.data(withJSONObject: parameters)
+        
+        request.httpBody = jsonData
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid response")
+                return
+            }
+            
+            print("Status code: \(httpResponse.statusCode)")  // 200 OK인지 확인
+            
+            guard let data = data else {
+                print("데이터 없음")
+                return
+            }
+            print("받은 데이터 크기: \(data.count)")
+
+            do {
+                let decodedData = try JSONDecoder().decode([PitcherRoot].self, from: data)
+//                print("🎯 첫 번째 홈 투수: \(decodedData.first?.awayImg)")
+                guard let pitcherData = decodedData.first else { return }
+                // 홈팀
+                self.homePitcherName = pitcherData.homePitcher
+                self.homeTeamName = pitcherData.homeTeam
+                guard let homeURL = URL(string: pitcherData.homeImg) else { return }
+                self.homePitcherImage = homeURL
+                // 원정팀
+                self.awayPitcherName = pitcherData.awayPitcher
+                self.awayTeamName = pitcherData.awayTeam
+                guard let awayURL = URL(string: pitcherData.awayImg) else { return }
+                self.awayPitcherImage = awayURL
+                DispatchQueue.main.async {
+                    self.updatePitcherUI()
+                }
+            } catch {
+                print("디코딩 에러: \(error)")
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("받은 JSON 문자열: \(jsonString)")
+                } else {
+                    print("JSON 문자열 변환 실패")
+                }
+            }
+        }.resume()
     }
     
     private func setupUI() {
@@ -191,7 +263,7 @@ class MainInfoViewController: UIViewController {
     }
     
     // 선발투수 스택 아이템
-    private func createPitcherItem(imageName: String, pitcherName: String, pitcherERA: Double) -> UIView {
+    private func createPitcherItem(imageURL: URL, pitcherName: String, teamName: String) -> UIView {
         let container = UIView()
         container.backgroundColor = .white
         container.layer.cornerRadius = 12
@@ -202,21 +274,26 @@ class MainInfoViewController: UIViewController {
         container.clipsToBounds = false
 
         let imageView = UIImageView()
-        imageView.image = UIImage(named: imageName)
+        imageView.kf.setImage(with: imageURL)
         imageView.contentMode = .scaleAspectFit
+        imageView.layer.shadowColor = UIColor.black.cgColor
+        imageView.layer.shadowOpacity = 0.2
+        imageView.layer.shadowOffset = CGSize(width: 0, height: 2)
+        imageView.layer.shadowRadius = 8
+        imageView.layer.masksToBounds = false
 
         let nameLabel = UILabel()
-        nameLabel.font = .systemFont(ofSize: 18, weight: .semibold)
+        nameLabel.font = .systemFont(ofSize: 14, weight: .medium)
         nameLabel.textAlignment = .center
-        nameLabel.text = pitcherName
+        nameLabel.text = "선발 투수: \(pitcherName)"
 
-        let eraLabel = UILabel()
-        eraLabel.font = .systemFont(ofSize: 16, weight: .regular)
-        eraLabel.textAlignment = .center
-        eraLabel.textColor = .darkGray
-        eraLabel.text = "ERA: \(pitcherERA)"
+        let teamLabel = UILabel()
+        teamLabel.font = .systemFont(ofSize: 18, weight: .bold)
+        teamLabel.textAlignment = .center
+        teamLabel.textColor = .black
+        teamLabel.text = teamName
 
-        let verticalStack = UIStackView(arrangedSubviews: [imageView, nameLabel, eraLabel])
+        let verticalStack = UIStackView(arrangedSubviews: [teamLabel, imageView, nameLabel])
         verticalStack.axis = .vertical
         verticalStack.alignment = .center
         verticalStack.distribution = .equalSpacing
@@ -316,15 +393,16 @@ class MainInfoViewController: UIViewController {
         pitcherStackView.distribution = .fillEqually
         pitcherStackView.alignment = .center
         pitcherStackView.backgroundColor = .clear
-
-        let awayPitcher = createPitcherItem(imageName: "pitcher_ohwonseok.png", pitcherName: "오원석", pitcherERA: 2.54)
+        
+        guard let awayPitcherImage, let  homePitcherImage else { return }
+        let awayPitcher = createPitcherItem(imageURL: homePitcherImage, pitcherName: homePitcherName, teamName: homeTeamName)
         let vsLabel = UILabel()
         vsLabel.text = "VS"
         vsLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
         vsLabel.textAlignment = .center
         vsLabel.textColor = .darkGray
 
-        let homePitcher = createPitcherItem(imageName: "pitcher_kimyoonha.png", pitcherName: "김윤하", pitcherERA: 7.23)
+        let homePitcher = createPitcherItem(imageURL: awayPitcherImage, pitcherName: awayPitcherName, teamName: awayTeamName)
 
         pitcherStackView.addArrangedSubview(awayPitcher)
         pitcherStackView.addArrangedSubview(vsLabel)
@@ -335,7 +413,35 @@ class MainInfoViewController: UIViewController {
             make.width.equalTo(40)
         }
     }
-
+    
+    private func updatePitcherUI() {
+        // 기존에 있던 stackView 안 뷰들 모두 제거
+        pitcherStackView.arrangedSubviews.forEach { view in
+            pitcherStackView.removeArrangedSubview(view)
+            view.removeFromSuperview()
+        }
+        
+        guard let awayPitcherImage, let  homePitcherImage else { return }
+        // 데이터 기반 새 뷰들 생성
+        let awayPitcher = createPitcherItem(imageURL: awayPitcherImage, pitcherName: awayPitcherName, teamName: awayTeamName)
+        let vsLabel = UILabel()
+        vsLabel.text = "VS"
+        vsLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
+        vsLabel.textAlignment = .center
+        vsLabel.textColor = .darkGray
+        
+        let homePitcher = createPitcherItem(imageURL: homePitcherImage, pitcherName: homePitcherName, teamName: homeTeamName)
+        
+        // 새 뷰 추가 (레이아웃 제약은 이미 setupPitcherUI에서 했으니까 안 건드림)
+        pitcherStackView.addArrangedSubview(awayPitcher)
+        pitcherStackView.addArrangedSubview(vsLabel)
+        pitcherStackView.addArrangedSubview(homePitcher)
+        
+        // VS 라벨 너비만 따로 제약
+        vsLabel.snp.makeConstraints { make in
+            make.width.equalTo(40)
+        }
+    }
     
     private func setupWeatherUI() {
         // 1. weatherTitle
@@ -401,8 +507,6 @@ class MainInfoViewController: UIViewController {
             make.bottom.equalTo(weatherCardView.snp.bottom).inset(15)
         }
     }
-
-
     
     private func startAutoScroll() {
         timer?.invalidate()
