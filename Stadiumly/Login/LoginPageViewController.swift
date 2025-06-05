@@ -128,9 +128,7 @@ class LoginPageViewController: UIViewController {
         carouselCollectionView.register(LoginPageCollectionViewCell.self, forCellWithReuseIdentifier: "loginCell")
         idTextField.delegate = self
         passwordTextField.delegate = self
-        
     }
-   
 }
 //MARK: - 화면이동, 텍스트필드
 extension LoginPageViewController: UITextFieldDelegate {
@@ -228,13 +226,7 @@ extension LoginPageViewController: UICollectionViewDataSource, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: collectionView.bounds.height)
     }
-    
-//    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//            let nextVC = FoodListViewController()
-//            navigationController?.pushViewController(nextVC, animated: true)
-//            print(indexPath.item)
-//    }
-//    
+        
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         stopAutoScroll()
     }
@@ -256,4 +248,34 @@ extension LoginPageViewController: UICollectionViewDataSource, UICollectionViewD
     }
     
 }
-
+//MARK: - 로그인 API
+extension LoginPageViewController {
+    
+    func login() {
+        let endPoint = "http://40.82.137.87/stadium/??"
+        guard let url = URL(string: endPoint) else { return }
+        var request = URLRequest(url: url)
+//        request.addValue("\(apiKey)", forHTTPHeaderField: "")
+        let seesion = URLSession.shared
+        let task = seesion.dataTask(with: request) { data, _ , error in
+            if let error = error {
+                print("요청 실패 Error: \(error.localizedDescription)")
+                return
+            }
+            guard let data else {
+                print("데이터가 없습니다")
+                return
+            }
+            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
+            do {
+                _ = try JSONDecoder().decode(KakaoSearch.self, from: data)
+                DispatchQueue.main.async {
+                }
+            } catch {
+                print("디코딩 실패\(error)")
+            }
+        }
+        task.resume()
+    }
+    
+}

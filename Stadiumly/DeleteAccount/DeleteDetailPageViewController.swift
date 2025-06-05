@@ -71,6 +71,8 @@ class DeleteDetailPageViewController: UIViewController {
     
     
     @objc private func accountDelete() {
+       
+        deleteUserAccount()
         let newAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 20),
             .foregroundColor: UIColor.white
@@ -89,4 +91,39 @@ class DeleteDetailPageViewController: UIViewController {
         //추가로 버튼누르면 계정정보를 삭제하는것도 구현해야함
     }
 
+}
+//MARK: - 회원탈퇴 API
+extension DeleteDetailPageViewController {
+    
+   private func deleteUserAccount() {
+        let endpt = "http://40.82.137.87/stadium/???"
+        guard let url = URL(string: endpt) else { return }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+//        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//        request.setValue("Bearer \(userToken)", forHTTPHeaderField: "Authorization")
+
+      
+        let parameters = [""]
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
+        } catch {
+            print("JSON 변환 실패: \(error)")
+            return
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("에러: \(error.localizedDescription)")
+                return
+            }
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("응답 오류")
+                return
+            }
+            print("Status code: \(httpResponse.statusCode)")
+        }.resume()
+    }
 }

@@ -135,13 +135,14 @@ class DeleteAccountViewController: UIViewController {
         detailPageVC.modalPresentationStyle = .pageSheet
         
         if let modalView = detailPageVC.sheetPresentationController {
-            modalView.detents = [.medium()] // 화면 반 정도
-            modalView.prefersGrabberVisible = true // 위에 손잡이 표시
+            modalView.detents = [.medium()]
+            modalView.prefersGrabberVisible = true
             modalView.preferredCornerRadius = 20
            }
            present(detailPageVC, animated: true)
     }
 }
+//MARK: - 테이블뷰
 extension DeleteAccountViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -159,6 +160,5 @@ extension DeleteAccountViewController: UITableViewDataSource, UITableViewDelegat
         isDropdownVisible = false
         dropdownTableView.isHidden = true
     }
-    
-    
 }
+
