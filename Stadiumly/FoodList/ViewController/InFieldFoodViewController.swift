@@ -225,36 +225,6 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
         return 30
     }
 }
-//MARK: - API
-extension InFieldFoodViewController {
-    //수정해야함
-    func inFieldFood(longitude: Double, latitude: Double) {
-        let endPoint = ""
-        guard let url = URL(string: endPoint) else { return }
-        var request = URLRequest(url: url)
-        let seesion = URLSession.shared
-        let task = seesion.dataTask(with: request) { data, _ , error in
-            if let error = error {
-                print("요청 실패 Error: \(error.localizedDescription)")
-                return
-            }
-            guard let data else {
-                print("데이터가 없습니다")
-                return
-            }
-            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
-            do {
-                _ = try JSONDecoder().decode(KakaoSearch.self, from: data)
-                DispatchQueue.main.async {
-                    self.inFieldCollectionView.reloadData()
-                }
-            } catch {
-                print("디코딩 실패\(error)")
-            }
-        }
-        task.resume()
-    }
-}
 //MARK: - 드롭다운메뉴 테이블뷰
 extension InFieldFoodViewController: UITableViewDataSource, UITableViewDelegate {
     
@@ -276,4 +246,52 @@ extension InFieldFoodViewController: UITableViewDataSource, UITableViewDelegate 
         dropdownTableView.isHidden = true
     }
     
+}
+//MARK: - API
+extension InFieldFoodViewController {
+    //수정해야함 - 팀이름으로 받아와야함
+    func playerRecommed() {
+        let endPt = "http://40.82.137.87/stadium/??"
+        guard let url = URL(string: endPt) else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        //        let parameters = ["teamname" : teamShort]
+//        let jsonData = try? JSONSerialization.data(withJSONObject: parameters)
+        
+//        request.httpBody = jsonData
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid response")
+                return
+            }
+            
+            print("Status code: \(httpResponse.statusCode)")  // 200 OK인지 확인
+            
+            guard let data = data else {
+                print("데이터 없음")
+                return
+            }
+            print("받은 데이터 크기: \(data.count)")
+            
+            do {
+                DispatchQueue.main.async {
+                }
+            } catch {
+                print("디코딩 에러: \(error)")
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("받은 JSON 문자열: \(jsonString)")
+                } else {
+                    print("JSON 문자열 변환 실패")
+                }
+            }
+        }.resume()
+    }
 }
