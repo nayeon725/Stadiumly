@@ -104,7 +104,7 @@ class LoginPageViewController: UIViewController {
         leftPadding(to: idTextField)
         leftPadding(to: passwordTextField)
         loginButton.setTitle("로그인", for: .normal)
-        loginButton.backgroundColor = .gray
+        loginButton.backgroundColor = .systemGray4
         loginButton.layer.cornerRadius = 20
         loginButton.setTitleColor(.black, for: .normal)
         findIdButton.setTitleColor(.black, for: .normal)
@@ -117,6 +117,8 @@ class LoginPageViewController: UIViewController {
         infoButton.setTitle("로그인 없이 이용 하시겠습니까?", for: .normal)
         singUpButton.addTarget(self, action: #selector(signUpMoveVC), for: .touchUpInside)
         infoButton.addTarget(self, action: #selector(mainVC), for: .touchUpInside)
+        findIdButton.addTarget(self, action: #selector(findIdMoveVC), for: .touchUpInside)
+        findPasswordButton.addTarget(self, action: #selector(findPasswordMoveVC), for: .touchUpInside)
         self.navigationItem.hidesBackButton = true
     }
     
@@ -148,13 +150,13 @@ extension LoginPageViewController: UITextFieldDelegate {
     }
     
     @objc private func findIdMoveVC() {
-        let findIdVC = FindIDViewController()
-        navigationController?.pushViewController(findIdVC, animated: true)
+        let fidIdVC = FindIDViewController()
+        navigationController?.pushViewController(fidIdVC, animated: true)
     }
     
     @objc private func findPasswordMoveVC() {
-        let findPWVC = FindPWViewController()
-        navigationController?.pushViewController(findPWVC, animated: true)
+        let findPasswordVC = FindPWViewController()
+        navigationController?.pushViewController(findPasswordVC, animated: true)
     }
     
     @objc private func signUpMoveVC() {
