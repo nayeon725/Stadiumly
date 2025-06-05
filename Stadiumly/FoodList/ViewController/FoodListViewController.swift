@@ -10,7 +10,7 @@ import SnapKit
 //먹거리 페이지
 class FoodListViewController: UIViewController {
     
-    //데이터 전달예정 페이지 델리게이트
+
     weak var delegate: FoodSearchDelegate?
     
     private lazy var apiKey: String = {
@@ -28,7 +28,7 @@ class FoodListViewController: UIViewController {
     private let xmarkButton = UIButton()
     private let searchBarView = UIView()
     private let foodTitleLabel = UILabel()
-    //커스텀 button 세그먼트
+
     private let foodMenuTitle = ["구장 내 먹거리", "야구선수의메뉴추천", "구장 외 먹거리"]
     private var menuButton: [UIButton] = []
     private let selectorView = UIView()
@@ -36,19 +36,18 @@ class FoodListViewController: UIViewController {
     private let segmentBackgroundView = UIView()
     private let buttonStackView = UIStackView()
     let searchBar = UISearchBar()
-    //하단에 표시할 뷰컨들
+
     private var infieldFoodVC = InFieldFoodViewController()
     private var outfieldFoodVC = OutFieldFoodViewController()
     private var playerRecommedVC = PlayerRecommedViewController()
     private let containerView = UIView()
     private var currentChildVC: UIViewController?
-
+    
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
         updateStadiumInfo()
-        print("\(lon),\(lat)")
         setupAddSubview()
         setupConstraints()
         configureUI()
@@ -147,13 +146,18 @@ class FoodListViewController: UIViewController {
     func setupProperty() {
         searchBar.delegate = self
         self.delegate = outfieldFoodVC
-
+        
+    }
+    private func updateStadiumInfo() {
+        if let stadium = DataManager.shared.selectedStadium {
+            lat = stadium.latitude
+            lon = stadium.longitude
+        }
     }
 }
-
 //MARK: - 푸드 검색 API
 extension FoodListViewController {
-    // longitude: Double, latitude: Double
+
     func searchFood(query: String?) {
         guard let query else { return }
         let endPoint = "https://dapi.kakao.com/v2/local/search/keyword.json?query=\(query)&category_group_code=FD6&x=\(lon)&y=\(lat)"
@@ -182,23 +186,23 @@ extension FoodListViewController {
         }
         task.resume()
     }
-
+    
 }
 //MARK: - 커스텀 세그먼트 함수들
 extension FoodListViewController {
     
     private func setupViewControllers() {
-        //각 뷰컨 초기화
+        
         infieldFoodVC = InFieldFoodViewController()
         outfieldFoodVC = OutFieldFoodViewController()
         playerRecommedVC = PlayerRecommedViewController()
         
-        //delegate
+        
         self.delegate = outfieldFoodVC
         
         let viewControllers: [UIViewController] = [infieldFoodVC, outfieldFoodVC, playerRecommedVC]
         
-        //각 뷰컨트롤러 자식으로 추가
+        
         viewControllers.forEach { vc in
             addChild(vc)
             if let vcView = vc.view {
@@ -208,9 +212,9 @@ extension FoodListViewController {
             }
             vc.didMove(toParent: self)
         }
-        //모든 뷰를 제거하고 다시 순서대로 추가 하는것
+        
         containerView.subviews.forEach { $0.removeFromSuperview() }
-        //뷰들을 추가
+        
         let orderControllers: [UIViewController] = [infieldFoodVC, outfieldFoodVC, playerRecommedVC]
         orderControllers.forEach { vc in
             if let vcview = vc.view {
@@ -223,12 +227,11 @@ extension FoodListViewController {
             
         }
     }
-    //버튼,타이틀 UI
+    
     func setupSegement() {
         for(index, title) in foodMenuTitle.enumerated() {
             let button = UIButton(type: .system)
             button.setTitle(title, for: .normal)
-//            button.setTitleColor(index == selectedButtonIndex ? .white : .lightGray, for: .normal)
             button.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
             button.tag = index
             button.addTarget(self, action: #selector(segementTapped(_:)), for: .touchUpInside)
@@ -237,14 +240,14 @@ extension FoodListViewController {
         }
     }
     
-    //커스텀 세그먼트 애니메이션, 텍스트컬러
+    
     func updateSelector(animaited: Bool) {
-        //텍스트 컬러 업데이트
+        
         for (i, btn) in menuButton.enumerated() {
             btn.setTitleColor(i == selectedButtonIndex ? .black : .black , for: .normal)
         }
         
-        //selectorView 애니메이션
+        
         let selectedButton = menuButton[selectedButtonIndex]
         let underlineHeight: CGFloat = 3
         let selectorFrame = CGRect(x: selectedButton.frame.origin.x, y: selectedButton.frame.maxY-underlineHeight, width: selectedButton.frame.width, height: underlineHeight)
@@ -258,28 +261,22 @@ extension FoodListViewController {
         }
     }
     
-    //세그먼트 텝별로 다른 화면 보여주기
     func showChildViewController(_ vc: UIViewController) {
-        //현재 보이는 뷰컨 처리
+        
         if let current = currentChildVC {
             current.view.isHidden = true
             current.view.isUserInteractionEnabled = false
         }
-        //새로운 뷰컨 표시
         vc.view.isHidden = false
         vc.view.isUserInteractionEnabled = true
         containerView.bringSubviewToFront(vc.view)
         currentChildVC = vc
         
-        // delegate 재설정
         if vc === outfieldFoodVC {
             self.delegate = outfieldFoodVC
         }
     }
     
-    
-
-    //세그먼트 텝버튼 함수
     @objc func segementTapped(_ sender: UIButton) {
         selectedButtonIndex = sender.tag
         updateSelector(animaited: true)
@@ -291,14 +288,14 @@ extension FoodListViewController {
         }
     }
 }
-    //MARK: - 서치바 설정
-    extension FoodListViewController: UISearchBarDelegate {
-        
-        func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-            if currentChildVC == outfieldFoodVC {
-                searchFood(query: searchBar.text)
-            }
-            searchBar.resignFirstResponder()
+//MARK: - 서치바 설정
+extension FoodListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        if currentChildVC == outfieldFoodVC {
+            searchFood(query: searchBar.text)
         }
-        
+        searchBar.resignFirstResponder()
     }
+    
+}

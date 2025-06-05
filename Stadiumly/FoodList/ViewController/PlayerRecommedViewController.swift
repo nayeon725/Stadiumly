@@ -13,7 +13,7 @@ class PlayerRecommedViewController: UIViewController {
     
    private var testImageList = ["doosanbears","giants","hanwhaeagles","kiatigers","kiwoom","ktwiz","lgtwins","ncdinos","samsunglions","ssglanders"]
     
-    private let apiKey = ""
+    private var stadiumName: String = ""
     
     lazy var playerRecommedCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -28,25 +28,31 @@ class PlayerRecommedViewController: UIViewController {
         setupConstraints()
         configureUI()
         setupProperty()
+        updateStadiumInfo()
     }
     
-    //addSubView
+    private func updateStadiumInfo() {
+        if let stadium = DataManager.shared.selectedStadium {
+            stadiumName = stadium.name
+        }
+    }
+
     func setupAddSubview() {
         [playerRecommedCollectionView].forEach {
             view.addSubview($0)
         }
     }
-    //오토 레이아웃
+
     func setupConstraints() {
         playerRecommedCollectionView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
     }
-    //UI 속성
+
     func configureUI() {
         
     }
-    //property
+
     func setupProperty() {
         playerRecommedCollectionView.delegate = self
         playerRecommedCollectionView.dataSource = self
@@ -56,7 +62,7 @@ class PlayerRecommedViewController: UIViewController {
 }
 //MARK: - 컬렉션뷰 + 디테일 페이지 이동하기
 extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-   //디테일 페이지 이동 부분 
+
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedItem = testImageList[indexPath.row]
         let detailPageVC = DetailedPageViewController()
@@ -64,17 +70,17 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
         detailPageVC.modalPresentationStyle = .pageSheet
         
         if let modalView = detailPageVC.sheetPresentationController {
-            modalView.detents = [.medium()] // 화면 반 정도
-            modalView.prefersGrabberVisible = true // 위에 손잡이 표시
+            modalView.detents = [.medium()]
+            modalView.prefersGrabberVisible = true
             modalView.preferredCornerRadius = 20
            }
            present(detailPageVC, animated: true)
     }
-    //만들 셀의 갯수
+  
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return testImageList.count
     }
-    //셀 정의 - 재사용셀
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PlayerRecommedCollectionViewCell.identifier, for: indexPath) as? PlayerRecommedCollectionViewCell
         else {
@@ -84,7 +90,7 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
         cell.configure(with: imageName)
         return cell
     }
-    //셀 크기 설정
+  
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: 160, height: 175)
     }
@@ -97,7 +103,7 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
         
         return UIEdgeInsets(top: 10, left: inset, bottom: 30, right: inset)
     }
-    // 셀 세로 간격
+
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 30
     }
@@ -105,33 +111,49 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
 }
 //MARK: - API 데이터 받는거 > 수정해야함
 extension PlayerRecommedViewController {
-    //수정해야함
-    func playerRecommed(longitude: Double, latitude: Double) {
-        let endPoint = ""
-        guard let url = URL(string: endPoint) else { return }
+    //수정해야함 - 팀이름으로 받아와야함
+    func playerRecommed() {
+        let endPt = "http://40.82.137.87/stadium/??"
+        guard let url = URL(string: endPt) else { return }
         var request = URLRequest(url: url)
-        request.addValue("\(apiKey)", forHTTPHeaderField: "")
-        let seesion = URLSession.shared
-        let task = seesion.dataTask(with: request) { data, _ , error in
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        //        let parameters = ["teamname" : teamShort]
+//        let jsonData = try? JSONSerialization.data(withJSONObject: parameters)
+        
+//        request.httpBody = jsonData
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("요청 실패 Error: \(error.localizedDescription)")
+                print("Network error: \(error.localizedDescription)")
                 return
             }
-            guard let data else {
-                print("데이터가 없습니다")
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid response")
                 return
             }
-            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
+            
+            print("Status code: \(httpResponse.statusCode)")  // 200 OK인지 확인
+            
+            guard let data = data else {
+                print("데이터 없음")
+                return
+            }
+            print("받은 데이터 크기: \(data.count)")
+            
             do {
-                _ = try JSONDecoder().decode(KakaoSearch.self, from: data)
                 DispatchQueue.main.async {
-                    self.playerRecommedCollectionView.reloadData()
                 }
             } catch {
-                print("디코딩 실패\(error)")
+                print("디코딩 에러: \(error)")
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("받은 JSON 문자열: \(jsonString)")
+                } else {
+                    print("JSON 문자열 변환 실패")
+                }
             }
-        }
-        task.resume()
+        }.resume()
     }
-    
 }

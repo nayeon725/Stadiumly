@@ -8,8 +8,15 @@
 import UIKit
 import SnapKit
 
+//델리게이트로 팀 이름 넘기는 부분
+protocol TeamSelectionDelete: AnyObject {
+    func didSelectTeam(team: String)
+}
+
 //회원가입 페이지
 class SignUpPageViewController: UIViewController {
+    
+    weak var delegate: TeamSelectionDelete?
     
     private let idLabel = UILabel()
     private let idTextField = UITextField()
@@ -238,13 +245,24 @@ class SignUpPageViewController: UIViewController {
         emailTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         nickNameTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         verificationTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
+       
         signUpButton.isEnabled = false
         signUpButton.alpha = 0.5
         buttonTypes()
         setPasswordShow()
     }
     
-    @objc func textFieldsDidChange(_ textField: UITextField) {
+    @objc private func textFieldsDidChange(_ textField: UITextField) {
+        if textField == idTextField {
+            if let id = textField.text {
+                if isValidId(id) {
+                    textField.layer.borderColor = UIColor.systemGreen.cgColor
+                } else {
+                    textField.layer.borderColor = UIColor.systemRed.cgColor
+                }
+                textField.layer.borderWidth = 0.8
+            }
+        }
         
         if textField == passwordTextField {
             if let password = textField.text {
@@ -253,11 +271,13 @@ class SignUpPageViewController: UIViewController {
                 } else {
                     textField.layer.borderColor = UIColor.systemRed.cgColor
                 }
-                textField.layer.borderWidth = 0.5
+                textField.layer.borderWidth = 0.8
             }
         }
         updateSignUpButtonState()
     }
+   
+    
     private func updateSignUpButtonState() {
         let isAllFilled = !(nickNameTextField.text?.isEmpty ?? true) &&
                           !(emailTextField.text?.isEmpty ?? true) &&
@@ -276,10 +296,21 @@ class SignUpPageViewController: UIViewController {
         dropdownTableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         passwordTextField.delegate = self
     }
-    //비밀번호 정규식
+    
     func isValidPassword(_ password: String) -> Bool {
         let regex = "^(?=(?:.*[A-Za-z].*[0-9]|.*[A-Za-z].*[^A-Za-z0-9]|.*[0-9].*[^A-Za-z0-9]))[A-Za-z0-9!@#$%^&*(),.?\":{}|<>]{8,16}$"
         return NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: password)
+    }
+    
+    func isValidId(_ id: String) -> Bool {
+        let idRegEx = "^[A-Za-z0-9]{5,13}$"
+        let idTest = NSPredicate(format: "SELF MATCHES %@", idRegEx)
+        return idTest.evaluate(with: id)
+    }
+    
+    func isValidEmail(_ email: String) -> Bool {
+        let emailRegEx = #"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$"#
+        return NSPredicate(format: "SELF MATCHES %@", emailRegEx).evaluate(with: email)
     }
     
 }
@@ -320,11 +351,11 @@ extension SignUpPageViewController: UITextFieldDelegate{
         var buttonConfiguration = UIButton.Configuration.plain()
         buttonConfiguration.imagePadding = 10
         buttonConfiguration.baseBackgroundColor = .clear
-        
         eyeButton.setImage(UIImage(systemName: "eye"), for: .normal)
         eyeButton.setImage(UIImage(systemName: "eye.slash"), for: .selected)
         eyeButton.tintColor = .black
         eyeButton.configuration = buttonConfiguration
+        eyeButton.tintColor = .black
         passwordTextField.rightView = eyeButton
         passwordTextField.rightViewMode = .always
     }
@@ -346,6 +377,7 @@ extension SignUpPageViewController: UITextFieldDelegate{
         dropdownButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         dropdownButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 260, bottom: 0, right: 0)
         dropdownButton.addTarget(self, action: #selector(toggleDropdown), for: .touchUpInside)
+        
         
         configureButton(checkAvailabilityButton, title: "중복확인", titleColor: .black, bgColor: .gray)
         configureButton(gettingNumberButton, title: "인증번호받기", titleColor: .black, bgColor: .gray)
@@ -408,6 +440,14 @@ extension SignUpPageViewController: UITextFieldDelegate{
             
             self.view.layoutIfNeeded()
         }
+        guard let email = emailTextField.text, !email.isEmpty else { return }
+        
+        if isValidEmail(email) {
+            emailTextField.layer.borderColor = UIColor.systemGreen.cgColor
+        } else {
+            emailTextField.layer.borderColor = UIColor.systemRed.cgColor
+        }
+        emailTextField.layer.borderWidth = 0.8
     }
     
 }
@@ -429,9 +469,59 @@ extension SignUpPageViewController: UITableViewDataSource, UITableViewDelegate {
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        //델리게이트로 데이터 넘기는 부분
+        let selectedTeam = teamOptions[indexPath.row]
+        delegate?.didSelectTeam(team: selectedTeam)
+        
         dropdownButton.setTitle(teamOptions[indexPath.row], for: .normal)
         isDropdownVisible = false
         dropdownTableView.isHidden = true
     }
     
+}
+//MARK: - 회원가입 API
+extension SignUpPageViewController {
+    
+    private func signUp() {
+        let endpt = "http://40.82.137.87/stadium/???"
+        guard let url = URL(string: endpt) else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let parameters = [""]
+        let jsonData = try? JSONSerialization.data(withJSONObject: parameters)
+        
+        request.httpBody = jsonData
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                return
+            }
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("Invalid response")
+                return
+            }
+            print("Status code: \(httpResponse.statusCode)")  // 200 OK인지 확인
+            
+            guard let data = data else {
+                print("데이터 없음")
+                return
+            }
+            print("받은 데이터 크기: \(data.count)")
+            do {
+                DispatchQueue.main.async {
+                }
+            } catch {
+                print("디코딩 에러: \(error)")
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("받은 JSON 문자열: \(jsonString)")
+                } else {
+                    print("JSON 문자열 변환 실패")
+                }
+            }
+        }.resume()
+    }
+
 }
