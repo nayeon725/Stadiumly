@@ -214,7 +214,6 @@ class FindPWViewController: UIViewController {
         codeTF.layer.masksToBounds = true
         codeTF.layer.borderWidth = 0.8
         codeTF.layer.borderColor = UIColor.systemGray4.cgColor
-        codeTF.keyboardType = .numberPad
         configureTextField(to: codeTF)
 
         let codeButton = UIButton()
@@ -334,6 +333,10 @@ class FindPWViewController: UIViewController {
         pwValidateLabel.font = .systemFont(ofSize: 13, weight: .light)
         pwValidateLabel.isHidden = false
         pwValidateLabel.textAlignment = .left
+    }
+    
+    private func networkingWithBE() {
+        
     }
 
     @objc private func emailTFDidChange() {

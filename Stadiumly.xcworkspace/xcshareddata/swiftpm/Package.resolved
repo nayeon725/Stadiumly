@@ -1,6 +1,15 @@
 {
-  "originHash" : "0ec2902eb6d6a681805485c31bb88b8ef85b760a214ecc88bcb53c7e30d3a2a5",
+  "originHash" : "49fcce125faacb6957d8166aa21fcfa72019287ac6b1c561dc5dce8442e826ed",
   "pins" : [
+    {
+      "identity" : "alamofire",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Alamofire/Alamofire.git",
+      "state" : {
+        "revision" : "513364f870f6bfc468f9d2ff0a95caccc10044c5",
+        "version" : "5.10.2"
+      }
+    },
     {
       "identity" : "kakaomapssdk-spm",
       "kind" : "remoteSourceControl",
@@ -13,7 +22,7 @@
     {
       "identity" : "kingfisher",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/onevcat/Kingfisher",
+      "location" : "https://github.com/onevcat/Kingfisher.git",
       "state" : {
         "revision" : "7deda23bbdca612076c5c315003d8638a08ed0f1",
         "version" : "8.3.2"
