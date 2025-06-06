@@ -43,8 +43,6 @@ class FoodListViewController: UIViewController {
     private let containerView = UIView()
     private var currentChildVC: UIViewController?
     
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         updateStadiumInfo()
@@ -148,13 +146,8 @@ class FoodListViewController: UIViewController {
         self.delegate = outfieldFoodVC
         
     }
-    private func updateStadiumInfo() {
-        if let stadium = DataManager.shared.selectedStadium {
-            lat = stadium.latitude
-            lon = stadium.longitude
-        }
-    }
 }
+
 //MARK: - 푸드 검색 API
 extension FoodListViewController {
 

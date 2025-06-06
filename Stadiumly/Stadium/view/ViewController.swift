@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import Kingfisher
+import Alamofire
 
 class ViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
