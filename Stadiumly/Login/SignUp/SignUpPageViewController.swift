@@ -507,20 +507,20 @@ extension SignUpPageViewController {
         AF.request(endpt, method: .post, parameters: parameters, encoding: JSONEncoding.default,
                    headers: ["Content-Type": "application/json"])
         .validate()
-        .responseDecodable(of: userIdCheck.self) { response in
-            switch response.result {
-            case .success(let value):
-                print("✅ 성공 응답: \(value)")
-                
-            case .failure(let error):
-                print("❌ 요청 실패: \(error.localizedDescription)")
-                
-                if let data = response.data,
-                   let jsonString = String(data: data, encoding: .utf8) {
-                    print("받은 에러 응답 JSON: \(jsonString)")
-                }
-            }
-        }
+//        .responseDecodable(of: userIdCheck.self) { response in
+//            switch response.result {
+//            case .success(let value):
+//                print("✅ 성공 응답: \(value)")
+//                
+//            case .failure(let error):
+//                print("❌ 요청 실패: \(error.localizedDescription)")
+//                
+//                if let data = response.data,
+//                   let jsonString = String(data: data, encoding: .utf8) {
+//                    print("받은 에러 응답 JSON: \(jsonString)")
+//                }
+//            }
+//        }
     }
     
     private func userIdUniqueCheck() {
@@ -534,19 +534,19 @@ extension SignUpPageViewController {
         AF.request(endpt, method: .post, parameters: parameters, encoding: JSONEncoding.default,
                    headers: ["Content-Type": "application/json"])
         .validate()
-        .responseDecodable(of: userIdCheck.self) { response in
-            switch response.result {
-            case .success(let value):
-                print("✅ 성공 응답: \(value)")
-                
-            case .failure(let error):
-                print("❌ 요청 실패: \(error.localizedDescription)")
-                
-                if let data = response.data,
-                   let jsonString = String(data: data, encoding: .utf8) {
-                    print("받은 에러 응답 JSON: \(jsonString)")
-                }
-            }
-        }
+//        .responseDecodable(of: userIdCheck.self) { response in
+//            switch response.result {
+//            case .success(let value):
+//                print("✅ 성공 응답: \(value)")
+//                
+//            case .failure(let error):
+//                print("❌ 요청 실패: \(error.localizedDescription)")
+//                
+//                if let data = response.data,
+//                   let jsonString = String(data: data, encoding: .utf8) {
+//                    print("받은 에러 응답 JSON: \(jsonString)")
+//                }
+//            }
+//        }
     }
 }

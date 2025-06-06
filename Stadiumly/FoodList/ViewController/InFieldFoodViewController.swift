@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Alamofire
 
 struct Cafeteria: Codable {
     let cafe_name: String
@@ -21,6 +22,16 @@ class InFieldFoodViewController: UIViewController {
     
     private var cafeteriaList: [Cafeteria] = []
     
+
+    private let foodMenuTitle = ["1루", "3루", "외야"]
+    private let foodMenuCodes = ["1ru", "3ru", "outside"] //서버요청용
+
+    
+    private var menuButton: [UIButton] = []
+    private let selectorView = UIView()
+    private var selectedButtonIndex = 0
+    private let segmentBackgroundView = UIView()
+    private let buttonStackView = UIStackView()
     
     lazy var inFieldCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -35,9 +46,15 @@ class InFieldFoodViewController: UIViewController {
         setupConstraints()
         configureUI()
         setupProperty()
+        setupSegement()
         updateStadiumInfo()
-        playerRecommed()
         
+        let defaultLocation = foodMenuCodes[0]
+        inFieldFoodList(location: defaultLocation)
+        
+        DispatchQueue.main.async {
+            self.updateSelector(animaited: false)
+        }
     }
     private func updateStadiumInfo() {
         if let stadium = DataManager.shared.selectedStadium {
@@ -46,23 +63,95 @@ class InFieldFoodViewController: UIViewController {
         }
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateSelector(animaited: true)
+    }
+    
     func setupAddSubview() {
-        view.addSubview(inFieldCollectionView)
+        [inFieldCollectionView, segmentBackgroundView].forEach {
+            view.addSubview($0)
+        }
+        segmentBackgroundView.addSubview(buttonStackView)
     }
     
     func setupConstraints() {
-        inFieldCollectionView.snp.makeConstraints {
+        segmentBackgroundView.snp.makeConstraints {
+            $0.top.equalToSuperview()
+            $0.leading.equalToSuperview().offset(20)
+            $0.width.equalTo(350)
+            $0.height.equalTo(50)
+        }
+        buttonStackView.snp.makeConstraints {
             $0.edges.equalToSuperview()
+        }
+        inFieldCollectionView.snp.makeConstraints {
+            $0.top.equalTo(buttonStackView.snp.bottom).offset(0)
+            $0.horizontalEdges.equalToSuperview()
+            $0.bottom.equalToSuperview()
         }
     }
     
     func configureUI() {
+        segmentBackgroundView.addSubview(buttonStackView)
+        segmentBackgroundView.backgroundColor = UIColor(white: 0.1, alpha: 1)
+        segmentBackgroundView.layer.cornerRadius = 24
+        buttonStackView.axis = .horizontal
+        buttonStackView.distribution = .fillEqually
+        selectorView.backgroundColor = UIColor(white: 0.25, alpha: 1)
+        selectorView.layer.cornerRadius = 20
+        segmentBackgroundView.insertSubview(selectorView, at: 0)
+
     }
     
     func setupProperty() {
         inFieldCollectionView.delegate = self
         inFieldCollectionView.dataSource = self
         inFieldCollectionView.register(InFieldCollectionViewCell.self, forCellWithReuseIdentifier: InFieldCollectionViewCell.identifier)
+    }
+    
+}
+//MARK: - 커스텀 세그먼트
+extension InFieldFoodViewController {
+    
+    func setupSegement() {
+        for(index, title) in foodMenuTitle.enumerated() {
+            let button = UIButton(type: .system)
+            button.setTitle(title, for: .normal)
+            button.setTitleColor(index == selectedButtonIndex ? .white : .lightGray, for: .normal)
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+            button.tag = index
+            button.addTarget(self, action: #selector(segementTapped(_:)), for: .touchUpInside)
+          
+            menuButton.append(button)
+            buttonStackView.addArrangedSubview(button)
+        }
+    }
+    func updateSelector(animaited: Bool) {
+    
+        for (i, btn) in menuButton.enumerated() {
+            btn.setTitleColor(i == selectedButtonIndex ? .white : .lightGray , for: .normal)
+        }
+        
+        let selectedButton = menuButton[selectedButtonIndex]
+        let selectorFrame = selectedButton.frame.insetBy(dx: 4, dy: 6)
+        
+        if animaited {
+            UIView.animate(withDuration: 0.25) {
+                self.selectorView.frame = selectorFrame
+            }
+        } else {
+            self.selectorView.frame = selectorFrame
+        }
+    }
+
+    @objc private func segementTapped(_ sender: UIButton) {
+        selectedButtonIndex = sender.tag
+        updateSelector(animaited: true)
+        
+        //서버에 층수로 보낼 코드
+        let selectedCode = foodMenuCodes[selectedButtonIndex]
+        inFieldFoodList(location: selectedCode)
     }
     
 }
@@ -77,7 +166,7 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
         
         if let modalView = detailPageVC.sheetPresentationController {
             modalView.detents = [.medium()]
-            modalView.prefersGrabberVisible = true 
+            modalView.prefersGrabberVisible = true
             modalView.preferredCornerRadius = 20
         }
         present(detailPageVC, animated: true)
@@ -103,7 +192,7 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
         let totalCellWidth: CGFloat = 160 * 2
-        let totalSpacing: CGFloat = 30  
+        let totalSpacing: CGFloat = 30
         let availableWidth = collectionView.bounds.width
         let inset = max((availableWidth - totalCellWidth - totalSpacing) / 2, 0)
         
@@ -118,31 +207,39 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
 //MARK: - API
 extension InFieldFoodViewController {
  
-    func playerRecommed() {
-        let endPt = "http://20.41.113.4/cafeteria/\(String(stadiumlyId))?location=3ru_3f"
-        guard let url = URL(string: endPt) else { return }
-        let request = URLRequest(url: url)
-        let seesion = URLSession.shared
-        let task = seesion.dataTask(with: request) { data, _ , error in
-            if let error = error {
-                print("요청 실패 Error: \(error.localizedDescription)")
-                return
-            }
-            guard let data else {
-                print("데이터가 없습니다")
-                return
-            }
-                print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
-            do {
-                let decoded = try JSONDecoder().decode([Cafeteria].self, from: data)
-                DispatchQueue.main.async {
-                    self.cafeteriaList = decoded
-                    self.inFieldCollectionView.reloadData()
+    func covertServerData(_ input:String)-> String {
+        let parts = input.split(separator: "_")
+        guard parts.count == 2 else { return input } // _로 분리안되면 그대로 리턴
+        
+        let base = String(parts[0]) //"3ru"
+        let floorPart = String(parts[1]) //"3f"
+        
+        let baseMapping: [String: String] = ["1ru": "1루", "2ru": "2루", "3ru": "3루", "outside" : "외야"]
+        
+        let baseKR = baseMapping[base] ?? base
+        let floorNumber = floorPart.filter {"0123456789".contains($0)}
+        let foorKR = floorNumber.isEmpty ? "" : "\(floorNumber)층"
+        return "\(baseKR) \(foorKR)".trimmingCharacters(in: .whitespaces)
+    }
+    
+    func inFieldFoodList(location: String) {
+        let endPt = "http://40.82.137.87/cafeteria/\(String(stadiumlyId))?location=\(location)"
+        AF.request(endPt, method: .get)
+            .validate()
+            .responseDecodable(of: [Cafeteria].self) { response in
+                switch response.result {
+                case.success(let decoded):
+                    DispatchQueue.main.sync {
+                        self.cafeteriaList = decoded
+                        self.inFieldCollectionView.reloadData()
+                    }
+                case .failure(let error):
+                    print("요청실패")
                 }
-            } catch {
-                print("디코딩 실패\(error)")
-            }
+                if let data = response.data,
+                   let jsonString = String(data: data, encoding: .utf8) {
+                    print("받은 에러 응답 JSON: \(jsonString)")
+                }
         }
-        task.resume()
     }
 }
