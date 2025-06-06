@@ -7,20 +7,25 @@
 
 import UIKit
 import SnapKit
+import Alamofire
+
+struct Cafeteria: Codable {
+    let cafe_name: String
+    let cafe_image: String
+    let cafe_location: String
+}
 
 //구장 내 먹거리
 class InFieldFoodViewController: UIViewController {
     
-    private var inFieldFoodData: [String]?
+    private var stadiumlyId: Int = 0
     
-    private var stadiumName: String = ""
+    private var cafeteriaList: [Cafeteria] = []
     
-    var testImageList = ["doosanbears","giants","hanwhaeagles","kiatigers","kiwoom","ktwiz","lgtwins","ncdinos","samsunglions","ssglanders"]
-    private let categoryOptions = ["분식", "디저트", "치킨", "패스트푸드", "중식"]
-    private var isDropdownVisible = false
+
     private let foodMenuTitle = ["1루", "3루", "외야"]
-    private var dropdownButton = UIButton(type: .system)
-    private let dropdownTableView = UITableView()
+    private let foodMenuCodes = ["1ru", "3ru", "outside"] //서버요청용
+
     
     private var menuButton: [UIButton] = []
     private let selectorView = UIView()
@@ -44,13 +49,17 @@ class InFieldFoodViewController: UIViewController {
         setupSegement()
         updateStadiumInfo()
         
+        let defaultLocation = foodMenuCodes[0]
+        inFieldFoodList(location: defaultLocation)
+        
         DispatchQueue.main.async {
             self.updateSelector(animaited: false)
         }
     }
     private func updateStadiumInfo() {
         if let stadium = DataManager.shared.selectedStadium {
-            stadiumName = stadium.name
+            stadiumlyId = stadium.id
+
         }
     }
     
@@ -60,7 +69,7 @@ class InFieldFoodViewController: UIViewController {
     }
     
     func setupAddSubview() {
-        [inFieldCollectionView, segmentBackgroundView, dropdownButton, dropdownTableView].forEach {
+        [inFieldCollectionView, segmentBackgroundView].forEach {
             view.addSubview($0)
         }
         segmentBackgroundView.addSubview(buttonStackView)
@@ -69,8 +78,8 @@ class InFieldFoodViewController: UIViewController {
     func setupConstraints() {
         segmentBackgroundView.snp.makeConstraints {
             $0.top.equalToSuperview()
-            $0.leading.equalTo(dropdownButton.snp.trailing).offset(5)
-            $0.width.equalTo(250)
+            $0.leading.equalToSuperview().offset(20)
+            $0.width.equalTo(350)
             $0.height.equalTo(50)
         }
         buttonStackView.snp.makeConstraints {
@@ -80,18 +89,6 @@ class InFieldFoodViewController: UIViewController {
             $0.top.equalTo(buttonStackView.snp.bottom).offset(0)
             $0.horizontalEdges.equalToSuperview()
             $0.bottom.equalToSuperview()
-        }
-        dropdownButton.snp.makeConstraints {
-            $0.top.equalToSuperview()
-            $0.leading.equalToSuperview().offset(25)
-            $0.width.equalTo(100)
-            $0.height.equalTo(50)
-        }
-        dropdownTableView.snp.makeConstraints {
-            $0.top.equalTo(dropdownButton.snp.bottom)
-            $0.centerX.equalTo(dropdownButton.snp.centerX)
-            $0.width.equalTo(dropdownButton.snp.width)
-            $0.height.equalTo(44 * categoryOptions.count)
         }
     }
     
@@ -104,35 +101,13 @@ class InFieldFoodViewController: UIViewController {
         selectorView.backgroundColor = UIColor(white: 0.25, alpha: 1)
         selectorView.layer.cornerRadius = 20
         segmentBackgroundView.insertSubview(selectorView, at: 0)
-        
-        dropdownTableView.isHidden = true
-        dropdownTableView.rowHeight = 44
-        dropdownTableView.separatorInset = .zero
-        dropdownTableView.layer.cornerRadius = 20
-        dropdownTableView.layer.borderColor = UIColor.lightGray.cgColor
-        dropdownTableView.layer.borderWidth = 0.5
-        
-        dropdownButton.setTitle("카테고리", for: .normal)
-        dropdownButton.setTitleColor(.black, for: .normal)
-        dropdownButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
-        dropdownButton.tintColor = .black
-        dropdownButton.backgroundColor = .lightGray
-        dropdownButton.layer.cornerRadius = 24
-        dropdownButton.addTarget(self, action: #selector(toggleDropdown), for: .touchUpInside)
+
     }
     
     func setupProperty() {
         inFieldCollectionView.delegate = self
         inFieldCollectionView.dataSource = self
         inFieldCollectionView.register(InFieldCollectionViewCell.self, forCellWithReuseIdentifier: InFieldCollectionViewCell.identifier)
-        dropdownTableView.delegate = self
-        dropdownTableView.dataSource = self
-        dropdownTableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
-    }
-    
-    @objc private func toggleDropdown() {
-        isDropdownVisible.toggle()
-        dropdownTableView.isHidden = !isDropdownVisible
     }
     
 }
@@ -173,6 +148,10 @@ extension InFieldFoodViewController {
     @objc private func segementTapped(_ sender: UIButton) {
         selectedButtonIndex = sender.tag
         updateSelector(animaited: true)
+        
+        //서버에 층수로 보낼 코드
+        let selectedCode = foodMenuCodes[selectedButtonIndex]
+        inFieldFoodList(location: selectedCode)
     }
     
 }
@@ -180,21 +159,21 @@ extension InFieldFoodViewController {
 extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let selectedItem = testImageList[indexPath.row]
-        let detailPageVC = DetailedPageViewController()
+        let selectedItem = cafeteriaList[indexPath.row]
+        let detailPageVC = DetailedInFieldViewController()
         detailPageVC.detailData = selectedItem
         detailPageVC.modalPresentationStyle = .pageSheet
         
         if let modalView = detailPageVC.sheetPresentationController {
-            modalView.detents = [.medium()] // 화면 반 정도
-            modalView.prefersGrabberVisible = true // 위에 손잡이 표시
+            modalView.detents = [.medium()]
+            modalView.prefersGrabberVisible = true
             modalView.preferredCornerRadius = 20
         }
         present(detailPageVC, animated: true)
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return testImageList.count
+        return cafeteriaList.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -202,8 +181,7 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
         else {
             return UICollectionViewCell()
         }
-        let imageName = testImageList[indexPath.row]
-        cell.configure(with: imageName)
+        cell.configureImage(with: cafeteriaList[indexPath.row])
         return cell
     }
 
@@ -214,7 +192,7 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
         let totalCellWidth: CGFloat = 160 * 2
-        let totalSpacing: CGFloat = 30  // 셀 사이 간격
+        let totalSpacing: CGFloat = 30
         let availableWidth = collectionView.bounds.width
         let inset = max((availableWidth - totalCellWidth - totalSpacing) / 2, 0)
         
@@ -225,73 +203,43 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
         return 30
     }
 }
-//MARK: - 드롭다운메뉴 테이블뷰
-extension InFieldFoodViewController: UITableViewDataSource, UITableViewDelegate {
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categoryOptions.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        cell.textLabel?.text = categoryOptions[indexPath.row]
-        cell.textLabel?.adjustsFontSizeToFitWidth = true
-        cell.textLabel?.minimumScaleFactor = 0.8
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 15)
-        return cell
-    }
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        dropdownButton.setTitle(categoryOptions[indexPath.row], for: .normal)
-        isDropdownVisible = false
-        dropdownTableView.isHidden = true
-    }
-    
-}
+
 //MARK: - API
 extension InFieldFoodViewController {
-    //수정해야함 - 팀이름으로 받아와야함
-    func playerRecommed() {
-        let endPt = "http://40.82.137.87/stadium/??"
-        guard let url = URL(string: endPt) else { return }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+ 
+    func covertServerData(_ input:String)-> String {
+        let parts = input.split(separator: "_")
+        guard parts.count == 2 else { return input } // _로 분리안되면 그대로 리턴
         
-        //        let parameters = ["teamname" : teamShort]
-//        let jsonData = try? JSONSerialization.data(withJSONObject: parameters)
+        let base = String(parts[0]) //"3ru"
+        let floorPart = String(parts[1]) //"3f"
         
-//        request.httpBody = jsonData
+        let baseMapping: [String: String] = ["1ru": "1루", "2ru": "2루", "3ru": "3루", "outside" : "외야"]
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Network error: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                print("Invalid response")
-                return
-            }
-            
-            print("Status code: \(httpResponse.statusCode)")  // 200 OK인지 확인
-            
-            guard let data = data else {
-                print("데이터 없음")
-                return
-            }
-            print("받은 데이터 크기: \(data.count)")
-            
-            do {
-                DispatchQueue.main.async {
+        let baseKR = baseMapping[base] ?? base
+        let floorNumber = floorPart.filter {"0123456789".contains($0)}
+        let foorKR = floorNumber.isEmpty ? "" : "\(floorNumber)층"
+        return "\(baseKR) \(foorKR)".trimmingCharacters(in: .whitespaces)
+    }
+    
+    func inFieldFoodList(location: String) {
+        let endPt = "http://40.82.137.87/cafeteria/\(String(stadiumlyId))?location=\(location)"
+        AF.request(endPt, method: .get)
+            .validate()
+            .responseDecodable(of: [Cafeteria].self) { response in
+                switch response.result {
+                case.success(let decoded):
+                    DispatchQueue.main.sync {
+                        self.cafeteriaList = decoded
+                        self.inFieldCollectionView.reloadData()
+                    }
+                case .failure(let error):
+                    print("요청실패")
                 }
-            } catch {
-                print("디코딩 에러: \(error)")
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("받은 JSON 문자열: \(jsonString)")
-                } else {
-                    print("JSON 문자열 변환 실패")
+                if let data = response.data,
+                   let jsonString = String(data: data, encoding: .utf8) {
+                    print("받은 에러 응답 JSON: \(jsonString)")
                 }
-            }
-        }.resume()
+        }
     }
 }

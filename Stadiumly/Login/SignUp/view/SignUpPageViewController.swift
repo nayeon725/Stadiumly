@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 import Alamofire
 
+
 //델리게이트로 팀 이름 넘기는 부분
 protocol TeamSelectionDelete: AnyObject {
     func didSelectTeam(team: String)
@@ -58,7 +59,7 @@ class SignUpPageViewController: UIViewController {
     
     private let dropdownButton = UIButton(type: .custom)
     private let dropdownTableView = UITableView()
-    private let teamOptions = ["기아 타이거즈", "두산 베어스", "롯데 자이언츠", "삼성 라이언즈", "SSG 랜더스", "엘지 트윈스", "NC 다이노스", "키움 히어로즈", "KG 위즈", "한화 이글스"]
+    private let teamOptions = ["기아 타이거즈", "두산 베어스", "롯데 자이언츠", "삼성 라이언즈", "SSG 랜더스", "엘지 트윈스", "NC 다이노스", "키움 히어로즈", "KG 위즈", "한화 이글스", "응원하는팀 없음"]
     private var isDropdownVisible = false
     private let signUpButton = UIButton()
     
@@ -271,7 +272,8 @@ class SignUpPageViewController: UIViewController {
         emailTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         nickNameTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         verificationTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
-       
+        checkBoxButton.addTarget(self, action: #selector(termsPageMove), for: .touchUpInside)
+        
         signUpButton.isEnabled = false
         signUpButton.alpha = 0.5
         buttonTypes()
@@ -392,8 +394,10 @@ class SignUpPageViewController: UIViewController {
         return NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: password)
     }
     
-    private func isValidId(_ id: String) -> Bool {
-        let idRegEx = "^[A-Za-z0-9]{5,13}$"
+
+    func isValidId(_ id: String) -> Bool {
+        let idRegEx = "^[A-Za-z0-9]{4,12}$"
+
         let idTest = NSPredicate(format: "SELF MATCHES %@", idRegEx)
         return idTest.evaluate(with: id)
     }
@@ -449,7 +453,7 @@ extension SignUpPageViewController: UITextFieldDelegate{
         passwordTextField.rightView = eyeButton
         passwordTextField.rightViewMode = .always
     }
-   
+
     private func buttonTypes(){
         dropdownButton.backgroundColor = .white
         dropdownButton.layer.borderColor = UIColor.black.cgColor
@@ -468,7 +472,7 @@ extension SignUpPageViewController: UITextFieldDelegate{
         
         
         configureButton(checkAvailabilityButton, title: "중복확인", titleColor: .black, bgColor: .gray)
-        configureButton(gettingNumberButton, title: "인증번호받기", titleColor: .black, bgColor: .gray)
+        configureButton(gettingNumberButton, title: "이메일중복확인", titleColor: .black, bgColor: .gray)
         configureButton(verificationButton, title: "인증확인", titleColor: .black, bgColor: .gray)
         configureButton(signUpButton, title: "회원가입", titleColor: .black, bgColor: .gray)
         
@@ -487,6 +491,7 @@ extension SignUpPageViewController: UITextFieldDelegate{
         self.navigationItem.leftBarButtonItem = backButton
         backButton.tintColor = .black
         gettingNumberButton.addTarget(self, action: #selector(showVerificationFields), for: .touchUpInside)
+        checkAvailabilityButton.addTarget(self, action: #selector(didTapCheckId), for: .touchUpInside)
     }
     
     @objc private func toggleDropdown() {
@@ -537,6 +542,15 @@ extension SignUpPageViewController: UITextFieldDelegate{
         }
         emailTextField.layer.borderWidth = 0.8
     }
+
+    @objc private func termsPageMove() {
+        let termsVC = TermsOfServiceViewController()
+        present(termsVC, animated: true)
+    }
+    @objc private func didTapCheckId() {
+        userIdUniqueCheck()
+    }
+
 }
 
 //MARK: - 테이블뷰
@@ -569,7 +583,34 @@ extension SignUpPageViewController: UITableViewDataSource, UITableViewDelegate {
 
 //MARK: - 회원가입 API
 extension SignUpPageViewController {
-    private func signUp() {
+
+    private func userIdUniqueCheck() {
+        guard let userId = idTextField.text, !userId.isEmpty else {
+            print("‼️아이디 입력 필요")
+            return
+        }
+        let endpt = "http://20.41.113.4/auth/check-userid-unique"
+        let parameters: [String: Any] = ["user_cus_id": "유저아이디값"]
+        
+        AF.request(endpt, method: .post, parameters: parameters, encoding: JSONEncoding.default,
+                   headers: ["Content-Type": "application/json"])
+        .validate()
+//        .responseDecodable(of: userIdCheck.self) { response in
+//            switch response.result {
+//            case .success(let value):
+//                print("✅ 성공 응답: \(value)")
+//                
+//            case .failure(let error):
+//                print("❌ 요청 실패: \(error.localizedDescription)")
+//                
+//                if let data = response.data,
+//                   let jsonString = String(data: data, encoding: .utf8) {
+//                    print("받은 에러 응답 JSON: \(jsonString)")
+//                }
+//            }
+//        }
+    }
+        private let signUp() {
         let email = emailTextField.text ?? ""
         let token = verificationTextField.text ?? ""
         
