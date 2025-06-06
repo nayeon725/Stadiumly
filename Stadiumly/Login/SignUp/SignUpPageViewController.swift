@@ -7,6 +7,8 @@
 
 import UIKit
 import SnapKit
+import Alamofire
+
 
 //델리게이트로 팀 이름 넘기는 부분
 protocol TeamSelectionDelete: AnyObject {
@@ -41,7 +43,7 @@ class SignUpPageViewController: UIViewController {
     
     private let dropdownButton = UIButton(type: .custom)
     private let dropdownTableView = UITableView()
-    private let teamOptions = ["기아 타이거즈", "두산 베어스", "롯데 자이언츠", "삼성 라이언즈", "SSG 랜더스", "엘지 트윈스", "NC 다이노스", "키움 히어로즈", "KG 위즈", "한화 이글스"]
+    private let teamOptions = ["기아 타이거즈", "두산 베어스", "롯데 자이언츠", "삼성 라이언즈", "SSG 랜더스", "엘지 트윈스", "NC 다이노스", "키움 히어로즈", "KG 위즈", "한화 이글스", "응원하는팀 없음"]
     private var isDropdownVisible = false
     private let signUpButton = UIButton()
     
@@ -245,7 +247,8 @@ class SignUpPageViewController: UIViewController {
         emailTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         nickNameTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         verificationTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
-       
+        checkBoxButton.addTarget(self, action: #selector(termsPageMove), for: .touchUpInside)
+        
         signUpButton.isEnabled = false
         signUpButton.alpha = 0.5
         buttonTypes()
@@ -303,7 +306,7 @@ class SignUpPageViewController: UIViewController {
     }
     
     func isValidId(_ id: String) -> Bool {
-        let idRegEx = "^[A-Za-z0-9]{5,13}$"
+        let idRegEx = "^[A-Za-z0-9]{4,12}$"
         let idTest = NSPredicate(format: "SELF MATCHES %@", idRegEx)
         return idTest.evaluate(with: id)
     }
@@ -360,8 +363,6 @@ extension SignUpPageViewController: UITextFieldDelegate{
         passwordTextField.rightViewMode = .always
     }
     
-   
-   
     private func buttonTypes(){
         dropdownButton.backgroundColor = .white
         dropdownButton.layer.borderColor = UIColor.black.cgColor
@@ -380,7 +381,7 @@ extension SignUpPageViewController: UITextFieldDelegate{
         
         
         configureButton(checkAvailabilityButton, title: "중복확인", titleColor: .black, bgColor: .gray)
-        configureButton(gettingNumberButton, title: "인증번호받기", titleColor: .black, bgColor: .gray)
+        configureButton(gettingNumberButton, title: "이메일중복확인", titleColor: .black, bgColor: .gray)
         configureButton(verificationButton, title: "인증확인", titleColor: .black, bgColor: .gray)
         configureButton(signUpButton, title: "회원가입", titleColor: .black, bgColor: .gray)
         
@@ -399,6 +400,7 @@ extension SignUpPageViewController: UITextFieldDelegate{
         self.navigationItem.leftBarButtonItem = backButton
         backButton.tintColor = .black
         gettingNumberButton.addTarget(self, action: #selector(showVerificationFields), for: .touchUpInside)
+        checkAvailabilityButton.addTarget(self, action: #selector(didTapCheckId), for: .touchUpInside)
     }
     
     @objc private func toggleDropdown() {
@@ -450,6 +452,14 @@ extension SignUpPageViewController: UITextFieldDelegate{
         emailTextField.layer.borderWidth = 0.8
     }
     
+    @objc private func termsPageMove() {
+        let termsVC = TermsOfServiceViewController()
+        present(termsVC, animated: true)
+    }
+    @objc private func didTapCheckId() {
+        userIdUniqueCheck()
+    }
+    
 }
 //MARK: - 테이블뷰
 extension SignUpPageViewController: UITableViewDataSource, UITableViewDelegate {
@@ -483,45 +493,60 @@ extension SignUpPageViewController: UITableViewDataSource, UITableViewDelegate {
 extension SignUpPageViewController {
     
     private func signUp() {
-        let endpt = "http://40.82.137.87/stadium/???"
-        guard let url = URL(string: endpt) else { return }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let parameters = [""]
-        let jsonData = try? JSONSerialization.data(withJSONObject: parameters)
-        
-        request.httpBody = jsonData
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Network error: \(error.localizedDescription)")
-                return
-            }
-            guard let httpResponse = response as? HTTPURLResponse else {
-                print("Invalid response")
-                return
-            }
-            print("Status code: \(httpResponse.statusCode)")  // 200 OK인지 확인
-            
-            guard let data = data else {
-                print("데이터 없음")
-                return
-            }
-            print("받은 데이터 크기: \(data.count)")
-            do {
-                DispatchQueue.main.async {
-                }
-            } catch {
-                print("디코딩 에러: \(error)")
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("받은 JSON 문자열: \(jsonString)")
-                } else {
-                    print("JSON 문자열 변환 실패")
+        guard let userId = idTextField.text, !userId.isEmpty,
+              let userEmail = emailTextField.text, !userEmail.isEmpty,
+              let userPwd = passwordTextField.text, !userPwd.isEmpty
+        else { return }
+        let userNick = nickNameTextField.text ?? "랜덤닉네임"
+        let endpt = ""
+        let parameters: [String: Any] = ["user_email": userEmail, "user_cus_id": userId,
+                                         "user_pwd": userPwd,
+                                         "user_nick": userNick,
+                                         "user_grade": 1,
+                                         "user_like_staId": 7]
+        AF.request(endpt, method: .post, parameters: parameters, encoding: JSONEncoding.default,
+                   headers: ["Content-Type": "application/json"])
+        .validate()
+        .responseDecodable(of: userIdCheck.self) { response in
+            switch response.result {
+            case .success(let value):
+                print("✅ 성공 응답: \(value)")
+                
+            case .failure(let error):
+                print("❌ 요청 실패: \(error.localizedDescription)")
+                
+                if let data = response.data,
+                   let jsonString = String(data: data, encoding: .utf8) {
+                    print("받은 에러 응답 JSON: \(jsonString)")
                 }
             }
-        }.resume()
+        }
     }
-
+    
+    private func userIdUniqueCheck() {
+        guard let userId = idTextField.text, !userId.isEmpty else {
+            print("‼️아이디 입력 필요")
+            return
+        }
+        let endpt = "http://20.41.113.4/auth/check-userid-unique"
+        let parameters: [String: Any] = ["user_cus_id": "유저아이디값"]
+        
+        AF.request(endpt, method: .post, parameters: parameters, encoding: JSONEncoding.default,
+                   headers: ["Content-Type": "application/json"])
+        .validate()
+        .responseDecodable(of: userIdCheck.self) { response in
+            switch response.result {
+            case .success(let value):
+                print("✅ 성공 응답: \(value)")
+                
+            case .failure(let error):
+                print("❌ 요청 실패: \(error.localizedDescription)")
+                
+                if let data = response.data,
+                   let jsonString = String(data: data, encoding: .utf8) {
+                    print("받은 에러 응답 JSON: \(jsonString)")
+                }
+            }
+        }
+    }
 }

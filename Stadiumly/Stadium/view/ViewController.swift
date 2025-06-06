@@ -72,7 +72,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     }
     
     private func findStadium() {
-        let endPt = "http://40.82.137.87/stadium"
+        let endPt = "http://20.41.113.4/stadium"
         guard let url = URL(string: endPt) else { return }
         let request = URLRequest(url: url)
         

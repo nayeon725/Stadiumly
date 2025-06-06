@@ -48,10 +48,23 @@ class PlayerRecommedCollectionViewCell: UICollectionViewCell {
         contentView.layer.cornerRadius = 15
         contentView.layer.masksToBounds = true
         nameLabel.text = "야구 선수 추천"
-        
+        let strokeTextAttributes: [NSAttributedString.Key: Any] = [
+            .strokeColor: UIColor.white,
+            .foregroundColor: UIColor.white,
+            .strokeWidth: -2.0,
+            .font: UIFont.systemFont(ofSize: 23, weight: .bold)
+        ]
+        nameLabel.attributedText = NSAttributedString(string: "야구 선수 추천", attributes: strokeTextAttributes)
     }
     
     func configure(with imageName: String) {
         imageView.image = UIImage(named: imageName)
     }
+    
+    func configureImage(with cafeteria: Cafeteria) {
+         nameLabel.text = cafeteria.cafe_name
+         if let url = URL(string: cafeteria.cafe_image) {
+             imageView.kf.setImage(with: url, placeholder: UIImage(systemName: "Photo"))
+         }
+     }
 }

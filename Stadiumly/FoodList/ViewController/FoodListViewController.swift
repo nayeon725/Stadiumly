@@ -148,12 +148,7 @@ class FoodListViewController: UIViewController {
         self.delegate = outfieldFoodVC
         
     }
-    private func updateStadiumInfo() {
-        if let stadium = DataManager.shared.selectedStadium {
-            lat = stadium.latitude
-            lon = stadium.longitude
-        }
-    }
+
 }
 //MARK: - 푸드 검색 API
 extension FoodListViewController {
@@ -247,7 +242,6 @@ extension FoodListViewController {
             btn.setTitleColor(i == selectedButtonIndex ? .black : .black , for: .normal)
         }
         
-        
         let selectedButton = menuButton[selectedButtonIndex]
         let underlineHeight: CGFloat = 3
         let selectorFrame = CGRect(x: selectedButton.frame.origin.x, y: selectedButton.frame.maxY-underlineHeight, width: selectedButton.frame.width, height: underlineHeight)
@@ -297,5 +291,4 @@ extension FoodListViewController: UISearchBarDelegate {
         }
         searchBar.resignFirstResponder()
     }
-    
 }

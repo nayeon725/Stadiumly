@@ -251,11 +251,11 @@ extension LoginPageViewController: UICollectionViewDataSource, UICollectionViewD
 //MARK: - 로그인 API
 extension LoginPageViewController {
     
+    //토큰값 받아서 로그인 시켜야함 
     func login() {
         let endPoint = "http://40.82.137.87/stadium/??"
         guard let url = URL(string: endPoint) else { return }
         var request = URLRequest(url: url)
-//        request.addValue("\(apiKey)", forHTTPHeaderField: "")
         let seesion = URLSession.shared
         let task = seesion.dataTask(with: request) { data, _ , error in
             if let error = error {

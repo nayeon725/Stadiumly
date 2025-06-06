@@ -11,9 +11,10 @@ import SnapKit
 //야구 선수 추천
 class PlayerRecommedViewController: UIViewController {
     
-   private var testImageList = ["doosanbears","giants","hanwhaeagles","kiatigers","kiwoom","ktwiz","lgtwins","ncdinos","samsunglions","ssglanders"]
     
-    private var stadiumName: String = ""
+    private var stadiumlyId: Int = 0
+    
+    private var cafeteriaList: [Cafeteria] = []
     
     lazy var playerRecommedCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -33,7 +34,7 @@ class PlayerRecommedViewController: UIViewController {
     
     private func updateStadiumInfo() {
         if let stadium = DataManager.shared.selectedStadium {
-            stadiumName = stadium.name
+            stadiumlyId = stadium.id
         }
     }
 
@@ -64,8 +65,8 @@ class PlayerRecommedViewController: UIViewController {
 extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let selectedItem = testImageList[indexPath.row]
-        let detailPageVC = DetailedPageViewController()
+        let selectedItem = cafeteriaList[indexPath.row]
+        let detailPageVC = DetailedPlayerViewController()
         detailPageVC.detailData = selectedItem
         detailPageVC.modalPresentationStyle = .pageSheet
         
@@ -78,7 +79,7 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
     }
   
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return testImageList.count
+        return cafeteriaList.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -86,8 +87,7 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
         else {
             return UICollectionViewCell()
         }
-        let imageName = testImageList[indexPath.row]
-        cell.configure(with: imageName)
+        cell.configureImage(with: cafeteriaList[indexPath.row])
         return cell
     }
   
@@ -119,10 +119,9 @@ extension PlayerRecommedViewController {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        //        let parameters = ["teamname" : teamShort]
-//        let jsonData = try? JSONSerialization.data(withJSONObject: parameters)
-        
-//        request.httpBody = jsonData
+        let parameters = [""]
+        let jsonData = try? JSONSerialization.data(withJSONObject: parameters)
+        request.httpBody = jsonData
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
