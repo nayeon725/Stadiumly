@@ -18,20 +18,36 @@ protocol TeamSelectionDelete: AnyObject {
 //회원가입 페이지
 class SignUpPageViewController: UIViewController {
     
+    // api 관련
+    private let endpt = "http://20.41.113.4/"
+    private var userEmail: String = ""
+    private var userID: String = ""
+    private var userPW: String = ""
+    private var userNick: String = ""
+    private var userTeam: Int?
+    
+    private var isEmailUniqueConfirmed = false
+    private var isEmailTokenConfirmed = false
+    
     weak var delegate: TeamSelectionDelete?
     
     private let idLabel = UILabel()
     private let idTextField = UITextField()
+    
     private let nickNameLabel = UILabel()
     private let nickNameTextField = UITextField()
+    
     private let emailLabel = UILabel()
     private let emailTextField = UITextField()
+    
     private let verificationLabel = UILabel()
     private let verificationTextField = UITextField()
     private let verificationButton = UIButton()
+    
     private let passwordLabel = UILabel()
     private let passwordTextField = UITextField()
     private let passwordInfoLabel = UILabel()
+    
     private let cheeringTeamLabel = UILabel()
     private let checkAvailabilityButton = UIButton()
     private let gettingNumberButton = UIButton()
@@ -70,7 +86,16 @@ class SignUpPageViewController: UIViewController {
         setupProperty()
         
     }
-    func setupAddSubview() {
+    
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title,
+                                      message: message,
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
+    }
+    
+    private func setupAddSubview() {
         [contentScrollView,].forEach {
             view.addSubview($0)
         }
@@ -81,7 +106,7 @@ class SignUpPageViewController: UIViewController {
         }
     }
     
-    func setupConstraints() {
+    private func setupConstraints() {
         contentScrollView.snp.makeConstraints {
             $0.edges.equalTo(view.safeAreaLayoutGuide)
         }
@@ -201,7 +226,7 @@ class SignUpPageViewController: UIViewController {
         
     }
     
-    func configureUI() {
+    private func configureUI() {
         view.backgroundColor = .white
         configureLabel(idLabel, text: "아이디", fontSize: 20)
         configureLabel(nickNameLabel, text: "닉네임", fontSize: 20)
@@ -293,30 +318,96 @@ class SignUpPageViewController: UIViewController {
         signUpButton.alpha = shouldEnable ? 1.0 : 0.5
     }
     
-    func setupProperty() {
+    @objc private func checkEmailUniqueButtonTapped() {
+        checkEmailUnique(email: emailTextField.text ?? "") { result in
+            switch result {
+            case .success(let response):
+                if response.status == "success" {
+                    self.isEmailUniqueConfirmed = true
+                    print("✅ 이메일 중복 아님")
+                    self.showAlert(title: "중복 이메일 확인", message: "사용 가능한 이메일입니다.")
+                } else {
+                    self.isEmailUniqueConfirmed = false
+                    print("❌ 중복된 이메일")
+                    self.showAlert(title: "중복된 이메일", message: "이미 사용 중인 이메일입니다.")
+                }
+            case .failure:
+                self.isEmailUniqueConfirmed = false
+                print("❌ 네트워크 오류 등")
+                self.showAlert(title: "에러 발생", message: "네트워크 오류가 발생했습니다.")
+            }
+        }
+    }
+
+    @objc private func checkEmailTokenButtonTapped() {
+        checkEmailToken(email: emailTextField.text ?? "", token: verificationTextField.text ?? "") { result in
+            switch result {
+            case .success(let response):
+                if response.status == "success" {
+                    self.isEmailTokenConfirmed = true
+                    print("✅ 인증번호 일치")
+                    self.showAlert(title: "인증번호 확인", message: "인증이 완료되었습니다.")
+                } else {
+                    self.isEmailTokenConfirmed = false
+                    print("❌ 인증번호 불일치")
+                    self.showAlert(title: "인증 실패", message: "인증번호가 올바르지 않습니다.")
+                }
+            case .failure:
+                self.isEmailTokenConfirmed = false
+                print("❌ 네트워크 오류 등")
+                self.showAlert(title: "에러 발생", message: "네트워크 오류가 발생했습니다.")
+            }
+        }
+    }
+
+    @objc private func signUpButtonTapped() {
+        guard isEmailUniqueConfirmed else {
+            showAlert(title: "이메일 확인 필요", message: "이메일 중복 확인을 먼저 진행해주세요.")
+            return
+        }
+        
+        guard isEmailTokenConfirmed else {
+            showAlert(title: "인증 필요", message: "이메일로 받은 인증번호를 확인해주세요.")
+            return
+        }
+        
+        // 최종 가입 요청
+        signUpRequest(email: userEmail, id: userID, password: userPW, nick: userNick, team: userTeam) { result in
+            switch result {
+            case .success(let response):
+                self.showAlert(title: "회원가입 완료", message: response.message)
+            case .failure(let error):
+                self.showAlert(title: "회원가입 실패", message: error.localizedDescription)
+            }
+        }
+    }
+    
+    private func setupProperty() {
         dropdownTableView.delegate = self
         dropdownTableView.dataSource = self
         dropdownTableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         passwordTextField.delegate = self
     }
     
-    func isValidPassword(_ password: String) -> Bool {
+    private func isValidPassword(_ password: String) -> Bool {
         let regex = "^(?=(?:.*[A-Za-z].*[0-9]|.*[A-Za-z].*[^A-Za-z0-9]|.*[0-9].*[^A-Za-z0-9]))[A-Za-z0-9!@#$%^&*(),.?\":{}|<>]{8,16}$"
         return NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: password)
     }
     
+
     func isValidId(_ id: String) -> Bool {
         let idRegEx = "^[A-Za-z0-9]{4,12}$"
+
         let idTest = NSPredicate(format: "SELF MATCHES %@", idRegEx)
         return idTest.evaluate(with: id)
     }
     
-    func isValidEmail(_ email: String) -> Bool {
+    private func isValidEmail(_ email: String) -> Bool {
         let emailRegEx = #"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$"#
         return NSPredicate(format: "SELF MATCHES %@", emailRegEx).evaluate(with: email)
     }
-    
 }
+
 //MARK: - UI 설정 함수들
 extension SignUpPageViewController: UITextFieldDelegate{
     
@@ -362,7 +453,7 @@ extension SignUpPageViewController: UITextFieldDelegate{
         passwordTextField.rightView = eyeButton
         passwordTextField.rightViewMode = .always
     }
-    
+
     private func buttonTypes(){
         dropdownButton.backgroundColor = .white
         dropdownButton.layer.borderColor = UIColor.black.cgColor
@@ -451,7 +542,7 @@ extension SignUpPageViewController: UITextFieldDelegate{
         }
         emailTextField.layer.borderWidth = 0.8
     }
-    
+
     @objc private func termsPageMove() {
         let termsVC = TermsOfServiceViewController()
         present(termsVC, animated: true)
@@ -459,8 +550,9 @@ extension SignUpPageViewController: UITextFieldDelegate{
     @objc private func didTapCheckId() {
         userIdUniqueCheck()
     }
-    
+
 }
+
 //MARK: - 테이블뷰
 extension SignUpPageViewController: UITableViewDataSource, UITableViewDelegate {
     
@@ -487,42 +579,11 @@ extension SignUpPageViewController: UITableViewDataSource, UITableViewDelegate {
         isDropdownVisible = false
         dropdownTableView.isHidden = true
     }
-    
 }
+
 //MARK: - 회원가입 API
 extension SignUpPageViewController {
-    
-    private func signUp() {
-        guard let userId = idTextField.text, !userId.isEmpty,
-              let userEmail = emailTextField.text, !userEmail.isEmpty,
-              let userPwd = passwordTextField.text, !userPwd.isEmpty
-        else { return }
-        let userNick = nickNameTextField.text ?? "랜덤닉네임"
-        let endpt = ""
-        let parameters: [String: Any] = ["user_email": userEmail, "user_cus_id": userId,
-                                         "user_pwd": userPwd,
-                                         "user_nick": userNick,
-                                         "user_grade": 1,
-                                         "user_like_staId": 7]
-        AF.request(endpt, method: .post, parameters: parameters, encoding: JSONEncoding.default,
-                   headers: ["Content-Type": "application/json"])
-        .validate()
-//        .responseDecodable(of: userIdCheck.self) { response in
-//            switch response.result {
-//            case .success(let value):
-//                print("✅ 성공 응답: \(value)")
-//                
-//            case .failure(let error):
-//                print("❌ 요청 실패: \(error.localizedDescription)")
-//                
-//                if let data = response.data,
-//                   let jsonString = String(data: data, encoding: .utf8) {
-//                    print("받은 에러 응답 JSON: \(jsonString)")
-//                }
-//            }
-//        }
-    }
-    
+
     private func userIdUniqueCheck() {
         guard let userId = idTextField.text, !userId.isEmpty else {
             print("‼️아이디 입력 필요")
@@ -548,5 +609,90 @@ extension SignUpPageViewController {
 //                }
 //            }
 //        }
+    }
+        private let signUp() {
+        let email = emailTextField.text ?? ""
+        let token = verificationTextField.text ?? ""
+        
+        // 1단계: 이메일 중복 확인
+        checkEmailUnique(email: email) { result in
+            switch result {
+            case .success(let response):
+                print("✅ 이메일 중복 확인 성공: \(response.message)")
+                
+                // 2단계: 인증번호 확인
+                self.checkEmailToken(email: email, token: token) { result in
+                    switch result {
+                    case .success(let tokenResponse):
+                        print("✅ 이메일 토큰 확인 성공: \(tokenResponse.message)")
+                        
+                        // ✅ 인증 성공 시 이메일 저장
+                        self.userEmail = email
+                        
+                        // 3단계: 최종 회원가입 요청
+                        self.signUpRequest(email: self.userEmail,
+                                           id: self.userID,
+                                           password: self.userPW,
+                                           nick: self.userNick,
+                                           team: self.userTeam) { result in
+                            switch result {
+                            case .success(let signUpResponse):
+                                print("🎉 회원가입 성공: \(signUpResponse.message)")
+                            case .failure(let error):
+                                print("❌ 회원가입 실패: \(error.localizedDescription)")
+                            }
+                        }
+                        
+                    case .failure(let error):
+                        print("❌ 인증번호 불일치: \(error.localizedDescription)")
+                    }
+                }
+                
+            case .failure(let error):
+                print("❌ 이메일 중복됨 또는 네트워크 오류: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func checkEmailUnique(email: String, completion: @escaping (Result<EmailUniqueResponse, AFError>) -> Void) {
+        let url = endpt + "auth/check-email-unique"
+        let parameters = EmailUniqueRequest(email: email)
+        
+        AF.request(url,
+                   method: .post,
+                   parameters: parameters,
+                   encoder: JSONParameterEncoder.default)
+        .validate()
+        .responseDecodable(of: EmailUniqueResponse.self) { response in
+            completion(response.result)
+        }
+    }
+    
+    private func checkEmailToken(email: String, token: String, completion: @escaping (Result<EmailTokenCheckResponse, AFError>) -> Void) {
+        let url = endpt + "auth/email-token-check"
+        let parameters = EmailTokenCheckRequest(email: email, emailToken: token)
+        
+        AF.request(url,
+                   method: .post,
+                   parameters: parameters,
+                   encoder: JSONParameterEncoder.default)
+        .validate()
+        .responseDecodable(of: EmailTokenCheckResponse.self) { response in
+            completion(response.result)
+        }
+    }
+
+    private func signUpRequest(email: String, id: String, password: String, nick: String?, team: Int?, completion: @escaping (Result<SignUpResponse, AFError>) -> Void) {
+        let url = endpt + "auth/email-signup"
+        let parameters = SignUpRequest(email: userEmail, id: userID, password: userPW, nick: userNick, team: userTeam)
+        
+        AF.request(url,
+                   method: .post,
+                   parameters: parameters,
+                   encoder: JSONParameterEncoder.default)
+        .validate()
+        .responseDecodable(of: SignUpResponse.self) { response in
+            completion(response.result)
+        }
     }
 }

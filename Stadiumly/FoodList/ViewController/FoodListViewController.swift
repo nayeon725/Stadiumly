@@ -43,8 +43,6 @@ class FoodListViewController: UIViewController {
     private let containerView = UIView()
     private var currentChildVC: UIViewController?
     
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         updateStadiumInfo()
@@ -150,6 +148,7 @@ class FoodListViewController: UIViewController {
     }
 
 }
+
 //MARK: - 푸드 검색 API
 extension FoodListViewController {
 

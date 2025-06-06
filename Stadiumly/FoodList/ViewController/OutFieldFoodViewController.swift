@@ -22,7 +22,7 @@ class OutFieldFoodViewController: UIViewController {
     var lon: Double = 0.0
     
     var delegate: FoodSearchDelegate?
-    
+
     private var poiURLMap: [String: String] = [:]
     
     private lazy var outFieldMapView: KMViewContainer = {

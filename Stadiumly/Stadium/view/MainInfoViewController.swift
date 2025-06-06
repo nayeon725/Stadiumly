@@ -24,7 +24,7 @@ class MainInfoViewController: UIViewController {
     private var lon: Double = 126.866788407
     // 날씨 표시용 데이터
     private var stadiumName: String = ""
-    private var imgData: Data?
+    private var imgURL: URL?
     private var rcText: String = ""
     private var temp: Double = 0.0
     // 사이드메뉴 설정 관련
@@ -38,6 +38,7 @@ class MainInfoViewController: UIViewController {
     private var awayPitcherName: String = ""
     private var awayPitcherImage: URL?
     private var awayTeamName: String = ""
+    private var isLoading: Bool = false
     
     private let pitcherTitle: UILabel = {
         let label = UILabel()
@@ -158,6 +159,7 @@ class MainInfoViewController: UIViewController {
     }
     
     private func findStadium() {
+        print(teamName)
         let endPt = "http://40.82.137.87/stadium/detail"
         guard let url = URL(string: endPt) else { return }
         var request = URLRequest(url: url)
@@ -193,20 +195,27 @@ class MainInfoViewController: UIViewController {
 
             do {
                 let decodedData = try JSONDecoder().decode([PitcherRoot].self, from: data)
-//                print("🎯 첫 번째 홈 투수: \(decodedData.first?.awayImg)")
-                guard let pitcherData = decodedData.first else { return }
-                // 홈팀
-                self.homePitcherName = pitcherData.homePitcher
-                self.homeTeamName = pitcherData.homeTeam
-                guard let homeURL = URL(string: pitcherData.homeImg) else { return }
-                self.homePitcherImage = homeURL
-                // 원정팀
-                self.awayPitcherName = pitcherData.awayPitcher
-                self.awayTeamName = pitcherData.awayTeam
-                guard let awayURL = URL(string: pitcherData.awayImg) else { return }
-                self.awayPitcherImage = awayURL
-                DispatchQueue.main.async {
-                    self.updatePitcherUI()
+                print(decodedData.first)
+                
+                if let pitcherData = decodedData.first {
+                    self.isLoading = true
+                    // 홈팀
+                    self.homePitcherName = pitcherData.homePitcher
+                    self.homeTeamName = pitcherData.homeTeam
+                    guard let homeURL = URL(string: pitcherData.homeImg) else { return }
+                    self.homePitcherImage = homeURL
+                    // 원정팀
+                    self.awayPitcherName = pitcherData.awayPitcher
+                    self.awayTeamName = pitcherData.awayTeam
+                    guard let awayURL = URL(string: pitcherData.awayImg) else { return }
+                    self.awayPitcherImage = awayURL
+                    // 날씨 이미지
+                    self.imgURL = URL(string: pitcherData.weatherImage)
+                    DispatchQueue.main.async {
+                        self.updatePitcherUI()
+                    }
+                } else {
+                    self.isLoading = false
                 }
             } catch {
                 print("디코딩 에러: \(error)")
@@ -297,7 +306,7 @@ class MainInfoViewController: UIViewController {
         verticalStack.axis = .vertical
         verticalStack.alignment = .center
         verticalStack.distribution = .equalSpacing
-        verticalStack.spacing = 8
+        verticalStack.spacing = 10
 
         container.addSubview(verticalStack)
         verticalStack.snp.makeConstraints { make in
@@ -390,12 +399,13 @@ class MainInfoViewController: UIViewController {
 
         pitcherStackView.axis = .horizontal
         pitcherStackView.spacing = 0
-        pitcherStackView.distribution = .fillEqually
+        pitcherStackView.distribution = .equalSpacing
         pitcherStackView.alignment = .center
         pitcherStackView.backgroundColor = .clear
         
         guard let awayPitcherImage, let  homePitcherImage else { return }
         let awayPitcher = createPitcherItem(imageURL: homePitcherImage, pitcherName: homePitcherName, teamName: homeTeamName)
+        
         let vsLabel = UILabel()
         vsLabel.text = "VS"
         vsLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
@@ -470,8 +480,8 @@ class MainInfoViewController: UIViewController {
 
         // 3. 아이콘
         let weatherImage = UIImageView()
-        if let imgData, let img = UIImage(data: imgData) {
-            weatherImage.image = img
+        if let imgURL {
+            weatherImage.kf.setImage(with: imgURL)
         }
         weatherImage.contentMode = .scaleAspectFit
         weatherImage.snp.makeConstraints { make in
@@ -496,7 +506,7 @@ class MainInfoViewController: UIViewController {
         // 6. 우천 취소 안내 (텍스트만 예쁘게)
         let rainLabel = UILabel()
         rainLabel.text = rcText
-        rainLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        rainLabel.font = .systemFont(ofSize: 14, weight: .medium)
         rainLabel.numberOfLines = 2
 
         weatherCardView.addSubview(rainLabel)
@@ -548,7 +558,6 @@ class MainInfoViewController: UIViewController {
                     print("데이터 정보를 가져올 수 없습니다.")
                     return
                 }
-                
                 do {
                     let root = try JSONDecoder().decode(WeatherRoot.self, from: data)
                     let weather = root.weather
@@ -568,8 +577,8 @@ class MainInfoViewController: UIViewController {
                         "우천 취소 확률이 없습니다. 즐겁게 관람하세요. ☀️"
                     
                     // 이미지 데이터 가져오기
-                    if let imageURL = URL(string: "https://openweathermap.org/img/wn/\(weatherIcon)@2x.png") {
-                        let request = URLRequest(url: imageURL)
+//                    if let imageURL = URL(string: "https://openweathermap.org/img/wn/\(weatherIcon)@2x.png") {
+//                        let request = URLRequest(url: imageURL)
                         
                         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
                             guard let self = self,
@@ -577,14 +586,14 @@ class MainInfoViewController: UIViewController {
                             
                             // 메인 스레드에서 이미지 데이터와 텍스트 업데이트 후 UI 새로고침
                             DispatchQueue.main.async {
-                                self.imgData = imageData
+//                                self.imgData = imageData
                                 self.rcText = rainText
                                 
                                 // UI 업데이트를 위해 setupWeatherUI 다시 호출
                                 self.setupWeatherUI()
                             }
                         }.resume()
-                    }
+//                    }
                     
                 } catch {
                     // alert 처리
