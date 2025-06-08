@@ -54,22 +54,27 @@ class PasswordModalViewController: UIViewController {
     @objc func changePassword() {
         guard let current = currentPasswordField.text, !current.isEmpty,
               let newPass = newPasswordField.text, !newPass.isEmpty else {
+            // 빈 칸 체크 알림 등 추가 가능
             return
         }
         
         button.isEnabled = false
         button.alpha = 0.5
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            if current == DataManager.shared.userPassword {
-                DataManager.shared.updatePassword(newPass)
-                self.dismiss(animated: true)
-            } else {
+        DataManager.shared.updatePassword(currentPassword: current, newPassword: newPass) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
                 self.button.isEnabled = true
                 self.button.alpha = 1
-                let alert = UIAlertController(title: "오류", message: "기존 비밀번호가 일치하지 않습니다.", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "확인", style: .default))
-                self.present(alert, animated: true)
+                
+                switch result {
+                case .success:
+                    self.dismiss(animated: true)
+                case .failure:
+                    let alert = UIAlertController(title: "오류", message: "기존 비밀번호가 일치하지 않거나 변경에 실패했습니다.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "확인", style: .default))
+                    self.present(alert, animated: true)
+                }
             }
         }
     }
