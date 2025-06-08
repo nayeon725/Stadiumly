@@ -40,15 +40,34 @@ class DataManager {
         selectedStadium = stadium
     }
     
-    func updateNickname(_ nickname: String) {
-        userNickname = nickname
-        print("닉네임 업데이트: \(nickname)")
-        APIService.shared.requestAuthorized("mypage/nickChange", method: .post, parameters: ["user_nick" : nickname]) { result in
+    func updateNickname(_ nickname: String?, completion: @escaping (Bool, String?) -> Void) {
+        var parameters: [String: Any] = [:]
+        if let nickname = nickname {
+            parameters["user_nick"] = nickname
+        }
+//        if let teamId = teamId {
+//            parameters["user_like_staId"] = teamId
+//        }
+
+        APIService.shared.requestAuthorized("mypage/nickChange", method: .post, parameters: parameters) { result in
             switch result {
             case .success(let data):
-                print("닉네임 변경 성공: \(data)")
+                do {
+                    let decoded = try JSONDecoder().decode(NicknameUpdateResponse.self, from: data)
+                    if decoded.status == "success" {
+                        self.userNickname = nickname ?? ""
+                        completion(true, decoded.message)
+                    } else {
+                        completion(false, decoded.message)
+                    }
+                } catch {
+                    print("디코딩 실패: \(error)")
+                    completion(false, "응답 파싱 실패")
+                }
+
             case .failure(let error):
-                print("에러 발생: \(error.localizedDescription)")
+                print("닉네임 변경 에러:", error.localizedDescription)
+                completion(false, error.localizedDescription)
             }
         }
     }
