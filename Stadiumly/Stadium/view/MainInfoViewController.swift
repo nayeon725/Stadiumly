@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 import SideMenu
 import Kingfisher
+import Alamofire
 
 class MainInfoViewController: UIViewController {
     
@@ -16,6 +17,7 @@ class MainInfoViewController: UIViewController {
     private var timer: Timer?
     
     private var stadiums: [Stadium] = []
+    private let endPt = "http://localhost:3000/"
     
     // 타이틀 설정용 데이터
     private var teamName: String = ""
@@ -113,7 +115,7 @@ class MainInfoViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.isNavigationBarHidden = true
-      
+        
         updateStadiumInfo()
         updateUIAfterStadiumChange()
     }
@@ -121,7 +123,7 @@ class MainInfoViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-      
+        
         setupTitle() // 타이틀 설정
         setupPitcherUI() // 오늘의 선발 투수 부분 ui
         setupFoodList() // 먹거리 검색 부분 ui
@@ -138,7 +140,7 @@ class MainInfoViewController: UIViewController {
         // 화면 전환 동작 (예: pull)
         navigationController?.popViewController(animated: true)
     }
-  
+    
     private func updateUIAfterStadiumChange() {
         // 타이틀만 텍스트만 바꿔줌 (레이아웃 재설정 없이)
         titleLabel.text = teamName
@@ -148,7 +150,7 @@ class MainInfoViewController: UIViewController {
         // 날씨 정보 새로 검색
         searchWeather()
     }
-  
+    
     private func updateStadiumInfo() {
         if let stadium = DataManager.shared.selectedStadium {
             teamName = stadium.team
@@ -160,41 +162,22 @@ class MainInfoViewController: UIViewController {
     
     private func findStadium() {
         print(teamName)
-        let endPt = "http://40.82.137.87/stadium/detail"
-        guard let url = URL(string: endPt) else { return }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let url = endPt + "/stadium/detail"
         
         let teamShort: String = teamName.components(separatedBy: " ").first ?? ""
         print("팀이름: \(teamName), 자른 팀 이름: \(teamShort)..")
         
-        let parameters = ["teamname" : teamShort]
-        let jsonData = try? JSONSerialization.data(withJSONObject: parameters)
+        let parameters: [String: Any] = ["teamname": teamShort]
         
-        request.httpBody = jsonData
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Network error: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                print("Invalid response")
-                return
-            }
-            
-            print("Status code: \(httpResponse.statusCode)")  // 200 OK인지 확인
-            
-            guard let data = data else {
-                print("데이터 없음")
-                return
-            }
-            print("받은 데이터 크기: \(data.count)")
-
-            do {
-                let decodedData = try JSONDecoder().decode([PitcherRoot].self, from: data)
+        AF.request(url,
+                   method: .post,
+                   parameters: parameters,
+                   encoding: JSONEncoding.default,
+                   headers: ["Content-Type": "application/json"])
+        .validate(statusCode: 200..<300)
+        .responseDecodable(of: [PitcherRoot].self) { response in
+            switch response.result {
+            case .success(let decodedData):
                 print(decodedData.first)
                 
                 if let pitcherData = decodedData.first {
@@ -202,30 +185,31 @@ class MainInfoViewController: UIViewController {
                     // 홈팀
                     self.homePitcherName = pitcherData.homePitcher
                     self.homeTeamName = pitcherData.homeTeam
-                    guard let homeURL = URL(string: pitcherData.homeImg) else { return }
-                    self.homePitcherImage = homeURL
+                    self.homePitcherImage = URL(string: pitcherData.homeImg)
                     // 원정팀
                     self.awayPitcherName = pitcherData.awayPitcher
                     self.awayTeamName = pitcherData.awayTeam
-                    guard let awayURL = URL(string: pitcherData.awayImg) else { return }
-                    self.awayPitcherImage = awayURL
+                    self.awayPitcherImage = URL(string: pitcherData.awayImg)
                     // 날씨 이미지
                     self.imgURL = URL(string: pitcherData.weatherImage)
+                    
                     DispatchQueue.main.async {
                         self.updatePitcherUI()
                     }
                 } else {
                     self.isLoading = false
                 }
-            } catch {
-                print("디코딩 에러: \(error)")
-                if let jsonString = String(data: data, encoding: .utf8) {
+                
+            case .failure(let error):
+                print("네트워크 또는 디코딩 에러: \(error)")
+                if let data = response.data,
+                   let jsonString = String(data: data, encoding: .utf8) {
                     print("받은 JSON 문자열: \(jsonString)")
                 } else {
                     print("JSON 문자열 변환 실패")
                 }
             }
-        }.resume()
+        }
     }
     
     private func setupUI() {
@@ -235,23 +219,23 @@ class MainInfoViewController: UIViewController {
             make.leading.equalToSuperview().offset(30)
         }
     }
-
+    
     @objc private func openMenu() {
         if let menu = SideMenuManager.default.leftMenuNavigationController {
             present(menu, animated: true)
         }
     }
-
+    
     private func setupSideMenu() {
         let menuVC = SideMenuViewController()
         let menu = SideMenuNavigationController(rootViewController: menuVC)
         menu.leftSide = true
         menu.presentationStyle = .menuSlideIn
-
+        
         var settings = SideMenuSettings()
         settings.menuWidth = min(view.frame.width, view.frame.height) * 0.5
         menu.settings = settings
-
+        
         SideMenuManager.default.leftMenuNavigationController = menu
         SideMenuManager.default.addPanGestureToPresent(toView: self.view)
     }
@@ -281,7 +265,7 @@ class MainInfoViewController: UIViewController {
         container.layer.shadowOffset = CGSize(width: 0, height: 2)
         container.layer.shadowRadius = 4
         container.clipsToBounds = false
-
+        
         let imageView = UIImageView()
         imageView.kf.setImage(with: imageURL)
         imageView.contentMode = .scaleAspectFit
@@ -290,37 +274,37 @@ class MainInfoViewController: UIViewController {
         imageView.layer.shadowOffset = CGSize(width: 0, height: 2)
         imageView.layer.shadowRadius = 8
         imageView.layer.masksToBounds = false
-
+        
         let nameLabel = UILabel()
         nameLabel.font = .systemFont(ofSize: 14, weight: .medium)
         nameLabel.textAlignment = .center
         nameLabel.text = "선발 투수: \(pitcherName)"
-
+        
         let teamLabel = UILabel()
         teamLabel.font = .systemFont(ofSize: 18, weight: .bold)
         teamLabel.textAlignment = .center
         teamLabel.textColor = .black
         teamLabel.text = teamName
-
+        
         let verticalStack = UIStackView(arrangedSubviews: [teamLabel, imageView, nameLabel])
         verticalStack.axis = .vertical
         verticalStack.alignment = .center
         verticalStack.distribution = .equalSpacing
         verticalStack.spacing = 10
-
+        
         container.addSubview(verticalStack)
         verticalStack.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(10)
         }
-
+        
         imageView.snp.makeConstraints { make in
             make.height.equalTo(80)
             make.width.equalTo(80)
         }
-
+        
         return container
     }
-
+    
     
     // 날씨 스택 아이템
     private func createWeatherItem(stadiumName: String, temp: Double) -> UIView {
@@ -388,7 +372,7 @@ class MainInfoViewController: UIViewController {
             make.top.equalTo(titleLabel.snp.bottom).offset(20)
             make.leading.equalTo(view.safeAreaLayoutGuide.snp.leading).offset(20)
         }
-
+        
         view.addSubview(pitcherStackView)
         pitcherStackView.snp.makeConstraints { make in
             make.top.equalTo(pitcherTitle.snp.bottom).offset(10)
@@ -396,7 +380,7 @@ class MainInfoViewController: UIViewController {
             make.right.equalToSuperview().inset(20)
             make.height.equalTo(180)
         }
-
+        
         pitcherStackView.axis = .horizontal
         pitcherStackView.spacing = 0
         pitcherStackView.distribution = .equalSpacing
@@ -411,13 +395,13 @@ class MainInfoViewController: UIViewController {
         vsLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
         vsLabel.textAlignment = .center
         vsLabel.textColor = .darkGray
-
+        
         let homePitcher = createPitcherItem(imageURL: awayPitcherImage, pitcherName: awayPitcherName, teamName: awayTeamName)
-
+        
         pitcherStackView.addArrangedSubview(awayPitcher)
         pitcherStackView.addArrangedSubview(vsLabel)
         pitcherStackView.addArrangedSubview(homePitcher)
-
+        
         // VS 라벨 비율 조정
         vsLabel.snp.makeConstraints { make in
             make.width.equalTo(40)
@@ -460,7 +444,7 @@ class MainInfoViewController: UIViewController {
             make.top.equalTo(carouselView.snp.bottom).offset(20)
             make.leading.equalToSuperview().offset(20)
         }
-
+        
         // 2. 날씨 카드 뷰
         let weatherCardView = UIView()
         weatherCardView.backgroundColor = .white
@@ -470,14 +454,14 @@ class MainInfoViewController: UIViewController {
         weatherCardView.layer.shadowOffset = CGSize(width: 0, height: 4)
         weatherCardView.layer.shadowRadius = 6
         view.addSubview(weatherCardView)
-
+        
         weatherCardView.snp.makeConstraints { make in
             make.top.equalTo(weatherTitle.snp.bottom).offset(12)
             make.left.equalToSuperview().offset(20)
             make.right.equalToSuperview().inset(20)
             make.height.equalTo(140)
         }
-
+        
         // 3. 아이콘
         let weatherImage = UIImageView()
         if let imgURL {
@@ -487,30 +471,30 @@ class MainInfoViewController: UIViewController {
         weatherImage.snp.makeConstraints { make in
             make.size.equalTo(80)
         }
-
+        
         // 4. 온도/구장명 텍스트
         let infoStack = createWeatherItem(stadiumName: stadiumName, temp: temp)
-
+        
         // 5. 상단 스택 구성
         let topStack = UIStackView(arrangedSubviews: [weatherImage, infoStack])
         topStack.axis = .horizontal
         topStack.alignment = .center
         topStack.spacing = 15
         weatherCardView.addSubview(topStack)
-
+        
         topStack.snp.makeConstraints { make in
             make.top.equalTo(weatherCardView.snp.top).offset(10)
             make.leading.trailing.equalToSuperview().inset(15)
         }
-
+        
         // 6. 우천 취소 안내 (텍스트만 예쁘게)
         let rainLabel = UILabel()
         rainLabel.text = rcText
         rainLabel.font = .systemFont(ofSize: 14, weight: .medium)
         rainLabel.numberOfLines = 2
-
+        
         weatherCardView.addSubview(rainLabel)
-
+        
         rainLabel.snp.makeConstraints { make in
             make.top.equalTo(topStack.snp.bottom).offset(5)
             make.leading.trailing.equalToSuperview().inset(20)
@@ -542,65 +526,68 @@ class MainInfoViewController: UIViewController {
     }
     
     private func searchWeather() {
-        if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
-           let dict = NSDictionary(contentsOfFile: path),
-           let apiKey = dict["WEATHER_API_KEY"] as? String {
-            print("API 키: \(apiKey)")
-            
-            let endPt = "https://api.openweathermap.org/data/2.5/weather?lat=\(lat)&lon=\(lon)&appid=\(apiKey)&units=metric&lang=kr"
-            guard let url = URL(string: endPt) else { return }
-            let request = URLRequest(url: url)
-            
-            URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-                guard let self = self,
-                      let data else {
-                    // alert 처리
-                    print("데이터 정보를 가져올 수 없습니다.")
-                    return
-                }
-                do {
-                    let root = try JSONDecoder().decode(WeatherRoot.self, from: data)
+        guard let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
+              let dict = NSDictionary(contentsOfFile: path),
+              let apiKey = dict["WEATHER_API_KEY"] as? String else {
+            print("API 키를 불러올 수 없습니다.")
+            return
+        }
+        
+        print("API 키: \(apiKey)")
+        
+        let endPt = "https://api.openweathermap.org/data/2.5/weather"
+        let parameters: [String: Any] = [
+            "lat": lat,
+            "lon": lon,
+            "appid": apiKey,
+            "units": "metric",
+            "lang": "kr"
+        ]
+        
+        AF.request(endPt, method: .get, parameters: parameters)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: WeatherRoot.self) { [weak self] response in
+                guard let self = self else { return }
+                
+                switch response.result {
+                case .success(let root):
                     let weather = root.weather
                     let rain = root.rain
                     let main = root.main
                     
                     guard let weatherIcon = weather.first?.icon else { return }
                     
-                    // 메인 스레드에서 온도 업데이트
+                    // 온도 업데이트
                     DispatchQueue.main.async {
                         self.temp = main.temp
                     }
                     
-                    // 우천 취소 텍스트 설정
                     let rainText = (rain?.oneHour ?? 0 >= 10.0) ?
-                        "우천 취소 확률이 있습니다. 관람에 유의하세요. ☔️" :
-                        "우천 취소 확률이 없습니다. 즐겁게 관람하세요. ☀️"
+                    "우천 취소 확률이 있습니다. 관람에 유의하세요. ☔️" :
+                    "우천 취소 확률이 없습니다. 즐겁게 관람하세요. ☀️"
                     
-                    // 이미지 데이터 가져오기
-//                    if let imageURL = URL(string: "https://openweathermap.org/img/wn/\(weatherIcon)@2x.png") {
-//                        let request = URLRequest(url: imageURL)
+                    // 날씨 아이콘 이미지 요청
+                    let iconURLString = "https://openweathermap.org/img/wn/\(weatherIcon)@2x.png"
+                    guard let imageURL = URL(string: iconURLString) else { return }
+                    
+                    URLSession.shared.dataTask(with: imageURL) { [weak self] data, response, error in
+                        guard let self = self,
+                              let imageData = data else {
+                            print("이미지 데이터 로드 실패")
+                            return
+                        }
                         
-                        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-                            guard let self = self,
-                                  let imageData = data else { return }
-                            
-                            // 메인 스레드에서 이미지 데이터와 텍스트 업데이트 후 UI 새로고침
-                            DispatchQueue.main.async {
-//                                self.imgData = imageData
-                                self.rcText = rainText
-                                
-                                // UI 업데이트를 위해 setupWeatherUI 다시 호출
-                                self.setupWeatherUI()
-                            }
-                        }.resume()
-//                    }
+                        DispatchQueue.main.async {
+                            // self.imgData = imageData // 필요한 경우 사용
+                            self.rcText = rainText
+                            self.setupWeatherUI()
+                        }
+                    }.resume()
                     
-                } catch {
-                    // alert 처리
-                    print("JSON 디코딩 실패: \(error.localizedDescription)")
+                case .failure(let error):
+                    print("날씨 정보 요청 실패: \(error.localizedDescription)")
                 }
-            }.resume()
-        }
+            }
     }
 }
 

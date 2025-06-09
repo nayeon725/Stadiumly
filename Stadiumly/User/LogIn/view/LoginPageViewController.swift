@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import KeychainAccess
 
 //로그인 페이지
 class LoginPageViewController: UIViewController {
@@ -43,13 +44,13 @@ class LoginPageViewController: UIViewController {
         setupMascot()
     }
  
-    func setupAddSubview() {
+    private func setupAddSubview() {
         [stadiumlyLogo, idTextField, passwordTextField, loginButton, findIdButton, findPasswordButton, singUpButton, infoButton, carouselCollectionView].forEach {
             view.addSubview($0)
         }
     }
     
-    func setupConstraints() {
+   private  func setupConstraints() {
         stadiumlyLogo.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
             $0.centerX.equalToSuperview()
@@ -96,7 +97,7 @@ class LoginPageViewController: UIViewController {
         }
     }
     
-    func configureUI() {
+    private func configureUI() {
         view.backgroundColor = .white
         stadiumlyLogo.image = UIImage(named: "stadiumlyLogo")
         idTextField.placeholder = "아이디 입력"
@@ -107,6 +108,7 @@ class LoginPageViewController: UIViewController {
         loginButton.backgroundColor = .systemGray4
         loginButton.layer.cornerRadius = 20
         loginButton.setTitleColor(.black, for: .normal)
+        loginButton.addTarget(self, action: #selector(login), for: .touchUpInside)
         findIdButton.setTitleColor(.black, for: .normal)
         findIdButton.setTitle("아이디찾기 /", for: .normal)
         findPasswordButton.setTitleColor(.black, for: .normal)
@@ -122,12 +124,44 @@ class LoginPageViewController: UIViewController {
         self.navigationItem.hidesBackButton = true
     }
     
-    func setupProperty() {
+    @objc func login() {
+        guard let idText = idTextField.text, !idText.isEmpty else {
+            showAlert(title: "아이디 입력", message: "아이디를 입력해주세요.")
+            return
+        }
+        
+        guard let pwText = passwordTextField.text, !pwText.isEmpty else {
+            showAlert(title: "비밀번호 입력", message: "비밀번호를 입력해주세요.")
+            return
+        }
+        APIService.shared.login(userID: idText, password: pwText) { result in
+            switch result {
+            case .success:
+                print("✅ 로그인 성공")
+                
+                DispatchQueue.main.async {
+                    
+                }
+            case .failure(let error):
+                print("❌ 로그인 실패:", error.localizedDescription)
+            }
+        }
+    }
+    
+    private func setupProperty() {
         carouselCollectionView.delegate = self
         carouselCollectionView.dataSource = self
         carouselCollectionView.register(LoginPageCollectionViewCell.self, forCellWithReuseIdentifier: "loginCell")
         idTextField.delegate = self
         passwordTextField.delegate = self
+    }
+    
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title,
+                                      message: message,
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 }
 //MARK: - 화면이동, 텍스트필드
@@ -251,31 +285,31 @@ extension LoginPageViewController: UICollectionViewDataSource, UICollectionViewD
 //MARK: - 로그인 API
 extension LoginPageViewController {
     
-    func login() {
-        let endPoint = "http://40.82.137.87/stadium/??"
-        guard let url = URL(string: endPoint) else { return }
-        var request = URLRequest(url: url)
-//        request.addValue("\(apiKey)", forHTTPHeaderField: "")
-        let seesion = URLSession.shared
-        let task = seesion.dataTask(with: request) { data, _ , error in
-            if let error = error {
-                print("요청 실패 Error: \(error.localizedDescription)")
-                return
-            }
-            guard let data else {
-                print("데이터가 없습니다")
-                return
-            }
-            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
-            do {
-                _ = try JSONDecoder().decode(KakaoSearch.self, from: data)
-                DispatchQueue.main.async {
-                }
-            } catch {
-                print("디코딩 실패\(error)")
-            }
-        }
-        task.resume()
-    }
+    //토큰값 받아서 로그인 시켜야함 
+//    func login() {
+//        let endPoint = "http://40.82.137.87/stadium/??"
+//        guard let url = URL(string: endPoint) else { return }
+//        var request = URLRequest(url: url)
+//        let seesion = URLSession.shared
+//        let task = seesion.dataTask(with: request) { data, _ , error in
+//            if let error = error {
+//                print("요청 실패 Error: \(error.localizedDescription)")
+//                return
+//            }
+//            guard let data else {
+//                print("데이터가 없습니다")
+//                return
+//            }
+//            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
+//            do {
+//                _ = try JSONDecoder().decode(KakaoSearch.self, from: data)
+//                DispatchQueue.main.async {
+//                }
+//            } catch {
+//                print("디코딩 실패\(error)")
+//            }
+//        }
+//        task.resume()
+//    }
     
 }

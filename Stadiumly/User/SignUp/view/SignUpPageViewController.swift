@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 import Alamofire
 
+
 //델리게이트로 팀 이름 넘기는 부분
 protocol TeamSelectionDelete: AnyObject {
     func didSelectTeam(team: String)
@@ -18,7 +19,7 @@ protocol TeamSelectionDelete: AnyObject {
 class SignUpPageViewController: UIViewController {
     
     // api 관련
-    private let endpt = "http://20.41.113.4/"
+    private let endpt = "http://localhost:3000/"
     private var userEmail: String = ""
     private var userID: String = ""
     private var userPW: String = ""
@@ -41,15 +42,15 @@ class SignUpPageViewController: UIViewController {
     
     private let verificationLabel = UILabel()
     private let verificationTextField = UITextField()
-    private let verificationButton = UIButton()
+    private let emailTokenButton = UIButton()
     
     private let passwordLabel = UILabel()
     private let passwordTextField = UITextField()
     private let passwordInfoLabel = UILabel()
     
     private let cheeringTeamLabel = UILabel()
-    private let checkAvailabilityButton = UIButton()
-    private let gettingNumberButton = UIButton()
+    private let idUniqueButton = UIButton()
+    private let emailUniqueButton = UIButton()
     private let termsofServiceLabel = UILabel()
     private let termsofAgreedLabel = UILabel()
     private let checkBoxButton = UIButton()
@@ -58,7 +59,7 @@ class SignUpPageViewController: UIViewController {
     
     private let dropdownButton = UIButton(type: .custom)
     private let dropdownTableView = UITableView()
-    private let teamOptions = ["기아 타이거즈", "두산 베어스", "롯데 자이언츠", "삼성 라이언즈", "SSG 랜더스", "엘지 트윈스", "NC 다이노스", "키움 히어로즈", "KG 위즈", "한화 이글스"]
+    private let teamOptions = ["키움 히어로즈", "SSG 랜더스", "롯데 자이언츠", "KT 위즈", "삼성 라이온즈", "NC 다이노스", "두산 베어스", "LG 트윈스", "KIA 타이거즈", "한화 이글스", "응원하는 팀 없음"]
     private var isDropdownVisible = false
     private let signUpButton = UIButton()
     
@@ -100,7 +101,7 @@ class SignUpPageViewController: UIViewController {
         }
         contentScrollView.addSubview(contentView)
         [dropdownTableView, idLabel, idTextField, nickNameLabel, nickNameTextField, emailLabel, emailTextField, passwordLabel, passwordTextField, passwordInfoLabel, cheeringTeamLabel
-         , dropdownButton, checkAvailabilityButton, gettingNumberButton, termsofServiceLabel,termsofAgreedLabel, checkBoxButton, signUpButton, verificationLabel, verificationTextField, verificationButton].forEach {
+         , dropdownButton, idUniqueButton, emailUniqueButton, termsofServiceLabel,termsofAgreedLabel, checkBoxButton, signUpButton, verificationLabel, verificationTextField, emailTokenButton].forEach {
             contentView.addSubview($0)
         }
     }
@@ -124,7 +125,7 @@ class SignUpPageViewController: UIViewController {
             $0.width.equalTo(200)
             $0.height.equalTo(50)
         }
-        checkAvailabilityButton.snp.makeConstraints {
+        idUniqueButton.snp.makeConstraints {
             $0.top.equalToSuperview().offset(60)
             $0.leading.equalTo(idTextField.snp.trailing).offset(10)
             $0.width.equalTo(140)
@@ -150,7 +151,7 @@ class SignUpPageViewController: UIViewController {
             $0.width.equalTo(200)
             $0.height.equalTo(50)
         }
-        gettingNumberButton.snp.makeConstraints {
+        emailUniqueButton.snp.makeConstraints {
             $0.top.equalTo(nickNameTextField.snp.bottom).offset(40)
             $0.leading.equalTo(emailTextField.snp.trailing).offset(10)
             $0.width.equalTo(140)
@@ -162,8 +163,8 @@ class SignUpPageViewController: UIViewController {
             $0.width.equalTo(200)
             $0.height.equalTo(50)
         }
-        verificationButton.snp.makeConstraints {
-            $0.top.equalTo(gettingNumberButton.snp.bottom).offset(10)
+        emailTokenButton.snp.makeConstraints {
+            $0.top.equalTo(emailUniqueButton.snp.bottom).offset(10)
             $0.leading.equalTo(verificationTextField.snp.trailing).offset(10)
             $0.width.equalTo(140)
             $0.height.equalTo(50)
@@ -236,7 +237,7 @@ class SignUpPageViewController: UIViewController {
         configureLabel(termsofServiceLabel, text: "이용약관", fontSize: 20)
         configureLabel(termsofAgreedLabel, text: "[필수] 서비스이용약관에 동의합니다.", fontSize: 20)
         configureLabel(verificationLabel, text: "이메일로 발송된 인증번호를 입력해주세요.", fontSize: 16)
-
+        
         nickNameTextField.placeholder = "닉네임 입력"
         idTextField.placeholder = "아이디 입력"
         emailTextField.placeholder = "이메일 입력"
@@ -247,7 +248,7 @@ class SignUpPageViewController: UIViewController {
         contentScrollView.alwaysBounceVertical = true
         contentScrollView.contentInsetAdjustmentBehavior = .always
         contentScrollView.isScrollEnabled = true
-
+        
         let textFields = [idTextField, nickNameTextField, emailTextField, passwordTextField, verificationTextField]
         textFields.forEach { configureTextField(to: $0) }
         
@@ -265,13 +266,15 @@ class SignUpPageViewController: UIViewController {
         self.navigationItem.titleView = titleLabel
         verificationLabel.isHidden = true
         verificationTextField.isHidden = true
-        verificationButton.isHidden = true
+        emailTokenButton.isHidden = true
         passwordTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         idTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         emailTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         nickNameTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         verificationTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
-       
+        checkBoxButton.addTarget(self, action: #selector(termsPageMove), for: .touchUpInside)
+        emailTokenButton.addTarget(self, action: #selector(checkEmailTokenButtonTapped), for: .touchUpInside)
+        
         signUpButton.isEnabled = false
         signUpButton.alpha = 0.5
         buttonTypes()
@@ -302,42 +305,92 @@ class SignUpPageViewController: UIViewController {
         }
         updateSignUpButtonState()
     }
-   
+    
     
     private func updateSignUpButtonState() {
         let isAllFilled = !(nickNameTextField.text?.isEmpty ?? true) &&
-                          !(emailTextField.text?.isEmpty ?? true) &&
-                          !(passwordTextField.text?.isEmpty ?? true) &&
-                          !(idTextField.text?.isEmpty ?? true) &&
-                          !(verificationTextField.text?.isEmpty ?? true)
-
+        !(emailTextField.text?.isEmpty ?? true) &&
+        !(passwordTextField.text?.isEmpty ?? true) &&
+        !(idTextField.text?.isEmpty ?? true) &&
+        !(verificationTextField.text?.isEmpty ?? true)
+        
         let shouldEnable = isAllFilled && checkBoxButton.isSelected
         signUpButton.isEnabled = shouldEnable
         signUpButton.alpha = shouldEnable ? 1.0 : 0.5
     }
     
+    @objc private func checkIdUniqueButtonTapped() {
+        checkIdUnique(id: idTextField.text ?? "") { result in
+                switch result {
+                case .success(let response):
+                    if response.status == "success" {
+                        self.isEmailUniqueConfirmed = true
+                        print("✅ 아이디 중복 아님")
+                        self.showAlert(title: "아이디 중복 확인", message: "사용 가능한 아이디입니다.")
+                    }
+                case .failure:
+                    self.isEmailUniqueConfirmed = false
+                    print("❌ 중복된 아이디")
+                    self.showAlert(title: "중복된 아이디", message: "이미 사용 중인 아이디입니다.")
+                }
+        }
+    }
+    
     @objc private func checkEmailUniqueButtonTapped() {
-        checkEmailUnique(email: emailTextField.text ?? "") { result in
+        guard let email = self.emailTextField.text, !email.isEmpty
+        else {
+            showAlert(title: "이메일 입력 필요", message: "이메일을 입력해주세요.")
+            return
+        }
+        
+        checkEmailUnique(email: email) { result in
             switch result {
             case .success(let response):
                 if response.status == "success" {
                     self.isEmailUniqueConfirmed = true
                     print("✅ 이메일 중복 아님")
-                    self.showAlert(title: "중복 이메일 확인", message: "사용 가능한 이메일입니다.")
-                } else {
-                    self.isEmailUniqueConfirmed = false
-                    print("❌ 중복된 이메일")
-                    self.showAlert(title: "중복된 이메일", message: "이미 사용 중인 이메일입니다.")
+                    self.showAlert(title: "이메일 중복 확인", message: "사용 가능한 이메일입니다.")
+                    
+                    self.verificationLabel.isHidden = false
+                    self.verificationTextField.isHidden = false
+                    self.emailTokenButton.isHidden = false
+                    let _: CGFloat = 70
+                    UIView.animate(withDuration: 0.3) {
+                        self.passwordLabelTopConstraint?.update(offset: self.verificationTextField.frame.height + 40)
+                        self.passwordTextFieldTopConstraint?.update(offset: 5)
+                        self.passwordInfoLabelTopConstraint?.update(offset: 5)
+                        self.cheeringTeamLabelTopConstraint?.update(offset: 50)
+                        self.dropdownButtonTopConstraint?.update(offset: 5)
+                        self.dropdownTableViewTopConstraint?.update(offset: 0)
+                        self.termsofServiceLabelTopConstraint?.update(offset: 50)
+                        self.checkBoxButtonTopConstraint?.update(offset: 5)
+                        self.termsofAgreedLabelTopConstraint?.update(offset: 82)
+                        self.signUpButtonTopConstraint?.update(offset: 15)
+                        
+                        self.view.layoutIfNeeded()
+                    }
+                    
+                    if self.isValidEmail(email) {
+                        self.emailTextField.layer.borderColor = UIColor.systemGreen.cgColor
+                    } else {
+                        self.emailTextField.layer.borderColor = UIColor.systemRed.cgColor
+                    }
+                    self.emailTextField.layer.borderWidth = 0.8
                 }
             case .failure:
                 self.isEmailUniqueConfirmed = false
-                print("❌ 네트워크 오류 등")
-                self.showAlert(title: "에러 발생", message: "네트워크 오류가 발생했습니다.")
+                print("❌ 중복된 이메일")
+                self.showAlert(title: "중복된 이메일", message: "이미 사용 중인 이메일입니다.")
             }
         }
     }
-
+    
     @objc private func checkEmailTokenButtonTapped() {
+        guard isEmailUniqueConfirmed else {
+            showAlert(title: "이메일 확인 필요", message: "이메일 중복 확인을 먼저 진행해주세요.")
+            return
+        }
+        
         checkEmailToken(email: emailTextField.text ?? "", token: verificationTextField.text ?? "") { result in
             switch result {
             case .success(let response):
@@ -345,20 +398,17 @@ class SignUpPageViewController: UIViewController {
                     self.isEmailTokenConfirmed = true
                     print("✅ 인증번호 일치")
                     self.showAlert(title: "인증번호 확인", message: "인증이 완료되었습니다.")
-                } else {
-                    self.isEmailTokenConfirmed = false
-                    print("❌ 인증번호 불일치")
-                    self.showAlert(title: "인증 실패", message: "인증번호가 올바르지 않습니다.")
                 }
-            case .failure:
+            case .failure(let error):
                 self.isEmailTokenConfirmed = false
-                print("❌ 네트워크 오류 등")
-                self.showAlert(title: "에러 발생", message: "네트워크 오류가 발생했습니다.")
+                print("❌ 인증번호 불일치")
+                self.showAlert(title: "인증 실패", message: "인증번호가 올바르지 않습니다.")
             }
         }
     }
-
+    
     @objc private func signUpButtonTapped() {
+        print(userEmail, userID, userPW, userNick, userTeam)
         guard isEmailUniqueConfirmed else {
             showAlert(title: "이메일 확인 필요", message: "이메일 중복 확인을 먼저 진행해주세요.")
             return
@@ -392,8 +442,10 @@ class SignUpPageViewController: UIViewController {
         return NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: password)
     }
     
-    private func isValidId(_ id: String) -> Bool {
-        let idRegEx = "^[A-Za-z0-9]{5,13}$"
+    
+    func isValidId(_ id: String) -> Bool {
+        let idRegEx = "^[A-Za-z0-9]{4,12}$"
+        
         let idTest = NSPredicate(format: "SELF MATCHES %@", idRegEx)
         return idTest.evaluate(with: id)
     }
@@ -449,7 +501,7 @@ extension SignUpPageViewController: UITextFieldDelegate{
         passwordTextField.rightView = eyeButton
         passwordTextField.rightViewMode = .always
     }
-   
+    
     private func buttonTypes(){
         dropdownButton.backgroundColor = .white
         dropdownButton.layer.borderColor = UIColor.black.cgColor
@@ -467,9 +519,9 @@ extension SignUpPageViewController: UITextFieldDelegate{
         dropdownButton.addTarget(self, action: #selector(toggleDropdown), for: .touchUpInside)
         
         
-        configureButton(checkAvailabilityButton, title: "중복확인", titleColor: .black, bgColor: .gray)
-        configureButton(gettingNumberButton, title: "인증번호받기", titleColor: .black, bgColor: .gray)
-        configureButton(verificationButton, title: "인증확인", titleColor: .black, bgColor: .gray)
+        configureButton(idUniqueButton, title: "중복확인", titleColor: .black, bgColor: .gray)
+        configureButton(emailUniqueButton, title: "이메일중복확인", titleColor: .black, bgColor: .gray)
+        configureButton(emailTokenButton, title: "인증확인", titleColor: .black, bgColor: .gray)
         configureButton(signUpButton, title: "회원가입", titleColor: .black, bgColor: .gray)
         
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .bold)
@@ -486,7 +538,8 @@ extension SignUpPageViewController: UITextFieldDelegate{
         let backButton = UIBarButtonItem(image: backImage, style: .plain, target: self, action: #selector(customBackButton))
         self.navigationItem.leftBarButtonItem = backButton
         backButton.tintColor = .black
-        gettingNumberButton.addTarget(self, action: #selector(showVerificationFields), for: .touchUpInside)
+        emailUniqueButton.addTarget(self, action: #selector(checkEmailUniqueButtonTapped), for: .touchUpInside)
+        idUniqueButton.addTarget(self, action: #selector(checkIdUniqueButtonTapped), for: .touchUpInside)
     }
     
     @objc private func toggleDropdown() {
@@ -510,33 +563,13 @@ extension SignUpPageViewController: UITextFieldDelegate{
     }
     
     @objc private func showVerificationFields() {
-        verificationLabel.isHidden = false
-        verificationTextField.isHidden = false
-        verificationButton.isHidden = false
-        let offsetAmount: CGFloat = 70
-        UIView.animate(withDuration: 0.3) {
-            self.passwordLabelTopConstraint?.update(offset: self.verificationTextField.frame.height + 40)
-            self.passwordTextFieldTopConstraint?.update(offset: 5)
-            self.passwordInfoLabelTopConstraint?.update(offset: 5)
-            self.cheeringTeamLabelTopConstraint?.update(offset: 50)
-            self.dropdownButtonTopConstraint?.update(offset: 5)
-            self.dropdownTableViewTopConstraint?.update(offset: 0)
-            self.termsofServiceLabelTopConstraint?.update(offset: 50)
-            self.checkBoxButtonTopConstraint?.update(offset: 5)
-            self.termsofAgreedLabelTopConstraint?.update(offset: 82)
-            self.signUpButtonTopConstraint?.update(offset: 15)
-            
-            self.view.layoutIfNeeded()
-        }
-        guard let email = emailTextField.text, !email.isEmpty else { return }
-        
-        if isValidEmail(email) {
-            emailTextField.layer.borderColor = UIColor.systemGreen.cgColor
-        } else {
-            emailTextField.layer.borderColor = UIColor.systemRed.cgColor
-        }
-        emailTextField.layer.borderWidth = 0.8
     }
+    
+    @objc private func termsPageMove() {
+        let termsVC = TermsOfServiceViewController()
+        present(termsVC, animated: true)
+    }
+    
 }
 
 //MARK: - 테이블뷰
@@ -560,6 +593,9 @@ extension SignUpPageViewController: UITableViewDataSource, UITableViewDelegate {
         //델리게이트로 데이터 넘기는 부분
         let selectedTeam = teamOptions[indexPath.row]
         delegate?.didSelectTeam(team: selectedTeam)
+        print(selectedTeam)
+        
+        userTeam = indexPath.row
         
         dropdownButton.setTitle(teamOptions[indexPath.row], for: .normal)
         isDropdownVisible = false
@@ -569,49 +605,50 @@ extension SignUpPageViewController: UITableViewDataSource, UITableViewDelegate {
 
 //MARK: - 회원가입 API
 extension SignUpPageViewController {
-    private func signUp() {
-        let email = emailTextField.text ?? ""
-        let token = verificationTextField.text ?? ""
-        
-        // 1단계: 이메일 중복 확인
-        checkEmailUnique(email: email) { result in
-            switch result {
-            case .success(let response):
-                print("✅ 이메일 중복 확인 성공: \(response.message)")
-                
-                // 2단계: 인증번호 확인
-                self.checkEmailToken(email: email, token: token) { result in
-                    switch result {
-                    case .success(let tokenResponse):
-                        print("✅ 이메일 토큰 확인 성공: \(tokenResponse.message)")
-                        
-                        // ✅ 인증 성공 시 이메일 저장
-                        self.userEmail = email
-                        
-                        // 3단계: 최종 회원가입 요청
-                        self.signUpRequest(email: self.userEmail,
-                                           id: self.userID,
-                                           password: self.userPW,
-                                           nick: self.userNick,
-                                           team: self.userTeam) { result in
-                            switch result {
-                            case .success(let signUpResponse):
-                                print("🎉 회원가입 성공: \(signUpResponse.message)")
-                            case .failure(let error):
-                                print("❌ 회원가입 실패: \(error.localizedDescription)")
-                            }
-                        }
-                        
-                    case .failure(let error):
-                        print("❌ 인증번호 불일치: \(error.localizedDescription)")
-                    }
-                }
-                
-            case .failure(let error):
-                print("❌ 이메일 중복됨 또는 네트워크 오류: \(error.localizedDescription)")
-            }
-        }
-    }
+    
+//    private func signUp() {
+//        let email = emailTextField.text ?? ""
+//        let token = verificationTextField.text ?? ""
+//        
+//        // 1단계: 이메일 중복 확인
+//        checkEmailUnique(email: email) { result in
+//            switch result {
+//            case .success(let response):
+//                print("✅ 이메일 중복 확인 성공: \(response.message)")
+//                
+//                // 2단계: 인증번호 확인
+//                self.checkEmailToken(email: email, token: token) { result in
+//                    switch result {
+//                    case .success(let tokenResponse):
+//                        print("✅ 이메일 토큰 확인 성공: \(tokenResponse.message)")
+//                        
+//                        // ✅ 인증 성공 시 이메일 저장
+//                        self.userEmail = email
+//                        
+//                        // 3단계: 최종 회원가입 요청
+//                        self.signUpRequest(email: self.userEmail,
+//                                           id: self.userID,
+//                                           password: self.userPW,
+//                                           nick: self.userNick,
+//                                           team: self.userTeam) { result in
+//                            switch result {
+//                            case .success(let signUpResponse):
+//                                print("🎉 회원가입 성공: \(signUpResponse.message)")
+//                            case .failure(let error):
+//                                print("❌ 회원가입 실패: \(error.localizedDescription)")
+//                            }
+//                        }
+//                        
+//                    case .failure(let error):
+//                        print("❌ 인증번호 불일치: \(error.localizedDescription)")
+//                    }
+//                }
+//                
+//            case .failure(let error):
+//                print("❌ 이메일 중복됨 또는 네트워크 오류: \(error.localizedDescription)")
+//            }
+//        }
+//    }
     
     private func checkEmailUnique(email: String, completion: @escaping (Result<EmailUniqueResponse, AFError>) -> Void) {
         let url = endpt + "auth/check-email-unique"
@@ -640,7 +677,26 @@ extension SignUpPageViewController {
             completion(response.result)
         }
     }
-
+    
+    private func checkIdUnique(id: String, completion: @escaping (Result<IDUniqueResponse, AFError>) -> Void) {
+        guard let userId = idTextField.text, !userId.isEmpty else {
+            print("‼️아이디 입력 필요")
+            return
+        }
+        
+        let url = endpt + "auth/check-userid-unique"
+        let parameters = IDUniqueRequest(id: userId)
+        
+        AF.request(url,
+                   method: .post,
+                   parameters: parameters,
+                   encoder: JSONParameterEncoder.default)
+        .validate()
+        .responseDecodable(of: IDUniqueResponse.self) { response in
+            completion(response.result)
+        }
+    }
+    
     private func signUpRequest(email: String, id: String, password: String, nick: String?, team: Int?, completion: @escaping (Result<SignUpResponse, AFError>) -> Void) {
         let url = endpt + "auth/email-signup"
         let parameters = SignUpRequest(email: userEmail, id: userID, password: userPW, nick: userNick, team: userTeam)

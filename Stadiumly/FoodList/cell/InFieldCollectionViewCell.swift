@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 //구장 내 먹거리 컬렉션뷰 셀
 class InFieldCollectionViewCell: UICollectionViewCell {
@@ -33,24 +34,36 @@ class InFieldCollectionViewCell: UICollectionViewCell {
     }
 
     func setupConstraints() {
-        imageView.snp.makeConstraints {
-            $0.verticalEdges.equalToSuperview()
-            $0.horizontalEdges.equalToSuperview()
-        }
         nameLabel.snp.makeConstraints {
             $0.bottom.equalToSuperview().inset(10)
             $0.centerX.equalToSuperview()
+        }
+        imageView.snp.makeConstraints {
+            $0.verticalEdges.equalToSuperview()
+            $0.horizontalEdges.equalToSuperview()
         }
     }
     func configureUI() {
         contentView.backgroundColor = .lightGray
         contentView.layer.cornerRadius = 15
         contentView.layer.masksToBounds = true
-        nameLabel.text = "구장 내 먹거리"
+        let strokeTextAttributes: [NSAttributedString.Key: Any] = [
+            .strokeColor: UIColor.white,
+            .foregroundColor: UIColor.white,
+            .strokeWidth: -2.0,
+            .font: UIFont.systemFont(ofSize: 23, weight: .bold)
+        ]
+
+        nameLabel.attributedText = NSAttributedString(string: "구장 내 먹거리", attributes: strokeTextAttributes)
     }
 
     func configure(with imageName: String) {
         imageView.image = UIImage(named: imageName)
     }
-    
+    func configureImage(with cafeteria: Cafeteria) {
+        nameLabel.text = cafeteria.cafe_name
+        if let url = URL(string: cafeteria.cafe_image) {
+            imageView.kf.setImage(with: url, placeholder: UIImage(systemName: "Photo"))
+        }
+    }
 }

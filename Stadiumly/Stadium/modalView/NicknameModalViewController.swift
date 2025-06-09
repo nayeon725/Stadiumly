@@ -50,8 +50,40 @@ class NicknameModalViewController: UIViewController {
     }
 
     @objc func changeNickname() {
-        guard let newNick = textField.text, !newNick.isEmpty else { return }
-        onNicknameChanged?(newNick)
-        dismiss(animated: true)
+        let newNick = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if newNick == nil || newNick!.isEmpty {
+            // 닉네임 비어있을 때 확인 alert
+            let alert = UIAlertController(title: "경고", message: "닉네임을 입력하지 않으시면 랜덤 닉네임이 생성됩니다. 계속하시겠습니까?", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+            alert.addAction(UIAlertAction(title: "확인", style: .default) { _ in
+                self.performNicknameUpdate(with: newNick)
+            })
+            self.present(alert, animated: true)
+        } else {
+            // 닉네임 입력됐으면 바로 변경
+            performNicknameUpdate(with: newNick)
+        }
+    }
+
+    private func performNicknameUpdate(with nickname: String?) {
+        button.isEnabled = false
+        button.alpha = 0.5
+
+        DataManager.shared.updateNickname(nickname) { success, message in
+            DispatchQueue.main.async {
+                if success {
+                    print("✅ 닉네임 변경 성공:", message ?? "")
+                    self.dismiss(animated: true)
+                } else {
+                    print("❌ 실패:", message ?? "")
+                    self.button.isEnabled = true
+                    self.button.alpha = 1.0
+                    let alert = UIAlertController(title: "오류", message: message ?? "닉네임 변경에 실패했습니다.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "확인", style: .default))
+                    self.present(alert, animated: true)
+                }
+            }
+        }
     }
 }

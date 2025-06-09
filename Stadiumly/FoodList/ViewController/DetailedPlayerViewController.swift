@@ -7,12 +7,15 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 //식당 디테일 페이지
-class DetailedPageViewController: UIViewController {
+class DetailedPlayerViewController: UIViewController {
     
-    //테스트용 데이터받는곳
-    var detailData: String?
+
+    var operatingHoursText: String? = nil
+    
+    var detailData: Cafeteria?
     
     private let imageView = UIImageView()
     private let nameLabel = UILabel()
@@ -30,6 +33,9 @@ class DetailedPageViewController: UIViewController {
         setupAddSubview()
         setupConstraints()
         configureUI()
+        if let detail = detailData {
+            configureImage(with: detail)
+        }
     }
     
     
@@ -82,23 +88,27 @@ class DetailedPageViewController: UIViewController {
     }
     
     func configureUI() {
-        guard let fooddata = detailData else { return }
+        guard let foodData = detailData else { return }
         view.backgroundColor = .white
-        imageView.image = UIImage(named: fooddata)
-        nameLabel.text = "식당 이름"
+        nameLabel.text = foodData.cafe_name
         nameLabel.font = UIFont.boldSystemFont(ofSize: 30)
-        locationLabel.text = "주소 : 서울 서초구 서초대로74길 33 "
-        menuLabel.text = "메뉴 : 돈까스"
-        operatingHoursLabel.text = "운영시간 : 10:00 ~ 20:00"
+        locationLabel.text = "위치 \(foodData.cafe_location)"
+        menuLabel.text = "메뉴 : "
+        operatingHoursLabel.text = "운영시간 : 구장 운영시간 내"
         locationButton.setImage(UIImage(named: "location"), for: .normal)
         menuButton.setImage(UIImage(named: "menu"), for: .normal)
         hoursButton.setImage(UIImage(named: "clock"), for: .normal)
         xmarkButton.setImage(UIImage(named: "xmark"), for: .normal)
         xmarkButton.addTarget(self, action: #selector(dismissPage), for: .touchUpInside)
-        
     }
     
     @objc private func dismissPage() {
         dismiss(animated: true)
+    }
+    
+    func configureImage(with cafeteria: Cafeteria) {
+        if let url = URL(string: cafeteria.cafe_image) {
+            imageView.kf.setImage(with: url, placeholder: UIImage(systemName: "Photo"))
+        }
     }
 }
