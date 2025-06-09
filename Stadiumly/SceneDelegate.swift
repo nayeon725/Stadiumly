@@ -18,8 +18,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
 
         let window = UIWindow(windowScene: windowScene)
-        let homeVC = ViewController()
-
+        let homeVC = LoginPageViewController()
 
         let nav = UINavigationController(rootViewController: homeVC)
         window.rootViewController = nav
@@ -57,4 +56,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
 }
-

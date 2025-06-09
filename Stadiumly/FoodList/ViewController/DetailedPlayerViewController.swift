@@ -94,7 +94,7 @@ class DetailedPlayerViewController: UIViewController {
         nameLabel.font = UIFont.boldSystemFont(ofSize: 30)
         locationLabel.text = "위치 \(foodData.cafe_location)"
         menuLabel.text = "메뉴 : "
-        operatingHoursLabel.text = "운영시간 : 구장 운영시간 내"
+        operatingHoursLabel.text = "운영시간 : "
         locationButton.setImage(UIImage(named: "location"), for: .normal)
         menuButton.setImage(UIImage(named: "menu"), for: .normal)
         hoursButton.setImage(UIImage(named: "clock"), for: .normal)

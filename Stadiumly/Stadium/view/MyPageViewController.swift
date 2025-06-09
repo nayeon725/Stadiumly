@@ -14,8 +14,8 @@ class MyPageViewController: UIViewController {
     private var teamID: Int = 0
     private var teamName: String = ""
     private var userNickName: String = ""
-    private var userID: String = "juhong123"
-    private var userEmail: String = "email@mail.com"
+    private var userID: String = ""
+    private var userEmail: String = ""
     
     private let mypageTitle = UILabel()
     private let profileSection = UIStackView()
@@ -124,6 +124,8 @@ class MyPageViewController: UIViewController {
             teamName = stadium.team
         }
         userNickName = DataManager.shared.userNickname
+        userID = DataManager.shared.userLoginID
+        userEmail = DataManager.shared.userEmail
     }
 
     private func setupTitle() {
@@ -222,7 +224,19 @@ class MyPageViewController: UIViewController {
     private func updateProfileNickname(_ nickname: String) {
         userNickName = nickname
         nicknameLabel.text = nickname
-        DataManager.shared.updateNickname(nickname)
+        DataManager.shared.updateNickname(nickname) { success, message in
+            DispatchQueue.main.async {
+                if success {
+                    print("✅ 닉네임 변경 성공:", message ?? "")
+                    self.dismiss(animated: true)
+                } else {
+                    print("❌ 실패:", message ?? "")
+                    let alert = UIAlertController(title: "오류", message: message ?? "닉네임 변경에 실패했습니다.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "확인", style: .default))
+                    self.present(alert, animated: true)
+                }
+            }
+        }
     }
 
     private func updateProfileTeam(id: Int, name: String) {

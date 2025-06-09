@@ -7,12 +7,15 @@
 
 import UIKit
 import SnapKit
+import Alamofire
 import KeychainAccess
 
 //로그인 페이지
 class LoginPageViewController: UIViewController {
     
     private var mascotImageList = ["mascot_doosanbears","mascot_hanhwaeagles","mascot_kiatigers","mascot_kiwoomheroes","mascot_ktwiz","mascot_lgtwins","mascot_lottegiants","mascot_ncdinos","mascot_samsunglions","mascot_ssglanders"]
+    private var stadiums: [Stadium] = []
+    private var isExistingTeam: Bool = false
     
     private var timer: Timer?
     
@@ -24,7 +27,7 @@ class LoginPageViewController: UIViewController {
     private let findPasswordButton = UIButton()
     private let singUpButton = UIButton()
     private let infoButton = UIButton()
-   
+    
     lazy var carouselCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -34,7 +37,7 @@ class LoginPageViewController: UIViewController {
         collectionView.showsHorizontalScrollIndicator = false
         return collectionView
     }()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupAddSubview()
@@ -43,14 +46,14 @@ class LoginPageViewController: UIViewController {
         setupProperty()
         setupMascot()
     }
- 
+    
     private func setupAddSubview() {
         [stadiumlyLogo, idTextField, passwordTextField, loginButton, findIdButton, findPasswordButton, singUpButton, infoButton, carouselCollectionView].forEach {
             view.addSubview($0)
         }
     }
     
-   private  func setupConstraints() {
+    private  func setupConstraints() {
         stadiumlyLogo.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
             $0.centerX.equalToSuperview()
@@ -108,7 +111,6 @@ class LoginPageViewController: UIViewController {
         loginButton.backgroundColor = .systemGray4
         loginButton.layer.cornerRadius = 20
         loginButton.setTitleColor(.black, for: .normal)
-        loginButton.addTarget(self, action: #selector(login), for: .touchUpInside)
         findIdButton.setTitleColor(.black, for: .normal)
         findIdButton.setTitle("아이디찾기 /", for: .normal)
         findPasswordButton.setTitleColor(.black, for: .normal)
@@ -122,9 +124,20 @@ class LoginPageViewController: UIViewController {
         findIdButton.addTarget(self, action: #selector(findIdMoveVC), for: .touchUpInside)
         findPasswordButton.addTarget(self, action: #selector(findPasswordMoveVC), for: .touchUpInside)
         self.navigationItem.hidesBackButton = true
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
+        passwordTextField.isSecureTextEntry = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dissmissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
+    }
+    
+    
+    @objc private func dissmissKeyboard() {
+        view.endEditing(true)
     }
     
     @objc func login() {
+        
         guard let idText = idTextField.text, !idText.isEmpty else {
             showAlert(title: "아이디 입력", message: "아이디를 입력해주세요.")
             return
@@ -146,7 +159,9 @@ class LoginPageViewController: UIViewController {
                 print("❌ 로그인 실패:", error.localizedDescription)
             }
         }
+        
     }
+    
     
     private func setupProperty() {
         carouselCollectionView.delegate = self
@@ -154,6 +169,80 @@ class LoginPageViewController: UIViewController {
         carouselCollectionView.register(LoginPageCollectionViewCell.self, forCellWithReuseIdentifier: "loginCell")
         idTextField.delegate = self
         passwordTextField.delegate = self
+    }
+    
+    // 로그인 버튼 눌렀을 때
+    @objc private func loginButtonTapped(_ sender: UIButton) {
+        login { success in
+            if success {
+                self.fetchStadiums {
+                    self.getUserInfo { user in
+                        DispatchQueue.main.async {
+                            guard let user = user else {
+                                self.showAlert(title: "실패", message: "유저 정보를 불러오지 못했어요.")
+                                return
+                            }
+                            self.goToInitialScreen(user)
+                        }
+                    }
+                }
+            } else {
+                print("❌ 로그인 실패 : 화면 전환 안함 ")
+            }
+        }
+    }
+
+    private func fetchStadiums(completion: @escaping () -> Void) {
+        let url = "http://20.41.113.4/stadium"
+        AF.request(url)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: [Stadium].self) { response in
+                switch response.result {
+                case .success(let stadiums):
+                    print("✅ 경기장 \(stadiums.count)개 디코딩 성공")
+                    DataManager.shared.setStadiums(stadiums)
+                    completion() // 여기서 다음 단계로 진행
+
+                case .failure(let error):
+                    print("❌ 경기장 요청 실패: \(error)")
+                    self.showAlert(title: "오류", message: "경기장 정보를 불러오지 못했어요.")
+                }
+            }
+    }
+    
+    private func goToInitialScreen(_ user: User) {
+        if user.teamID == 11 {
+            let selectTeamVC = ViewController()
+            self.navigationController?.pushViewController(selectTeamVC, animated: true)
+        } else {
+            let mainVC = MainInfoViewController()
+            self.navigationController?.pushViewController(mainVC, animated: true)
+        }
+    }
+    
+    private func getUserInfo(completion: @escaping (User?) -> Void) {
+        APIService.shared.requestAuthorized("/user/mypage", method: .get) { result in
+            switch result {
+            case .success(let data):
+                do {
+                    let decoded = try JSONDecoder().decode([User].self, from: data)
+                    guard let user = decoded.first else { return }
+                    if user.teamID == 11 {
+                        self.isExistingTeam = false
+                    } else {
+                        self.isExistingTeam = true
+                    }
+                    DataManager.shared.setUser(user)
+                    completion(user)
+                } catch {
+                    print("❌ 유저 디코딩 실패: \(error)")
+                    completion(nil)
+                }
+            case .failure(let error):
+                self.showAlert(title: "에러 발생", message: "유저 디코딩 실패" + error.localizedDescription)
+                completion(nil)
+            }
+        }
     }
     
     private func showAlert(title: String, message: String) {
@@ -164,6 +253,7 @@ class LoginPageViewController: UIViewController {
         present(alert, animated: true)
     }
 }
+
 //MARK: - 화면이동, 텍스트필드
 extension LoginPageViewController: UITextFieldDelegate {
     
@@ -171,7 +261,7 @@ extension LoginPageViewController: UITextFieldDelegate {
         textField.resignFirstResponder()
         return true
     }
-
+    
     private func leftPadding(to textField:UITextField, width: CGFloat = 10) {
         let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: idTextField.frame.height))
         textField.leftView = paddingView
@@ -201,9 +291,10 @@ extension LoginPageViewController: UITextFieldDelegate {
         navigationController?.pushViewController(mainVC, animated: true)
     }
 }
+
 //MARK: - 캐러셀 설정
 extension LoginPageViewController {
-
+    
     private func setupMascot() {
         // 초기 위치 설정
         DispatchQueue.main.async { [weak self] in
@@ -260,7 +351,7 @@ extension LoginPageViewController: UICollectionViewDataSource, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: collectionView.bounds.height)
     }
-        
+    
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         stopAutoScroll()
     }
@@ -285,31 +376,35 @@ extension LoginPageViewController: UICollectionViewDataSource, UICollectionViewD
 //MARK: - 로그인 API
 extension LoginPageViewController {
     
-    //토큰값 받아서 로그인 시켜야함 
-//    func login() {
-//        let endPoint = "http://40.82.137.87/stadium/??"
-//        guard let url = URL(string: endPoint) else { return }
-//        var request = URLRequest(url: url)
-//        let seesion = URLSession.shared
-//        let task = seesion.dataTask(with: request) { data, _ , error in
-//            if let error = error {
-//                print("요청 실패 Error: \(error.localizedDescription)")
-//                return
-//            }
-//            guard let data else {
-//                print("데이터가 없습니다")
-//                return
-//            }
-//            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
-//            do {
-//                _ = try JSONDecoder().decode(KakaoSearch.self, from: data)
-//                DispatchQueue.main.async {
-//                }
-//            } catch {
-//                print("디코딩 실패\(error)")
-//            }
-//        }
-//        task.resume()
-//    }
-    
+    private func login(completion: @escaping(Bool) -> Void) {
+        guard let idText = idTextField.text, !idText.isEmpty else {
+            showAlert(title: "아이디 입력", message: "아이디를 입력해주세요.")
+            completion(false)
+            return
+        }
+        
+        guard let pwText = passwordTextField.text, !pwText.isEmpty else {
+            showAlert(title: "비밀번호 입력", message: "비밀번호를 입력해주세요.")
+            completion(false)
+            return
+        }
+        APIService.shared.login(userID: idText, password: pwText) { result in
+            switch result {
+            case .success:
+                if let token = KeychainManager.shared.get(KeychainKeys.accessToken) {
+                    print("🔑저장된 accessToken: \(token) ")
+                } else {
+                    print("❌ accessToken KeyChain에 없음")
+                }
+                print("✅ 로그인 성공")
+                completion(true)
+                DispatchQueue.main.async {
+                    
+                }
+            case .failure(let error):
+                print("❌ 로그인 실패:", error.localizedDescription)
+                completion(false)
+            }
+        }
+    }
 }

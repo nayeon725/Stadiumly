@@ -19,7 +19,7 @@ protocol TeamSelectionDelete: AnyObject {
 class SignUpPageViewController: UIViewController {
     
     // api 관련
-    private let endpt = "http://localhost:3000/"
+    private let endpt = "http://20.41.113.4/"
     private var userEmail: String = ""
     private var userID: String = ""
     private var userPW: String = ""
@@ -328,10 +328,10 @@ class SignUpPageViewController: UIViewController {
                         print("✅ 아이디 중복 아님")
                         self.showAlert(title: "아이디 중복 확인", message: "사용 가능한 아이디입니다.")
                     }
-                case .failure:
+                case .failure(let error):
                     self.isEmailUniqueConfirmed = false
-                    print("❌ 중복된 아이디")
-                    self.showAlert(title: "중복된 아이디", message: "이미 사용 중인 아이디입니다.")
+                    print("❌ 서버 에러")
+                    self.showAlert(title: "에러 발생", message: error.localizedDescription + "서버 에러가 발생했습니다.")
                 }
         }
     }
@@ -377,10 +377,10 @@ class SignUpPageViewController: UIViewController {
                     }
                     self.emailTextField.layer.borderWidth = 0.8
                 }
-            case .failure:
+            case .failure(let error):
                 self.isEmailUniqueConfirmed = false
-                print("❌ 중복된 이메일")
-                self.showAlert(title: "중복된 이메일", message: "이미 사용 중인 이메일입니다.")
+                print("❌ 서버 에러")
+                self.showAlert(title: "에러 발생", message: error.localizedDescription + "서버 에러가 발생했습니다.")
             }
         }
     }
@@ -401,8 +401,8 @@ class SignUpPageViewController: UIViewController {
                 }
             case .failure(let error):
                 self.isEmailTokenConfirmed = false
-                print("❌ 인증번호 불일치")
-                self.showAlert(title: "인증 실패", message: "인증번호가 올바르지 않습니다.")
+                print("❌ 서버 에러")
+                self.showAlert(title: "에러 발생", message: error.localizedDescription + "서버 에러가 발생했습니다.")
             }
         }
     }
@@ -552,19 +552,17 @@ extension SignUpPageViewController: UITextFieldDelegate{
         checkBoxButton.isSelected.toggle()
         updateSignUpButtonState()
     }
-    
+    //회원가입 버튼
     @objc private func moveToSingUpPageVC() {
         let singUpVC = SignUpCompletionViewController()
         navigationController?.pushViewController(singUpVC, animated: true)
+        signUpButtonTapped()
     }
     
     @objc private func customBackButton() {
         navigationController?.popViewController(animated: true)
     }
-    
-    @objc private func showVerificationFields() {
-    }
-    
+     
     @objc private func termsPageMove() {
         let termsVC = TermsOfServiceViewController()
         present(termsVC, animated: true)
@@ -648,7 +646,6 @@ extension SignUpPageViewController {
 //                print("❌ 이메일 중복됨 또는 네트워크 오류: \(error.localizedDescription)")
 //            }
 //        }
-//    }
     
     private func checkEmailUnique(email: String, completion: @escaping (Result<EmailUniqueResponse, AFError>) -> Void) {
         let url = endpt + "auth/check-email-unique"

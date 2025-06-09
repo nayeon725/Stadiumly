@@ -9,11 +9,7 @@ import UIKit
 import SnapKit
 import Alamofire
 
-struct Cafeteria: Codable {
-    let cafe_name: String
-    let cafe_image: String
-    let cafe_location: String
-}
+
 
 //구장 내 먹거리
 class InFieldFoodViewController: UIViewController {
@@ -21,6 +17,9 @@ class InFieldFoodViewController: UIViewController {
     private var stadiumlyId: Int = 0
     
     private var cafeteriaList: [Cafeteria] = []
+    
+    private var filteredList: [Cafeteria] = []
+    private var isSearching: Bool = false
     
 
     private let foodMenuTitle = ["1루", "3루", "외야"]
@@ -48,8 +47,8 @@ class InFieldFoodViewController: UIViewController {
         setupProperty()
         setupSegement()
         updateStadiumInfo()
-        
-        let defaultLocation = foodMenuCodes[0]
+
+        let defaultLocation = foodMenuCodes[1]
         inFieldFoodList(location: defaultLocation)
         
         DispatchQueue.main.async {
@@ -159,9 +158,12 @@ extension InFieldFoodViewController {
 extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let selectedItem = cafeteriaList[indexPath.row]
+        let selectedItem = isSearching ? filteredList[indexPath.row] : cafeteriaList[indexPath.row]
+        let locationStr = convertLocation(baseCode: selectedItem.cafe_location, floor: selectedItem.cafe_floor)
         let detailPageVC = DetailedInFieldViewController()
+        detailPageVC.convertedLocation = locationStr
         detailPageVC.detailData = selectedItem
+    
         detailPageVC.modalPresentationStyle = .pageSheet
         
         if let modalView = detailPageVC.sheetPresentationController {
@@ -173,7 +175,7 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return cafeteriaList.count
+        return isSearching ? filteredList.count : cafeteriaList.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -181,7 +183,8 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
         else {
             return UICollectionViewCell()
         }
-        cell.configureImage(with: cafeteriaList[indexPath.row])
+        let data = isSearching ? filteredList[indexPath.row] : cafeteriaList[indexPath.row]
+        cell.configureImage(with: data)
         return cell
     }
 
@@ -207,39 +210,51 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
 //MARK: - API
 extension InFieldFoodViewController {
  
-    func covertServerData(_ input:String)-> String {
-        let parts = input.split(separator: "_")
-        guard parts.count == 2 else { return input } // _로 분리안되면 그대로 리턴
-        
-        let base = String(parts[0]) //"3ru"
-        let floorPart = String(parts[1]) //"3f"
-        
-        let baseMapping: [String: String] = ["1ru": "1루", "2ru": "2루", "3ru": "3루", "outside" : "외야"]
-        
-        let baseKR = baseMapping[base] ?? base
-        let floorNumber = floorPart.filter {"0123456789".contains($0)}
-        let foorKR = floorNumber.isEmpty ? "" : "\(floorNumber)층"
-        return "\(baseKR) \(foorKR)".trimmingCharacters(in: .whitespaces)
+  
+    func convertLocation(baseCode: String, floor: Int?) -> String {
+        let baseMapping: [String: String] = ["1ru": "1루", "2ru": "2루", "3ru": "3루", "outside": "외야"]
+        let baseKR = baseMapping[baseCode] ?? baseCode
+        if let floor = floor {
+            return "\(baseKR) \(floor)층"
+        } else {
+            return baseKR
+        }
     }
     
     func inFieldFoodList(location: String) {
-        let endPt = "http://40.82.137.87/cafeteria/\(String(stadiumlyId))?location=\(location)"
+        let endPt = "http://20.41.113.4/cafeteria/\(String(stadiumlyId))?location=\(location)"
         AF.request(endPt, method: .get)
             .validate()
             .responseDecodable(of: [Cafeteria].self) { response in
                 switch response.result {
                 case.success(let decoded):
-                    DispatchQueue.main.sync {
+                    DispatchQueue.main.async {
                         self.cafeteriaList = decoded
                         self.inFieldCollectionView.reloadData()
                     }
                 case .failure(let error):
-                    print("요청실패")
+                    print("요청실패\(error.localizedDescription)")
                 }
                 if let data = response.data,
                    let jsonString = String(data: data, encoding: .utf8) {
-                    print("받은 에러 응답 JSON: \(jsonString)")
-                }
+//                    print("받은 응답 JSON: \(jsonString)")
+            }
         }
     }
+}
+extension InFieldFoodViewController: FoodCategorySearch {
+    
+    func filterCafeteria(by category: String?) {
+        guard let category = category, !category.isEmpty else {
+            isSearching = false
+            inFieldCollectionView.reloadData()
+            return
+        }
+        isSearching = true
+        filteredList = cafeteriaList.filter {
+            $0.cafe_category.localizedStandardContains(category)
+        }
+        inFieldCollectionView.reloadData()
+    }
+    
 }
