@@ -1,30 +1,4 @@
-//
-//  EmailUniqueRequest.swift
-//  Stadiumly
-//
-//  Created by 김나연 on 6/6/25.
-//
-
 import Foundation
-
-struct EmailUniqueRequest: Codable {
-    let email: String
-}
-
-struct EmailUniqueResponse: Codable {
-    let message: String
-    let status: String
-}
-
-struct EmailTokenCheckRequest: Codable {
-    let email: String
-    let emailToken: String
-}
-
-struct EmailTokenCheckResponse: Codable {
-    let message: String
-    let status: String
-}
 
 struct SignUpRequest: Codable {
     let email: String
@@ -45,4 +19,4 @@ struct SignUpRequest: Codable {
 struct SignUpResponse: Codable {
     let message: String
     let status: String
-}
+} 
