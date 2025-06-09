@@ -14,15 +14,17 @@ import KeychainAccess
 class LoginPageViewController: UIViewController {
     
     private var mascotImageList = ["mascot_doosanbears","mascot_hanhwaeagles","mascot_kiatigers","mascot_kiwoomheroes","mascot_ktwiz","mascot_lgtwins","mascot_lottegiants","mascot_ncdinos","mascot_samsunglions","mascot_ssglanders"]
+    private var stadiums: [Stadium] = []
+    private var isExistingTeam: Bool = false
     
     private var timer: Timer?
     
     private let session: Session = {
-            let configuration = URLSessionConfiguration.default
-            configuration.timeoutIntervalForRequest = 120
-            configuration.timeoutIntervalForResource = 120
-            return Session(configuration: configuration)
-        }()
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 120
+        configuration.timeoutIntervalForResource = 120
+        return Session(configuration: configuration)
+    }()
     
     private let stadiumlyLogo = UIImageView()
     private let idTextField = UITextField()
@@ -32,7 +34,7 @@ class LoginPageViewController: UIViewController {
     private let findPasswordButton = UIButton()
     private let singUpButton = UIButton()
     private let infoButton = UIButton()
-   
+    
     lazy var carouselCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -42,7 +44,7 @@ class LoginPageViewController: UIViewController {
         collectionView.showsHorizontalScrollIndicator = false
         return collectionView
     }()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupAddSubview()
@@ -51,14 +53,14 @@ class LoginPageViewController: UIViewController {
         setupProperty()
         setupMascot()
     }
- 
+    
     private func setupAddSubview() {
         [stadiumlyLogo, idTextField, passwordTextField, loginButton, findIdButton, findPasswordButton, singUpButton, infoButton, carouselCollectionView].forEach {
             view.addSubview($0)
         }
     }
     
-   private  func setupConstraints() {
+    private  func setupConstraints() {
         stadiumlyLogo.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
             $0.centerX.equalToSuperview()
@@ -126,14 +128,14 @@ class LoginPageViewController: UIViewController {
         infoButton.setTitleColor(.black, for: .normal)
         infoButton.setTitle("로그인 없이 이용 하시겠습니까?", for: .normal)
         singUpButton.addTarget(self, action: #selector(signUpMoveVC), for: .touchUpInside)
-        infoButton.addTarget(self, action: #selector(mainVC), for: .touchUpInside)
+        infoButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         findIdButton.addTarget(self, action: #selector(findIdMoveVC), for: .touchUpInside)
         findPasswordButton.addTarget(self, action: #selector(findPasswordMoveVC), for: .touchUpInside)
         self.navigationItem.hidesBackButton = true
         loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         passwordTextField.isSecureTextEntry = true
     }
-   
+    
     @objc func login() {
         guard let idText = idTextField.text, !idText.isEmpty else {
             showAlert(title: "아이디 입력", message: "아이디를 입력해주세요.")
@@ -165,24 +167,33 @@ class LoginPageViewController: UIViewController {
         idTextField.delegate = self
         passwordTextField.delegate = self
     }
-
+    
+    // 로그인 버튼 눌렀을 때
     @objc private func loginButtonTapped(_ sender: UIButton) {
         guard let id = idTextField.text, !id.isEmpty,
               let password = passwordTextField.text, !password.isEmpty else {
             print("❌ 아이디 또는 비밀번호가 비어있습니다")
             return
         }
-//        login(id: id, password: password) { success in
-//            if success {
-//                DispatchQueue.main.async {
-//                    let mainVC = DeleteAccountViewController()
-//                    self.navigationController?.pushViewController(mainVC, animated: true)
-//                }
-//            } else {
-//                print("❌ 로그인 실패 : 화면 전환 안함 ")
-//            }
-//        }
-
+        //        login(id: id, password: password) { success in
+        //            if success {
+        //                DispatchQueue.main.async {
+        //                    let mainVC = DeleteAccountViewController()
+        //                    self.navigationController?.pushViewController(mainVC, animated: true)
+        //                }
+        //            } else {
+        //                print("❌ 로그인 실패 : 화면 전환 안함 ")
+        //            }
+        //        }
+        
+        if isExistingTeam {
+            let mainVC = MainInfoViewController()
+            navigationController?.pushViewController(mainVC, animated: true)
+        } else {
+            let selectTeamVC = ViewController()
+            navigationController?.pushViewController(selectTeamVC, animated: true)
+        }
+    }
     
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title,
@@ -191,7 +202,32 @@ class LoginPageViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
     }
+    
+    private func getUserInfo(completion: @escaping (User?) -> Void) {
+        APIService.shared.requestAuthorized("/user/mypage", method: .get) { result in
+            switch result {
+            case .success(let data):
+                do {
+                    let user = try JSONDecoder().decode(User.self, from: data)
+                    if user.teamID == 11 {
+                        self.isExistingTeam = false
+                    } else {
+                        self.isExistingTeam = true
+                    }
+                    DataManager.shared.setUser(user)
+                    completion(user)
+                } catch {
+                    print("❌ 유저 디코딩 실패: \(error)")
+                    completion(nil)
+                }
+            case .failure(let error):
+                self.showAlert(title: "에러 발생", message: error.localizedDescription)
+                completion(nil)
+            }
+        }
+    }
 }
+
 //MARK: - 화면이동, 텍스트필드
 extension LoginPageViewController: UITextFieldDelegate {
     
@@ -199,7 +235,7 @@ extension LoginPageViewController: UITextFieldDelegate {
         textField.resignFirstResponder()
         return true
     }
-
+    
     private func leftPadding(to textField:UITextField, width: CGFloat = 10) {
         let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: idTextField.frame.height))
         textField.leftView = paddingView
@@ -224,14 +260,15 @@ extension LoginPageViewController: UITextFieldDelegate {
         navigationController?.pushViewController(signUpVC, animated: true)
     }
     
-    @objc private func mainVC() {
-        let mainVC = ViewController()
-        navigationController?.pushViewController(mainVC, animated: true)
-    }
+//    @objc private func mainVC() {
+//        let mainVC = ViewController()
+//        navigationController?.pushViewController(mainVC, animated: true)
+//    }
 }
+
 //MARK: - 캐러셀 설정
 extension LoginPageViewController {
-
+    
     private func setupMascot() {
         // 초기 위치 설정
         DispatchQueue.main.async { [weak self] in
@@ -288,7 +325,7 @@ extension LoginPageViewController: UICollectionViewDataSource, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: collectionView.bounds.height)
     }
-        
+    
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         stopAutoScroll()
     }
@@ -312,5 +349,5 @@ extension LoginPageViewController: UICollectionViewDataSource, UICollectionViewD
 }
 //MARK: - 로그인 API
 extension LoginPageViewController {
-
+    
 }
