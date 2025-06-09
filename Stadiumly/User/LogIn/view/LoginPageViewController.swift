@@ -131,7 +131,7 @@ class LoginPageViewController: UIViewController {
         view.addGestureRecognizer(tapGesture)
     }
     
-    
+
     @objc private func dissmissKeyboard() {
         view.endEditing(true)
     }
@@ -161,7 +161,7 @@ class LoginPageViewController: UIViewController {
         }
         
     }
-    
+
     
     private func setupProperty() {
         carouselCollectionView.delegate = self
@@ -209,6 +209,7 @@ class LoginPageViewController: UIViewController {
                 }
             }
     }
+
     
     private func goToInitialScreen(_ user: User) {
         if user.teamID == 11 {

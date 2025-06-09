@@ -116,6 +116,9 @@ class DeleteAccountViewController: UIViewController {
         dropdownTableView.rowHeight = 44
         dropdownTableView.separatorInset = .zero
         backButton.setImage(UIImage(systemName: "arrow.left"), for: .normal)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
+        backButton.addGestureRecognizer(tapGesture)
     }
 
     func setupProperty() {
@@ -140,6 +143,11 @@ class DeleteAccountViewController: UIViewController {
             modalView.preferredCornerRadius = 20
            }
            present(detailPageVC, animated: true)
+    }
+
+    @objc func logoTapped() {
+        // 화면 전환 동작 (예: pull)
+        navigationController?.popViewController(animated: true)
     }
 }
 //MARK: - 테이블뷰

@@ -272,7 +272,7 @@ class SignUpPageViewController: UIViewController {
         emailTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         nickNameTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         verificationTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
-        checkBoxButton.addTarget(self, action: #selector(termsPageMove), for: .touchUpInside)
+//        checkBoxButton.addTarget(self, action: #selector(termsPageMove), for: .touchUpInside)
         emailTokenButton.addTarget(self, action: #selector(checkEmailTokenButtonTapped), for: .touchUpInside)
         
         signUpButton.isEnabled = false
@@ -328,10 +328,15 @@ class SignUpPageViewController: UIViewController {
                         print("✅ 아이디 중복 아님")
                         self.showAlert(title: "아이디 중복 확인", message: "사용 가능한 아이디입니다.")
                     }
-                case .failure(let error):
+                case .failure:
                     self.isEmailUniqueConfirmed = false
+
+                    print("❌ 중복된 아이디")
+                    self.showAlert(title: "중복된 아이디", message: "이미 사용 중인 아이디입니다.")
+
                     print("❌ 서버 에러")
                     self.showAlert(title: "에러 발생", message: error.localizedDescription + "서버 에러가 발생했습니다.")
+
                 }
         }
     }
@@ -563,10 +568,10 @@ extension SignUpPageViewController: UITextFieldDelegate{
         navigationController?.popViewController(animated: true)
     }
      
-    @objc private func termsPageMove() {
-        let termsVC = TermsOfServiceViewController()
-        present(termsVC, animated: true)
-    }
+//    @objc private func termsPageMove() {
+//        let termsVC = TermsOfServiceViewController()
+//        present(termsVC, animated: true)
+//    }
     
 }
 

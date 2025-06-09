@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 struct User : Codable {
     let teamID: Int
     let nick: String

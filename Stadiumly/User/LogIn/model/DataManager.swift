@@ -9,6 +9,7 @@ import Foundation
 
 // MARK: - DataManager
 class DataManager {
+
     static let shared = DataManager()
     
     private(set) var stadiums: [Stadium] = []

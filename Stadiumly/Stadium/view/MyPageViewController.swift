@@ -79,7 +79,7 @@ class MyPageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
+        delAccButton.addTarget(self, action: #selector(moveDeletePageVC), for: .touchUpInside)
         view.addSubview(delAccButton)
         delAccButton.snp.makeConstraints { make in
             make.bottom.equalToSuperview().inset(35)
@@ -111,6 +111,10 @@ class MyPageViewController: UIViewController {
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         backButton.addGestureRecognizer(tapGesture)
+    }
+    @objc private func moveDeletePageVC() {
+        let deleteVC = DeleteAccountViewController()
+        navigationController?.pushViewController(deleteVC, animated: true)
     }
     
     @objc func logoTapped() {
