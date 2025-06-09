@@ -73,7 +73,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     }
     
     private func findStadium() {
-        let url = "http://localhost:3000/stadium"
+        let url = "http://20.41.113.4/stadium"
 
         AF.request(url)
             .validate(statusCode: 200..<300) // 상태코드 확인
@@ -100,7 +100,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        stadiums.count
+        return min(stadiums.count, 10)
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {

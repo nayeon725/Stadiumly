@@ -131,11 +131,13 @@ class LoginPageViewController: UIViewController {
         view.addGestureRecognizer(tapGesture)
     }
     
+
     @objc private func dissmissKeyboard() {
         view.endEditing(true)
     }
     
     @objc func login() {
+        
         guard let idText = idTextField.text, !idText.isEmpty else {
             showAlert(title: "아이디 입력", message: "아이디를 입력해주세요.")
             return
@@ -159,6 +161,7 @@ class LoginPageViewController: UIViewController {
         }
         
     }
+
     
     private func setupProperty() {
         carouselCollectionView.delegate = self
@@ -169,53 +172,79 @@ class LoginPageViewController: UIViewController {
     }
     
     // 로그인 버튼 눌렀을 때
-     @objc private func loginButtonTapped(_ sender: UIButton) {
-         login { success in
-             if success {
-                 self.fetchStadiums {
-                     self.getUserInfo { user in
-                         DispatchQueue.main.async {
-                             guard let user = user else {
-                                 self.showAlert(title: "실패", message: "유저 정보를 불러오지 못했어요.")
-                                 return
-                             }
-                             self.goToInitialScreen(user)
-                         }
-                     }
-                 }
-             } else {
-                 print("❌ 로그인 실패 : 화면 전환 안함 ")
-             }
-         }
-     }
+    @objc private func loginButtonTapped(_ sender: UIButton) {
+        login { success in
+            if success {
+                self.fetchStadiums {
+                    self.getUserInfo { user in
+                        DispatchQueue.main.async {
+                            guard let user = user else {
+                                self.showAlert(title: "실패", message: "유저 정보를 불러오지 못했어요.")
+                                return
+                            }
+                            self.goToInitialScreen(user)
+                        }
+                    }
+                }
+            } else {
+                print("❌ 로그인 실패 : 화면 전환 안함 ")
+            }
+        }
+    }
 
-     private func fetchStadiums(completion: @escaping () -> Void) {
-         let url = "http://localhost:3000/stadium"
-         AF.request(url)
-             .validate(statusCode: 200..<300)
-             .responseDecodable(of: [Stadium].self) { response in
-                 switch response.result {
-                 case .success(let stadiums):
-                     print("✅ 경기장 \(stadiums.count)개 디코딩 성공")
-                     DataManager.shared.setStadiums(stadiums)
-                     completion() // 여기서 다음 단계로 진행
+    private func fetchStadiums(completion: @escaping () -> Void) {
+        let url = "http://20.41.113.4/stadium"
+        AF.request(url)
+            .validate(statusCode: 200..<300)
+            .responseDecodable(of: [Stadium].self) { response in
+                switch response.result {
+                case .success(let stadiums):
+                    print("✅ 경기장 \(stadiums.count)개 디코딩 성공")
+                    DataManager.shared.setStadiums(stadiums)
+                    completion() // 여기서 다음 단계로 진행
 
-                 case .failure(let error):
-                     print("❌ 경기장 요청 실패: \(error)")
-                     self.showAlert(title: "오류", message: "경기장 정보를 불러오지 못했어요.")
-                 }
-             }
-     }
-     
-     private func goToInitialScreen(_ user: User) {
-         if user.teamID == 11 {
-             let selectTeamVC = ViewController()
-             self.navigationController?.pushViewController(selectTeamVC, animated: true)
-         } else {
-             let mainVC = MainInfoViewController()
-             self.navigationController?.pushViewController(mainVC, animated: true)
-         }
-     }
+                case .failure(let error):
+                    print("❌ 경기장 요청 실패: \(error)")
+                    self.showAlert(title: "오류", message: "경기장 정보를 불러오지 못했어요.")
+                }
+            }
+    }
+
+    
+    private func goToInitialScreen(_ user: User) {
+        if user.teamID == 11 {
+            let selectTeamVC = ViewController()
+            self.navigationController?.pushViewController(selectTeamVC, animated: true)
+        } else {
+            let mainVC = MainInfoViewController()
+            self.navigationController?.pushViewController(mainVC, animated: true)
+        }
+    }
+    
+    private func getUserInfo(completion: @escaping (User?) -> Void) {
+        APIService.shared.requestAuthorized("/user/mypage", method: .get) { result in
+            switch result {
+            case .success(let data):
+                do {
+                    let decoded = try JSONDecoder().decode([User].self, from: data)
+                    guard let user = decoded.first else { return }
+                    if user.teamID == 11 {
+                        self.isExistingTeam = false
+                    } else {
+                        self.isExistingTeam = true
+                    }
+                    DataManager.shared.setUser(user)
+                    completion(user)
+                } catch {
+                    print("❌ 유저 디코딩 실패: \(error)")
+                    completion(nil)
+                }
+            case .failure(let error):
+                self.showAlert(title: "에러 발생", message: "유저 디코딩 실패" + error.localizedDescription)
+                completion(nil)
+            }
+        }
+    }
     
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title,
@@ -224,32 +253,6 @@ class LoginPageViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
     }
-       
-       private func getUserInfo(completion: @escaping (User?) -> Void) {
-           APIService.shared.requestAuthorized("/user/mypage", method: .get) { result in
-               switch result {
-               case .success(let data):
-                   do {
-                       let decoded = try JSONDecoder().decode([User].self, from: data)
-                       guard let user = decoded.first else { return }
-                       print("🔴\(user.teamID)")
-                       if user.teamID == 11 {
-                           self.isExistingTeam = false
-                       } else {
-                           self.isExistingTeam = true
-                       }
-                       DataManager.shared.setUser(user)
-                       completion(user)
-                   } catch {
-                       print("❌ 유저 디코딩 실패: \(error)")
-                       completion(nil)
-                   }
-               case .failure(let error):
-                   self.showAlert(title: "에러 발생", message: error.localizedDescription)
-                   completion(nil)
-               }
-           }
-       }
 }
 
 //MARK: - 화면이동, 텍스트필드

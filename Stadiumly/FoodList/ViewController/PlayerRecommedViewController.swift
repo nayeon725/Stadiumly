@@ -126,6 +126,7 @@ extension PlayerRecommedViewController {
                     }
                 case .failure(let error):
                     print("요청실패\(error.localizedDescription)")
+
                 }
                 if let data = response.data,
                    let jsonString = String(data: data, encoding: .utf8) {

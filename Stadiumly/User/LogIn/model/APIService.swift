@@ -12,7 +12,7 @@ final class APIService {
     static let shared = APIService()
     private init() {}
 
-    private let baseURL = "http://localhost:3000"
+    private let baseURL = "http://20.41.113.4"
 
     // 로그인 요청
     func login(userID: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
