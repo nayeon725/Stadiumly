@@ -222,7 +222,7 @@ extension InFieldFoodViewController {
     }
     
     func inFieldFoodList(location: String) {
-        let endPt = "http://localhost:3000/cafeteria/\(String(stadiumlyId))?location=\(location)"
+        let endPt = "http://20.41.113.4/cafeteria/\(String(stadiumlyId))?location=\(location)"
         AF.request(endPt, method: .get)
             .validate()
             .responseDecodable(of: [Cafeteria].self) { response in

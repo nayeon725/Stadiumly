@@ -17,11 +17,13 @@ class DataManager {
     private(set) var userPassword: String = ""
     private(set) var userNickname: String = ""
     private(set) var userEmail: String = ""
+    private(set) var userLoginID: String = ""
     private(set) var userTeamID: Int = 0
     
     func setUser(_ user: User) {
         self.userNickname = user.nick
         self.userEmail = user.email
+        self.userLoginID = user.loginID
         if let stadium = stadiums.first(where: { $0.id == user.teamID }) {
             self.setSelectedStadium(stadium)
         } else {
@@ -42,7 +44,7 @@ class DataManager {
 //            parameters["user_like_staId"] = teamId
 //        }
 
-        APIService.shared.requestAuthorized("/mypage/nickChange", method: .post, parameters: parameters) { result in
+        APIService.shared.requestAuthorized("/user/mypage/nickChange", method: .post, parameters: parameters) { result in
             switch result {
             case .success(let data):
                 do {
@@ -66,7 +68,7 @@ class DataManager {
     }
     
     func updatePassword(currentPassword: String, newPassword: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        APIService.shared.requestAuthorized("/mypage/pwdChange",
+        APIService.shared.requestAuthorized("/user/mypage/pwdChange",
             method: .post,
             parameters: [
                 "current_pwd": currentPassword,
@@ -90,7 +92,7 @@ class DataManager {
     func selectStadium(byID id: Int) {
         if let stadium = stadiums.first(where: { $0.id == id }) {
             selectedStadium = stadium
-            APIService.shared.requestAuthorized("/mypage/myteam", method: .post, parameters: ["user_like_staId" : stadium.id]) { result in
+            APIService.shared.requestAuthorized("/user/mypage/myteam", method: .post, parameters: ["user_like_staId" : stadium.id]) { result in
                 switch result {
                 case .success(let data):
                     print("응원하는 팀 변경: \(data)")

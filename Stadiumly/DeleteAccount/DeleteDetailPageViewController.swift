@@ -100,7 +100,7 @@ extension DeleteDetailPageViewController {
             print("❌ 토큰없음 - 삭제불가")
             return
         }
-        let endpt = "http://localhost:3000/auth/delete-user"
+        let endpt = "http://20.41.113.4/auth/delete-user"
         let headers: HTTPHeaders = [
             "Authorization" : "Bearer \(accessToken)",
             "Content-Type" : "application/json"

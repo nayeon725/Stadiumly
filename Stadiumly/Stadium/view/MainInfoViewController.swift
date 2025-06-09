@@ -17,7 +17,7 @@ class MainInfoViewController: UIViewController {
     private var timer: Timer?
     
     private var stadiums: [Stadium] = []
-    private let endPt = "http://localhost:3000/"
+    private let endPt = "http://20.41.113.4/"
     
     // 타이틀 설정용 데이터
     private var teamName: String = ""

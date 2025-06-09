@@ -14,8 +14,8 @@ class MyPageViewController: UIViewController {
     private var teamID: Int = 0
     private var teamName: String = ""
     private var userNickName: String = ""
-    private var userID: String = "juhong123"
-    private var userEmail: String = "email@mail.com"
+    private var userID: String = ""
+    private var userEmail: String = ""
     
     private let mypageTitle = UILabel()
     private let profileSection = UIStackView()
@@ -124,6 +124,8 @@ class MyPageViewController: UIViewController {
             teamName = stadium.team
         }
         userNickName = DataManager.shared.userNickname
+        userID = DataManager.shared.userLoginID
+        userEmail = DataManager.shared.userEmail
     }
 
     private func setupTitle() {

@@ -12,11 +12,11 @@ final class APIService {
     static let shared = APIService()
     private init() {}
 
-    private let baseURL = "http://localhost:3000"
+    private let baseURL = "http://20.41.113.4"
 
     // 로그인 요청
     func login(userID: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let url = "\(baseURL)auth/userid-login"
+        let url = "\(baseURL)/auth/userid-login"
         let params = ["user_cus_id": userID, "user_pwd": password]
 
         AF.request(url, method: .post, parameters: params, encoding: JSONEncoding.default)

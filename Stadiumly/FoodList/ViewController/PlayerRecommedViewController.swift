@@ -113,7 +113,7 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
 extension PlayerRecommedViewController {
     //수정해야함 - 팀이름으로 받아와야함
     func playerRecommed() {
-        let endPt = "http://40.82.137.87/stadium/??"
+        let endPt = "http://20.41.113.4/player-recommand/"
         guard let url = URL(string: endPt) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"

@@ -32,6 +32,9 @@ class FindPWViewController: UIViewController {
 
     private let changePWButton = UIButton()
     private let toggleButton = UIButton(type: .system)
+    private let codeCheckButton = UIButton()
+    private let emailCheckButton = UIButton()
+    
     private var isPasswordVisible = false
 
     // 스크롤뷰 및 컨텐츠뷰
@@ -80,6 +83,10 @@ class FindPWViewController: UIViewController {
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         backButton.addGestureRecognizer(tapGesture)
+        
+        emailCheckButton.addTarget(self, action: #selector(emailCheckButtonTapped), for: .touchUpInside)
+        codeCheckButton.addTarget(self, action: #selector(codeCheckButtonTapped), for: .touchUpInside)
+        changePWButton.addTarget(self, action: #selector(changePWButtonTapped), for: .touchUpInside)
     }
     
     @objc func logoTapped() {
@@ -168,18 +175,17 @@ class FindPWViewController: UIViewController {
         emailTF.keyboardType = .emailAddress
         configureTextField(to: emailTF)
 
-        let emailButton = UIButton()
-        emailButton.setTitle("인증번호 받기", for: .normal)
-        emailButton.setTitleColor(.black, for: .normal)
-        emailButton.backgroundColor = .systemGray4
-        emailButton.layer.cornerRadius = 20
-        emailButton.layer.masksToBounds = true
-        emailButton.addTarget(self, action: #selector(sendVerificationCode), for: .touchUpInside)
+        emailCheckButton.setTitle("인증번호 받기", for: .normal)
+        emailCheckButton.setTitleColor(.black, for: .normal)
+        emailCheckButton.backgroundColor = .systemGray4
+        emailCheckButton.layer.cornerRadius = 20
+        emailCheckButton.layer.masksToBounds = true
+        emailCheckButton.addTarget(self, action: #selector(sendVerificationCode), for: .touchUpInside)
 
         emailTF.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        emailButton.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        emailCheckButton.setContentHuggingPriority(.defaultHigh, for: .horizontal)
 
-        let horizontalStack = UIStackView(arrangedSubviews: [emailTF, emailButton])
+        let horizontalStack = UIStackView(arrangedSubviews: [emailTF, emailCheckButton])
         horizontalStack.axis = .horizontal
         horizontalStack.alignment = .leading
         horizontalStack.distribution = .fillProportionally
@@ -198,7 +204,7 @@ class FindPWViewController: UIViewController {
         }
 
         emailTF.snp.makeConstraints { make in
-            make.width.equalTo(emailButton.snp.width).multipliedBy(5.0 / 3.0)
+            make.width.equalTo(emailCheckButton.snp.width).multipliedBy(5.0 / 3.0)
         }
     }
 
@@ -216,18 +222,17 @@ class FindPWViewController: UIViewController {
         codeTF.layer.borderColor = UIColor.systemGray4.cgColor
         configureTextField(to: codeTF)
 
-        let codeButton = UIButton()
-        codeButton.setTitle("인증번호 확인", for: .normal)
-        codeButton.setTitleColor(.black, for: .normal)
-        codeButton.backgroundColor = .systemGray4
-        codeButton.layer.cornerRadius = 20
-        codeButton.layer.masksToBounds = true
-        codeButton.addTarget(self, action: #selector(moveFocusToPWField), for: .touchUpInside)
+        codeCheckButton.setTitle("인증번호 확인", for: .normal)
+        codeCheckButton.setTitleColor(.black, for: .normal)
+        codeCheckButton.backgroundColor = .systemGray4
+        codeCheckButton.layer.cornerRadius = 20
+        codeCheckButton.layer.masksToBounds = true
+        codeCheckButton.addTarget(self, action: #selector(moveFocusToPWField), for: .touchUpInside)
 
         codeTF.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        codeButton.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        codeCheckButton.setContentHuggingPriority(.defaultHigh, for: .horizontal)
 
-        let horizontalStack = UIStackView(arrangedSubviews: [codeTF, codeButton])
+        let horizontalStack = UIStackView(arrangedSubviews: [codeTF, codeCheckButton])
         horizontalStack.axis = .horizontal
         horizontalStack.alignment = .leading
         horizontalStack.distribution = .fillProportionally
@@ -245,7 +250,7 @@ class FindPWViewController: UIViewController {
         }
 
         codeTF.snp.makeConstraints { make in
-            make.width.equalTo(codeButton.snp.width).multipliedBy(5.0 / 3.0)
+            make.width.equalTo(codeCheckButton.snp.width).multipliedBy(5.0 / 3.0)
         }
     }
 
@@ -310,8 +315,6 @@ class FindPWViewController: UIViewController {
             make.bottom.equalToSuperview().inset(10) // 컨텐츠뷰 bottom과 붙도록
         }
     }
-
-    // 이하 기존 유효성 검사, 버튼 액션 등 그대로 유지
 
     private func validateEmail(_ text: String) {
         let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
@@ -390,11 +393,73 @@ class FindPWViewController: UIViewController {
         passwordTF.becomeFirstResponder()
     }
     
-    @objc private func sendEmailToBE() {
+    @objc private func emailCheckButtonTapped() {
+        guard let insertedEmail = emailTF.text, !insertedEmail.isEmpty else {
+            showAlert(title: "오류", message: "이메일을 입력해주세요.")
+            return
+        }
         
+        APIService.shared.requestAuthorized("/auth/find-pwd", method: .post, parameters: ["user_email" : insertedEmail]) { result in
+            switch result {
+            case .success(let data):
+                print("✅ 서버에 이메일 전달 완료")
+                self.showAlert(title: "이메일 확인", message: "이메일로 인증번호가 전송되었습니다.\n확인 후 인증번호를 입력해주세요.")
+            case .failure(let error):
+                print(error.localizedDescription)
+                self.showAlert(title: "오류", message: "서버 에러가 발생했습니다.")
+            }
+        }
     }
     
-    @objc private func sendPasswordToBE() {
+    @objc private func codeCheckButtonTapped() {
+        guard let insertedEmail = emailTF.text, !insertedEmail.isEmpty else {
+            return
+        }
         
+        guard let insertedCode = codeTF.text, !insertedCode.isEmpty else {
+            showAlert(title: "오류", message: "인증번호를 다시 확인해주세요.")
+            return
+        }
+        
+        APIService.shared.requestAuthorized("/auth/find-pwd-verify", method: .post, parameters: ["user_email" : insertedEmail, "token" : insertedCode]) { result in
+            switch result {
+            case .success(let data):
+                print("✅ 서버에 인증코드 확인 안료")
+                self.showAlert(title: "인증코드 확인", message: "이메일로 인증번호가 전송되었습니다.\n확인 후 인증번호를 입력해주세요.")
+            case .failure(let error):
+                print(error.localizedDescription)
+                self.showAlert(title: "오류", message: "에러가 발생했습니다." + error.localizedDescription)
+            }
+        }
+    }
+    
+    @objc private func changePWButtonTapped() {
+        guard let insertedEmail = emailTF.text, !insertedEmail.isEmpty else {
+            return
+        }
+        
+        guard let newPW = passwordTF.text, !newPW.isEmpty else {
+            showAlert(title: "오류", message: "비밀번호를 다시 입력해주세요.")
+            return
+        }
+        
+        APIService.shared.requestAuthorized("/auth/find-pwd-update", method: .post, parameters: ["user_email" : insertedEmail, "new_pwd" : newPW]) { result in
+            switch result {
+            case .success(let data):
+                print("✅ 서버에 비밀번호 전달 완료")
+                self.showAlert(title: "비밀번호 확인", message: "비밀번호가 변경되었습니다.")
+            case .failure(let error):
+                print(error.localizedDescription)
+                self.showAlert(title: "오류", message: "서버 에러가 발생했습니다.")
+            }
+        }
+    }
+    
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title,
+                                      message: message,
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 }
