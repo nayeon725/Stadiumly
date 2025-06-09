@@ -210,22 +210,7 @@ extension InFieldFoodViewController: UICollectionViewDelegate, UICollectionViewD
 //MARK: - API
 extension InFieldFoodViewController {
  
-    func covertServerData(_ input:String)-> String {
-        let parts = input.split(separator: "_")
-        let baseMapping: [String: String] = ["1ru": "1루", "2ru": "2루", "3ru": "3루", "outside" : "외야"]
-        
-        if parts.count == 2 {
-            let base = String(parts[0]) //"3ru"
-            let floorPart = String(parts[1]) //"3f"
-            
-            let baseKR = baseMapping[base] ?? base
-            let floorNumber = floorPart.filter {"0123456789".contains($0)}
-            let foorKR = floorNumber.isEmpty ? "" : "\(floorNumber)층"
-            return "\(baseKR) \(foorKR)".trimmingCharacters(in: .whitespaces)
-        } else {
-            return baseMapping[input] ?? input
-        }
-    }
+  
     func convertLocation(baseCode: String, floor: Int?) -> String {
         let baseMapping: [String: String] = ["1ru": "1루", "2ru": "2루", "3ru": "3루", "outside": "외야"]
         let baseKR = baseMapping[baseCode] ?? baseCode

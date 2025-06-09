@@ -17,13 +17,6 @@ class LoginPageViewController: UIViewController {
     
     private var timer: Timer?
     
-    private let session: Session = {
-            let configuration = URLSessionConfiguration.default
-            configuration.timeoutIntervalForRequest = 120
-            configuration.timeoutIntervalForResource = 120
-            return Session(configuration: configuration)
-        }()
-    
     private let stadiumlyLogo = UIImageView()
     private let idTextField = UITextField()
     private let passwordTextField = UITextField()
@@ -116,7 +109,6 @@ class LoginPageViewController: UIViewController {
         loginButton.backgroundColor = .systemGray4
         loginButton.layer.cornerRadius = 20
         loginButton.setTitleColor(.black, for: .normal)
-        loginButton.addTarget(self, action: #selector(login), for: .touchUpInside)
         findIdButton.setTitleColor(.black, for: .normal)
         findIdButton.setTitle("아이디찾기 /", for: .normal)
         findPasswordButton.setTitleColor(.black, for: .normal)
@@ -132,31 +124,15 @@ class LoginPageViewController: UIViewController {
         self.navigationItem.hidesBackButton = true
         loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         passwordTextField.isSecureTextEntry = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dissmissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
     }
-   
-    @objc func login() {
-        guard let idText = idTextField.text, !idText.isEmpty else {
-            showAlert(title: "아이디 입력", message: "아이디를 입력해주세요.")
-            return
-        }
-        
-        guard let pwText = passwordTextField.text, !pwText.isEmpty else {
-            showAlert(title: "비밀번호 입력", message: "비밀번호를 입력해주세요.")
-            return
-        }
-        APIService.shared.login(userID: idText, password: pwText) { result in
-            switch result {
-            case .success:
-                print("✅ 로그인 성공")
-                
-                DispatchQueue.main.async {
-                    
-                }
-            case .failure(let error):
-                print("❌ 로그인 실패:", error.localizedDescription)
-            }
-        }
+    
+    @objc private func dissmissKeyboard() {
+        view.endEditing(true)
     }
+
     
     private func setupProperty() {
         carouselCollectionView.delegate = self
@@ -167,22 +143,18 @@ class LoginPageViewController: UIViewController {
     }
 
     @objc private func loginButtonTapped(_ sender: UIButton) {
-        guard let id = idTextField.text, !id.isEmpty,
-              let password = passwordTextField.text, !password.isEmpty else {
-            print("❌ 아이디 또는 비밀번호가 비어있습니다")
-            return
+      
+        login { success in
+            if success {
+                DispatchQueue.main.async {
+                    let mainVC = DeleteAccountViewController()
+                    self.navigationController?.pushViewController(mainVC, animated: true)
+                }
+            } else {
+                print("❌ 로그인 실패 : 화면 전환 안함 ")
+            }
         }
-//        login(id: id, password: password) { success in
-//            if success {
-//                DispatchQueue.main.async {
-//                    let mainVC = DeleteAccountViewController()
-//                    self.navigationController?.pushViewController(mainVC, animated: true)
-//                }
-//            } else {
-//                print("❌ 로그인 실패 : 화면 전환 안함 ")
-//            }
-//        }
-
+    }
     
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title,
@@ -312,5 +284,36 @@ extension LoginPageViewController: UICollectionViewDataSource, UICollectionViewD
 }
 //MARK: - 로그인 API
 extension LoginPageViewController {
-
+    
+    private func login(completion: @escaping(Bool) -> Void) {
+         guard let idText = idTextField.text, !idText.isEmpty else {
+             showAlert(title: "아이디 입력", message: "아이디를 입력해주세요.")
+             completion(false)
+             return
+         }
+         
+         guard let pwText = passwordTextField.text, !pwText.isEmpty else {
+             showAlert(title: "비밀번호 입력", message: "비밀번호를 입력해주세요.")
+             completion(false)
+             return
+         }
+         APIService.shared.login(userID: idText, password: pwText) { result in
+             switch result {
+             case .success:
+                 if let token = KeychainManager.shared.get(KeychainKeys.accessToken) {
+                     print("🔑저장된 accessToken: \(token) ")
+                 } else {
+                     print("❌ accessToken KeyChain에 없음")
+                 }
+                 print("✅ 로그인 성공")
+                 completion(true)
+                 DispatchQueue.main.async {
+                     
+                 }
+             case .failure(let error):
+                 print("❌ 로그인 실패:", error.localizedDescription)
+                 completion(false)
+             }
+         }
+     }
 }

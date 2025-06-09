@@ -96,7 +96,7 @@ class DeleteDetailPageViewController: UIViewController {
 extension DeleteDetailPageViewController {
     
     private func deleteUserAccount() {
-        guard let accessToken = KeychainHelper.shared.loadToken() else {
+        guard let accessToken = KeychainManager.shared.get(KeychainKeys.accessToken) else {
             print("❌ 토큰없음 - 삭제불가")
             return
         }
@@ -110,8 +110,8 @@ extension DeleteDetailPageViewController {
             .response { response in
                 switch response.result {
                 case .success:
-                    print("✅유저 삭제 성공")
-                    KeychainHelper.shared.deleteToken()
+                    print("✅ 유저 삭제 성공")
+                    KeychainManager.shared.clearAll()
                     print("🔑 Keychain 토큰 삭제 완료")
                     print("📦 탈퇴 요청에 사용된 토큰: \(accessToken)")
                 case .failure(let error):
