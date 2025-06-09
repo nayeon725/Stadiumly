@@ -14,8 +14,8 @@ class MyPageViewController: UIViewController {
     private var teamID: Int = 0
     private var teamName: String = ""
     private var userNickName: String = ""
-    private var userID: String = "juhong123"
-    private var userEmail: String = "email@mail.com"
+    private var userID: String = ""
+    private var userEmail: String = ""
     
     private let mypageTitle = UILabel()
     private let profileSection = UIStackView()
@@ -79,7 +79,7 @@ class MyPageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
+        delAccButton.addTarget(self, action: #selector(moveDeletePageVC), for: .touchUpInside)
         view.addSubview(delAccButton)
         delAccButton.snp.makeConstraints { make in
             make.bottom.equalToSuperview().inset(35)
@@ -112,6 +112,10 @@ class MyPageViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         backButton.addGestureRecognizer(tapGesture)
     }
+    @objc private func moveDeletePageVC() {
+        let deleteVC = DeleteAccountViewController()
+        navigationController?.pushViewController(deleteVC, animated: true)
+    }
     
     @objc func logoTapped() {
         // 화면 전환 동작 (예: pull)
@@ -124,6 +128,8 @@ class MyPageViewController: UIViewController {
             teamName = stadium.team
         }
         userNickName = DataManager.shared.userNickname
+        userID = DataManager.shared.userLoginID
+        userEmail = DataManager.shared.userEmail
     }
 
     private func setupTitle() {

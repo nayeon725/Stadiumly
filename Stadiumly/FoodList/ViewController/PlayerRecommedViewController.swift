@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Alamofire
 
 //야구 선수 추천
 class PlayerRecommedViewController: UIViewController {
@@ -109,50 +110,27 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
     }
     
 }
-//MARK: - API 데이터 받는거 > 수정해야함
+//MARK: - API
 extension PlayerRecommedViewController {
-    //수정해야함 - 팀이름으로 받아와야함
-    func playerRecommed() {
-        let endPt = "http://40.82.137.87/stadium/??"
-        guard let url = URL(string: endPt) else { return }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let parameters = [""]
-        let jsonData = try? JSONSerialization.data(withJSONObject: parameters)
-        request.httpBody = jsonData
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Network error: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                print("Invalid response")
-                return
-            }
-            
-            print("Status code: \(httpResponse.statusCode)")  // 200 OK인지 확인
-            
-            guard let data = data else {
-                print("데이터 없음")
-                return
-            }
-            print("받은 데이터 크기: \(data.count)")
-            
-            do {
-                DispatchQueue.main.async {
+
+    func playerRecommed(location: String) {
+        let endPt = "http://localhost:3000/cafeteria/\(String(stadiumlyId))?location=\(location)"
+        AF.request(endPt, method: .get)
+            .validate()
+            .responseDecodable(of: [Cafeteria].self) { response in
+                switch response.result {
+                case.success(let decoded):
+                    DispatchQueue.main.async {
+                        self.cafeteriaList = decoded
+                        self.playerRecommedCollectionView.reloadData()
+                    }
+                case .failure(let error):
+                    print("요청실패\(error.localizedDescription)")
                 }
-            } catch {
-                print("디코딩 에러: \(error)")
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("받은 JSON 문자열: \(jsonString)")
-                } else {
-                    print("JSON 문자열 변환 실패")
-                }
+                if let data = response.data,
+                   let jsonString = String(data: data, encoding: .utf8) {
+//                    print("받은 응답 JSON: \(jsonString)")
             }
-        }.resume()
+        }
     }
 }
