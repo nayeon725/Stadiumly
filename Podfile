@@ -6,6 +6,7 @@ target 'Stadiumly' do
   use_frameworks!
 
   # Pods for Stadiumly
- pod 'DropDown'
+ pod 'DropDown', '~> 2.3.4' # 또는 최신 버전
+ pod 'KeychainAccess'
 
 end
