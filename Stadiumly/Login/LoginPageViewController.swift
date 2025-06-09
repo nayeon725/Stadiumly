@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Alamofire
 
 //로그인 페이지
 class LoginPageViewController: UIViewController {
@@ -14,6 +15,13 @@ class LoginPageViewController: UIViewController {
     private var mascotImageList = ["mascot_doosanbears","mascot_hanhwaeagles","mascot_kiatigers","mascot_kiwoomheroes","mascot_ktwiz","mascot_lgtwins","mascot_lottegiants","mascot_ncdinos","mascot_samsunglions","mascot_ssglanders"]
     
     private var timer: Timer?
+    
+    private let session: Session = {
+            let configuration = URLSessionConfiguration.default
+            configuration.timeoutIntervalForRequest = 120
+            configuration.timeoutIntervalForResource = 120
+            return Session(configuration: configuration)
+        }()
     
     private let stadiumlyLogo = UIImageView()
     private let idTextField = UITextField()
@@ -120,14 +128,32 @@ class LoginPageViewController: UIViewController {
         findIdButton.addTarget(self, action: #selector(findIdMoveVC), for: .touchUpInside)
         findPasswordButton.addTarget(self, action: #selector(findPasswordMoveVC), for: .touchUpInside)
         self.navigationItem.hidesBackButton = true
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
+        passwordTextField.isSecureTextEntry = true
     }
-    
     func setupProperty() {
         carouselCollectionView.delegate = self
         carouselCollectionView.dataSource = self
         carouselCollectionView.register(LoginPageCollectionViewCell.self, forCellWithReuseIdentifier: "loginCell")
         idTextField.delegate = self
         passwordTextField.delegate = self
+    }
+    @objc private func loginButtonTapped(_ sender: UIButton) {
+        guard let id = idTextField.text, !id.isEmpty,
+              let password = passwordTextField.text, !password.isEmpty else {
+            print("❌ 아이디 또는 비밀번호가 비어있습니다")
+            return
+        }
+//        login(id: id, password: password) { success in
+//            if success {
+//                DispatchQueue.main.async {
+//                    let mainVC = DeleteAccountViewController()
+//                    self.navigationController?.pushViewController(mainVC, animated: true)
+//                }
+//            } else {
+//                print("❌ 로그인 실패 : 화면 전환 안함 ")
+//            }
+//        }
     }
 }
 //MARK: - 화면이동, 텍스트필드
@@ -251,31 +277,5 @@ extension LoginPageViewController: UICollectionViewDataSource, UICollectionViewD
 //MARK: - 로그인 API
 extension LoginPageViewController {
     
-    //토큰값 받아서 로그인 시켜야함 
-    func login() {
-        let endPoint = "http://40.82.137.87/stadium/??"
-        guard let url = URL(string: endPoint) else { return }
-        var request = URLRequest(url: url)
-        let seesion = URLSession.shared
-        let task = seesion.dataTask(with: request) { data, _ , error in
-            if let error = error {
-                print("요청 실패 Error: \(error.localizedDescription)")
-                return
-            }
-            guard let data else {
-                print("데이터가 없습니다")
-                return
-            }
-            print(String(data: data, encoding: .utf8) ?? "❌문자열 변환 실패")
-            do {
-                _ = try JSONDecoder().decode(KakaoSearch.self, from: data)
-                DispatchQueue.main.async {
-                }
-            } catch {
-                print("디코딩 실패\(error)")
-            }
-        }
-        task.resume()
-    }
-    
+  
 }

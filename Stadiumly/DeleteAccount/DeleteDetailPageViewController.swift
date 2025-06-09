@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Alamofire
 
 class DeleteDetailPageViewController: UIViewController {
 
@@ -82,48 +83,44 @@ class DeleteDetailPageViewController: UIViewController {
         titleLabel.text = "회원탈퇴 완료"
         informationLabel.text = "회원 탈퇴가 완료되었습니다.\n\n 더 나은 서비스로 보답하겠습니다 \n감사합니다"
       
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             let loginPage = LoginPageViewController()
             let nav = UINavigationController(rootViewController: loginPage)
             nav.modalPresentationStyle = .fullScreen
             self.present(nav, animated: true, completion: nil)
         }
-        //추가로 버튼누르면 계정정보를 삭제하는것도 구현해야함
     }
 
 }
 //MARK: - 회원탈퇴 API
 extension DeleteDetailPageViewController {
     
-   private func deleteUserAccount() {
-        let endpt = "http://40.82.137.87/stadium/???"
-        guard let url = URL(string: endpt) else { return }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "DELETE"
-//        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-//        request.setValue("Bearer \(userToken)", forHTTPHeaderField: "Authorization")
-
-      
-        let parameters = [""]
-
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
-        } catch {
-            print("JSON 변환 실패: \(error)")
+    private func deleteUserAccount() {
+        guard let accessToken = KeychainHelper.shared.loadToken() else {
+            print("❌ 토큰없음 - 삭제불가")
             return
         }
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("에러: \(error.localizedDescription)")
-                return
+        let endpt = "http://localhost:3000/auth/delete-user"
+        let headers: HTTPHeaders = [
+            "Authorization" : "Bearer \(accessToken)",
+            "Content-Type" : "application/json"
+        ]
+        AF.request(endpt, method: .post, headers: headers)
+            .validate(statusCode: 201..<300)
+            .response { response in
+                switch response.result {
+                case .success:
+                    print("✅유저 삭제 성공")
+                    KeychainHelper.shared.deleteToken()
+                    print("🔑 Keychain 토큰 삭제 완료")
+                    print("📦 탈퇴 요청에 사용된 토큰: \(accessToken)")
+                case .failure(let error):
+                    if let statusCode = response.response?.statusCode {
+                        print("❌ 유저 삭제 실패 - 상태코드 \(statusCode)")
+                    } else {
+                        print("❌ 요청 실패 : \(error.localizedDescription)")
+                    }
+                }
             }
-            guard let httpResponse = response as? HTTPURLResponse else {
-                print("응답 오류")
-                return
-            }
-            print("Status code: \(httpResponse.statusCode)")
-        }.resume()
     }
 }

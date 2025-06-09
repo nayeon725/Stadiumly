@@ -7,20 +7,26 @@
 import UIKit
 import SnapKit
 
+protocol FoodCategorySearch: AnyObject {
+    func filterCafeteria(by category: String?)
+}
+
+private var apiKey: String = {
+     if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
+        let dict = NSDictionary(contentsOfFile: path),
+        let key = dict["KAKAO_API_KEY_NY"] as? String {
+         return key
+     }
+     return ""
+ }()
+
 //먹거리 페이지
 class FoodListViewController: UIViewController {
     
 
     weak var delegate: FoodSearchDelegate?
     
-    private lazy var apiKey: String = {
-        if let path = Bundle.main.path(forResource: "APIKeys", ofType: "plist"),
-           let dict = NSDictionary(contentsOfFile: path),
-           let key = dict["KAKAO_API_KEY_NY"] as? String {
-            return key
-        }
-        return ""
-    }()
+ 
     
     var lat: Double = 0.0
     var lon: Double = 0.0
@@ -285,9 +291,20 @@ extension FoodListViewController {
 extension FoodListViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let query = searchBar.text
+        
         if currentChildVC == outfieldFoodVC {
-            searchFood(query: searchBar.text)
+            searchFood(query: query)
+        } else if currentChildVC == infieldFoodVC {
+            (infieldFoodVC as? FoodCategorySearch)?.filterCafeteria(by: query)
         }
+        
         searchBar.resignFirstResponder()
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if currentChildVC == infieldFoodVC {
+            (infieldFoodVC as? FoodCategorySearch)?.filterCafeteria(by: searchText)
+        }
     }
 }

@@ -610,7 +610,8 @@ extension SignUpPageViewController {
 //            }
 //        }
     }
-        private let signUp() {
+      private func signUp() {
+
         let email = emailTextField.text ?? ""
         let token = verificationTextField.text ?? ""
         

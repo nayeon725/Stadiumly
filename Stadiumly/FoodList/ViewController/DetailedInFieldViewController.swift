@@ -17,6 +17,8 @@ class DetailedInFieldViewController: UIViewController {
     
     var detailData: Cafeteria?
     
+    var convertedLocation: String?
+    
     private let imageView = UIImageView()
     private let nameLabel = UILabel()
     private let locationButton = UIButton()
@@ -36,8 +38,12 @@ class DetailedInFieldViewController: UIViewController {
         if let detail = detailData {
             configureImage(with: detail)
         }
+        if let location = convertedLocation {
+            locationLabel.text = "위치 : \(location)"
+        } else {
+            locationLabel.text = "위치 정보 없음"
+        }
     }
-    
     
     func setupAddSubview() {
         [imageView, nameLabel, locationLabel, menuLabel, operatingHoursLabel, locationButton, menuButton, hoursButton, xmarkButton].forEach {
@@ -92,9 +98,8 @@ class DetailedInFieldViewController: UIViewController {
         view.backgroundColor = .white
         nameLabel.text = foodData.cafe_name
         nameLabel.font = UIFont.boldSystemFont(ofSize: 30)
-        locationLabel.text = "위치 : \(foodData.cafe_location)"
-        menuLabel.text = "메뉴 : "
-        operatingHoursLabel.text = "운영시간 : "
+        menuLabel.text = "메뉴 : \(foodData.cafe_category)"
+        operatingHoursLabel.text = "운영시간 : 구장 운영시간 내"
         locationButton.setImage(UIImage(named: "location"), for: .normal)
         menuButton.setImage(UIImage(named: "menu"), for: .normal)
         hoursButton.setImage(UIImage(named: "clock"), for: .normal)
