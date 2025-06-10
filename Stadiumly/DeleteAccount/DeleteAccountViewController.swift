@@ -37,7 +37,7 @@ class DeleteAccountViewController: UIViewController {
     
 
     func setupAddSubview() {
-        [stadiumlyLogo, deleteLabel,deleteSubLabel, deleteAccountButton, dropdownButton, dropdownTableView].forEach {
+        [stadiumlyLogo, deleteLabel,deleteSubLabel, deleteAccountButton, dropdownButton, dropdownTableView, backButton].forEach {
             view.addSubview($0)
         }
     }
@@ -45,7 +45,12 @@ class DeleteAccountViewController: UIViewController {
     func setupConstraints() {
         stadiumlyLogo.snp.makeConstraints {
             $0.top.equalToSuperview().offset(100)
-            $0.leading.equalToSuperview().offset(20)
+            $0.centerX.equalToSuperview()
+        }
+        backButton.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(105)
+            $0.leading.equalToSuperview().offset(30)
+            $0.width.height.equalTo(25)
         }
         deleteLabel.snp.makeConstraints {
             $0.top.equalTo(stadiumlyLogo.snp.bottom).offset(50)
@@ -115,7 +120,7 @@ class DeleteAccountViewController: UIViewController {
         dropdownTableView.layer.borderWidth = 0.5
         dropdownTableView.rowHeight = 44
         dropdownTableView.separatorInset = .zero
-        backButton.setImage(UIImage(systemName: "arrow.left"), for: .normal)
+        backButton.setImage(UIImage(named: "back"), for: .normal)
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         backButton.addGestureRecognizer(tapGesture)

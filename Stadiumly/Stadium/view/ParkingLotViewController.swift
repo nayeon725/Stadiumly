@@ -125,7 +125,7 @@ class ParkingLotViewController: UIViewController {
         xmarkButton.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(27)
             $0.trailing.equalToSuperview().inset(20)
-            $0.width.height.equalTo(25)
+            $0.width.height.equalTo(20)
         }
         shadowView.snp.makeConstraints {
             $0.top.equalTo(titleLabel.snp.bottom).offset(30)
