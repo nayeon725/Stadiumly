@@ -32,6 +32,25 @@ class DataManager {
         }
     }
     
+    func logout() {
+        print("Before clearing:")
+        print("Access Token:", KeychainManager.shared.get(KeychainKeys.accessToken) ?? "없음")
+        print("Refresh Token:", KeychainManager.shared.get(KeychainKeys.refreshToken) ?? "없음")
+
+        KeychainManager.shared.clearAll()
+
+        print("After clearing:")
+        print("Access Token:", KeychainManager.shared.get(KeychainKeys.accessToken) ?? "없음")
+        print("Refresh Token:", KeychainManager.shared.get(KeychainKeys.refreshToken) ?? "없음")
+        
+        userNickname = ""
+        userEmail = ""
+        userLoginID = ""
+        userPassword = ""
+        userTeamID = 0
+        selectedStadium = nil
+    }
+    
     func setSelectedStadium(_ stadium: Stadium) {
         selectedStadium = stadium
     }

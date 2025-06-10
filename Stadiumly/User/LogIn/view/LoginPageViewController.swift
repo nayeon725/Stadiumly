@@ -303,6 +303,8 @@ extension LoginPageViewController: UITextFieldDelegate {
     }
     
     @objc private func mainVC() {
+        print("Access Token:", KeychainManager.shared.get(KeychainKeys.accessToken) ?? "없음")
+        print("Refresh Token:", KeychainManager.shared.get(KeychainKeys.refreshToken) ?? "없음")
         let mainVC = ViewController()
         navigationController?.pushViewController(mainVC, animated: true)
     }

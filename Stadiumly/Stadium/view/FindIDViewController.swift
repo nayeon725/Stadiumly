@@ -350,6 +350,7 @@ extension FindIDViewController {
             }
         }
     }// auth/find-id
+    
     private func requestFindUserId(email: String) {
         let url = endpt + "auth/find-id"
         let parameters = ["email" : email]

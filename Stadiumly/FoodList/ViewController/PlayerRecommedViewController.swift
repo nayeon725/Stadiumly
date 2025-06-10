@@ -13,8 +13,6 @@ import Alamofire
 //야구 선수 추천
 class PlayerRecommedViewController: UIViewController {
     
-    
-    
     private var stadiumlyId: Int = 0
     
     private var playerRecommand: [PlayerRecommand] = []
@@ -118,7 +116,6 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
 }
 //MARK: - API
 extension PlayerRecommedViewController {
-
     func playerRecommed(stadiumlyId: String) {
         let endPt = "http://20.41.113.4/player-recommand/\(String(stadiumlyId))"
         AF.request(endPt, method: .get)

@@ -20,6 +20,7 @@ class ParkingLotViewController: UIViewController {
            let key = dict["KAKAO_API_KEY_NY"] as? String {
             return key
         }
+        print("🚨 API 키를 가져오지 못했습니다.")
         return ""
     }()
 
@@ -364,6 +365,27 @@ extension ParkingLotViewController: KakaoMapEventDelegate {
                 poi.show()
             }
         }
+        
+        for (index, place) in places.enumerated() {
+            guard
+                let longitude = Double(place.x),
+                let latitude = Double(place.y)
+            else {
+                print("🚨 마커 정보 누락: \(place)")
+                continue
+            }
+
+            let poiOption = PoiOptions(styleID: "PerLevelStyle")
+            poiOption.clickable = true
+            poiOption.addText(PoiText(text: place.place_name, styleIndex: 0))
+            poiOption.rank = 0
+
+            if let poi = layer.addPoi(option: poiOption, at: MapPoint(longitude: longitude, latitude: latitude)) {
+                let poiId = "agpPoiLayer\(index)"
+                poiURLMap[poiId] = place.place_url
+                poi.show()
+            }
+        }
     }
 }
 //MARK: - API호출
@@ -392,7 +414,10 @@ extension ParkingLotViewController {
                     self.createPois()
                 }
             } catch {
-                print("디코딩 실패\(error)")
+                print("디코딩 실패: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.showToast(self.view, message: "주차장 정보를 불러오지 못했습니다.")
+                }
             }
         }
         task.resume()
