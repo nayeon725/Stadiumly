@@ -53,8 +53,6 @@ class ParkingLotViewController: UIViewController {
     
     @objc func logoTapped() {
         print("Tapped!")
-        // 화면 전환 동작 (예: pull)
-        let mainVC = MainInfoViewController()
         navigationController?.popViewController(animated: true)
     }
     
@@ -172,7 +170,6 @@ class ParkingLotViewController: UIViewController {
         mapController?.resetEngine()
     }
     @objc private func moveMainInfoVC() {
-        let mainInfoVC = MainInfoViewController()
         navigationController?.popViewController(animated: true)
     }
 }
