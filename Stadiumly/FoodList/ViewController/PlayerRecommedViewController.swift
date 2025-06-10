@@ -9,13 +9,13 @@ import UIKit
 import SnapKit
 import Alamofire
 
+
 //야구 선수 추천
 class PlayerRecommedViewController: UIViewController {
     
-    
     private var stadiumlyId: Int = 0
     
-    private var cafeteriaList: [Cafeteria] = []
+    private var playerRecommand: [PlayerRecommand] = []
     
     lazy var playerRecommedCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -31,11 +31,15 @@ class PlayerRecommedViewController: UIViewController {
         configureUI()
         setupProperty()
         updateStadiumInfo()
+    
     }
     
     private func updateStadiumInfo() {
         if let stadium = DataManager.shared.selectedStadium {
             stadiumlyId = stadium.id
+            playerRecommed(stadiumlyId: String(stadiumlyId))
+        } else {
+            print("❌ selectedStadium이 nil입니다")
         }
     }
 
@@ -66,7 +70,7 @@ class PlayerRecommedViewController: UIViewController {
 extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let selectedItem = cafeteriaList[indexPath.row]
+        let selectedItem = playerRecommand[indexPath.row]
         let detailPageVC = DetailedPlayerViewController()
         detailPageVC.detailData = selectedItem
         detailPageVC.modalPresentationStyle = .pageSheet
@@ -80,7 +84,7 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
     }
   
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return cafeteriaList.count
+        return playerRecommand.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -88,7 +92,7 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
         else {
             return UICollectionViewCell()
         }
-        cell.configureImage(with: cafeteriaList[indexPath.row])
+        cell.configureImage(with: playerRecommand[indexPath.row])
         return cell
     }
   
@@ -112,16 +116,15 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
 }
 //MARK: - API
 extension PlayerRecommedViewController {
-
-    func playerRecommed(location: String) {
+    func playerRecommed(stadiumlyId: String) {
         let endPt = "http://20.41.113.4/player-recommand/\(String(stadiumlyId))"
         AF.request(endPt, method: .get)
             .validate()
-            .responseDecodable(of: [Cafeteria].self) { response in
+            .responseDecodable(of: [PlayerRecommand].self) { response in
                 switch response.result {
                 case.success(let decoded):
                     DispatchQueue.main.async {
-                        self.cafeteriaList = decoded
+                        self.playerRecommand = decoded
                         self.playerRecommedCollectionView.reloadData()
                     }
                 case .failure(let error):
@@ -130,7 +133,7 @@ extension PlayerRecommedViewController {
                 }
                 if let data = response.data,
                    let jsonString = String(data: data, encoding: .utf8) {
-//                    print("받은 응답 JSON: \(jsonString)")
+                    print("받은 응답 JSON: \(jsonString)")
             }
         }
     }

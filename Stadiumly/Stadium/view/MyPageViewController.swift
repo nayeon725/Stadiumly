@@ -111,7 +111,10 @@ class MyPageViewController: UIViewController {
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         backButton.addGestureRecognizer(tapGesture)
+        
+        logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
     }
+    
     @objc private func moveDeletePageVC() {
         let deleteVC = DeleteAccountViewController()
         navigationController?.pushViewController(deleteVC, animated: true)
@@ -120,6 +123,35 @@ class MyPageViewController: UIViewController {
     @objc func logoTapped() {
         // 화면 전환 동작 (예: pull)
         navigationController?.popViewController(animated: true)
+    }
+    
+    @objc func logoutButtonTapped() {
+        APIService.shared.requestAuthorized("/auth/logout", method: .post) { result in
+            switch result {
+            case .success:
+                print("로그아웃 성공")
+                // 토큰 제거 + 사용자 정보 초기화
+                DataManager.shared.logout()
+                self.showAlert(title: "완료", message: "로그아웃 되었습니다.") {
+                    // 화면 이동
+                    let loginVC = LoginPageViewController()
+                    self.navigationController?.pushViewController(loginVC, animated: true)
+                }
+            case .failure(let error):
+                print("로그아웃 실패 \(error)")
+                self.showAlert(title: "오류 발생", message: "로그아웃에 실패하였습니다.")
+            }
+        }
+    }
+    
+    private func showAlert(title: String, message: String, handler: (() -> Void)? = nil) {
+        let alert = UIAlertController(title: title,
+                                      message: message,
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default) { _ in
+            handler?()
+        })
+        present(alert, animated: true)
     }
     
     private func loadUserData() {

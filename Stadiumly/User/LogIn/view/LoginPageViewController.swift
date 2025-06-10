@@ -10,6 +10,7 @@ import SnapKit
 import Alamofire
 import KeychainAccess
 
+
 //로그인 페이지
 class LoginPageViewController: UIViewController {
     
@@ -288,6 +289,8 @@ extension LoginPageViewController: UITextFieldDelegate {
     }
     
     @objc private func mainVC() {
+        print("Access Token:", KeychainManager.shared.get(KeychainKeys.accessToken) ?? "없음")
+        print("Refresh Token:", KeychainManager.shared.get(KeychainKeys.refreshToken) ?? "없음")
         let mainVC = ViewController()
         navigationController?.pushViewController(mainVC, animated: true)
     }
