@@ -20,6 +20,7 @@ class InFieldFoodViewController: UIViewController {
     
     private var filteredList: [Cafeteria] = []
     private var isSearching: Bool = false
+    private var currentSearchQuery: String?
     
 
     private let foodMenuTitle = ["1루", "3루", "외야"]
@@ -48,7 +49,7 @@ class InFieldFoodViewController: UIViewController {
         setupSegement()
         updateStadiumInfo()
 
-        let defaultLocation = foodMenuCodes[1]
+        let defaultLocation = foodMenuCodes[0]
         inFieldFoodList(location: defaultLocation)
         
         DispatchQueue.main.async {
@@ -231,14 +232,18 @@ extension InFieldFoodViewController {
                 case.success(let decoded):
                     DispatchQueue.main.async {
                         self.cafeteriaList = decoded
-                        self.inFieldCollectionView.reloadData()
+                        if let query = self.currentSearchQuery, !query.isEmpty {
+                            self.filterCafeteria(by: query)
+                        } else {
+                            self.inFieldCollectionView.reloadData()
+                        }
                     }
                 case .failure(let error):
                     print("요청실패\(error.localizedDescription)")
                 }
                 if let data = response.data,
                    let jsonString = String(data: data, encoding: .utf8) {
-//                    print("받은 응답 JSON: \(jsonString)")
+                    print("받은 응답 JSON: \(jsonString)")
             }
         }
     }
@@ -248,10 +253,12 @@ extension InFieldFoodViewController: FoodCategorySearch {
     func filterCafeteria(by category: String?) {
         guard let category = category, !category.isEmpty else {
             isSearching = false
+            currentSearchQuery = nil
             inFieldCollectionView.reloadData()
             return
         }
         isSearching = true
+        currentSearchQuery = category
         filteredList = cafeteriaList.filter {
             $0.cafe_category.localizedStandardContains(category)
         }

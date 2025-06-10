@@ -52,9 +52,10 @@ class PlayerRecommedCollectionViewCell: UICollectionViewCell {
             .strokeColor: UIColor.white,
             .foregroundColor: UIColor.white,
             .strokeWidth: -2.0,
-            .font: UIFont.systemFont(ofSize: 23, weight: .bold)
+            .font: UIFont.systemFont(ofSize: 20, weight: .bold)
         ]
         nameLabel.attributedText = NSAttributedString(string: "야구 선수 추천", attributes: strokeTextAttributes)
+        imageView.contentMode = .scaleAspectFill
     }
     
     func configure(with imageName: String) {

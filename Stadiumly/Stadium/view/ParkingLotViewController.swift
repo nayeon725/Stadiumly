@@ -53,8 +53,6 @@ class ParkingLotViewController: UIViewController {
     
     @objc func logoTapped() {
         print("Tapped!")
-        // 화면 전환 동작 (예: pull)
-        let mainVC = MainInfoViewController()
         navigationController?.popViewController(animated: true)
     }
     
@@ -125,7 +123,7 @@ class ParkingLotViewController: UIViewController {
         xmarkButton.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(27)
             $0.trailing.equalToSuperview().inset(20)
-            $0.width.height.equalTo(25)
+            $0.width.height.equalTo(20)
         }
         shadowView.snp.makeConstraints {
             $0.top.equalTo(titleLabel.snp.bottom).offset(30)
@@ -172,7 +170,6 @@ class ParkingLotViewController: UIViewController {
         mapController?.resetEngine()
     }
     @objc private func moveMainInfoVC() {
-        let mainInfoVC = MainInfoViewController()
         navigationController?.popViewController(animated: true)
     }
 }
@@ -388,6 +385,7 @@ extension ParkingLotViewController: KakaoMapEventDelegate {
         }
     }
 }
+
 //MARK: - API호출
 extension ParkingLotViewController {
     
