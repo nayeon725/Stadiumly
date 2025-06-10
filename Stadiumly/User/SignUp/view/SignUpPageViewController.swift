@@ -303,8 +303,15 @@ class SignUpPageViewController: UIViewController {
         setPasswordShow()
         let backButtonGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         backButton.addGestureRecognizer(backButtonGesture)
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dissmissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
     }
     
+    @objc private func dissmissKeyboard() {
+        view.endEditing(true)
+    }
+
     @objc private func textFieldsDidChange(_ textField: UITextField) {
         if textField == idTextField {
             if let id = textField.text {
@@ -459,6 +466,8 @@ class SignUpPageViewController: UIViewController {
             switch result {
             case .success(let response):
                 self.showAlert(title: "회원가입 완료", message: response.message)
+                let singUpVC = SignUpCompletionViewController()
+                self.navigationController?.pushViewController(singUpVC, animated: true)
             case .failure(let error):
                 self.showAlert(title: "회원가입 실패", message: error.localizedDescription)
             }
@@ -469,7 +478,6 @@ class SignUpPageViewController: UIViewController {
         dropdownTableView.delegate = self
         dropdownTableView.dataSource = self
         dropdownTableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
-        passwordTextField.delegate = self
     }
     
     private func isValidPassword(_ password: String) -> Bool {
@@ -496,12 +504,7 @@ class SignUpPageViewController: UIViewController {
 }
 
 //MARK: - UI 설정 함수들
-extension SignUpPageViewController: UITextFieldDelegate{
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return true
-    }
+extension SignUpPageViewController {
     
     private func configureLabel(_ label: UILabel, text: String, fontSize: CGFloat) {
         label.text = text
@@ -589,15 +592,9 @@ extension SignUpPageViewController: UITextFieldDelegate{
     }
     //회원가입 버튼
     @objc private func moveToSingUpPageVC() {
-        let singUpVC = SignUpCompletionViewController()
-        navigationController?.pushViewController(singUpVC, animated: true)
         signUpButtonTapped()
     }
     
-//    @objc private func customBackButton() {
-//        navigationController?.popViewController(animated: true)
-//    }
-     
     @objc private func termsPageMove() {
         let termsVC = TermsOfServiceViewController()
         present(termsVC, animated: true)

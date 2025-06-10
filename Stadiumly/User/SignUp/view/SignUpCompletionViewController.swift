@@ -15,7 +15,6 @@ class SignUpCompletionViewController: UIViewController {
     private let completionLabel = UILabel()
     private let singUpButton = UIButton()
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupAddSubview()
@@ -60,10 +59,7 @@ class SignUpCompletionViewController: UIViewController {
         singUpButton.layer.cornerRadius = 20
         singUpButton.addTarget(self, action: #selector(moveToLoginVC), for: .touchUpInside)
         self.navigationItem.hidesBackButton = true
-        let backImage = UIImage(systemName: "arrow.left")
-        let backButton = UIBarButtonItem(image: backImage, style: .plain, target: self, action: #selector(customBackButton))
-        self.navigationItem.leftBarButtonItem = backButton
-        backButton.tintColor = .black
+        
     }
     
     @objc private func moveToLoginVC() {
@@ -74,5 +70,6 @@ class SignUpCompletionViewController: UIViewController {
     @objc private func customBackButton() {
         navigationController?.popViewController(animated: true)
     }
+    
 }
 
