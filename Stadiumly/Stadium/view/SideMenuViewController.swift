@@ -18,7 +18,7 @@ class SideMenuViewController: UIViewController {
     private let logoutButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("로그아웃", for: .normal)
-        button.setTitleColor(.red, for: .normal)
+        button.setTitleColor(.gray, for: .normal)
         button.contentVerticalAlignment = .bottom
         return button
     }()
