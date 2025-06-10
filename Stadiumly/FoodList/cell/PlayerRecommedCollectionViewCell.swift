@@ -61,9 +61,9 @@ class PlayerRecommedCollectionViewCell: UICollectionViewCell {
         imageView.image = UIImage(named: imageName)
     }
     
-    func configureImage(with cafeteria: Cafeteria) {
-         nameLabel.text = cafeteria.cafe_name
-         if let url = URL(string: cafeteria.cafe_image) {
+    func configureImage(with recommend: PlayerRecommand) {
+         nameLabel.text = recommend.reco_name
+         if let url = URL(string: recommend.reco_image) {
              imageView.kf.setImage(with: url, placeholder: UIImage(systemName: "Photo"))
          }
      }

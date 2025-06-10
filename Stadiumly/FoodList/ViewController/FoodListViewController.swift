@@ -145,7 +145,9 @@ class FoodListViewController: UIViewController {
         searchBarView.layer.shadowRadius = 0.5
         searchBarView.layer.shadowOpacity = 0.1
         searchBarView.layer.shadowColor = UIColor.black.cgColor
-        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dissmissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
     }
     func setupProperty() {
         searchBar.delegate = self
@@ -153,6 +155,9 @@ class FoodListViewController: UIViewController {
         
     }
 
+    @objc private func dissmissKeyboard() {
+        view.endEditing(true)
+    }
 }
 
 //MARK: - 푸드 검색 API
