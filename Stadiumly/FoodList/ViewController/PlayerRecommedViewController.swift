@@ -114,7 +114,7 @@ extension PlayerRecommedViewController: UICollectionViewDelegate, UICollectionVi
 extension PlayerRecommedViewController {
 
     func playerRecommed(location: String) {
-        let endPt = "http://localhost:3000/cafeteria/\(String(stadiumlyId))?location=\(location)"
+        let endPt = "http://20.41.113.4/player-recommand/\(String(stadiumlyId))"
         AF.request(endPt, method: .get)
             .validate()
             .responseDecodable(of: [Cafeteria].self) { response in

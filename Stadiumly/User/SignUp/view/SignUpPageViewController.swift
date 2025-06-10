@@ -328,7 +328,7 @@ class SignUpPageViewController: UIViewController {
                         print("✅ 아이디 중복 아님")
                         self.showAlert(title: "아이디 중복 확인", message: "사용 가능한 아이디입니다.")
                     }
-                case .failure:
+                case .failure(let error):
                     self.isEmailUniqueConfirmed = false
 
                     print("❌ 중복된 아이디")
