@@ -73,7 +73,12 @@ class FoodCollectionCell: UICollectionViewCell {
         }
     }
     
-    func configure(with imageName: String) {
-        imageView.image = UIImage(named: imageName)
+    func configure(with imageName: String?) {
+        guard let imageName, let url = URL(string: imageName) else {
+            imageView.image = UIImage(named: "placeholder")
+            return
+        }
+        
+        imageView.kf.setImage(with: url, placeholder: UIImage(named: "loading"))
     }
 }

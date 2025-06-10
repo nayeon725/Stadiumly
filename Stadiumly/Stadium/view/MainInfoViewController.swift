@@ -13,7 +13,9 @@ import Alamofire
 
 class MainInfoViewController: UIViewController {
     
-    private let foodImages = ["크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries", "크새", "fries"]
+    private var stadiumlyId: Int = 0
+    private var foodImages: [String] = ["크새", "fries"]
+    private var playerRecommand: [PlayerRecommand] = []
     private var timer: Timer?
     
     private var stadiums: [Stadium] = []
@@ -40,7 +42,20 @@ class MainInfoViewController: UIViewController {
     private var awayPitcherName: String = ""
     private var awayPitcherImage: URL?
     private var awayTeamName: String = ""
-    private var isLoading: Bool = false
+    private var hasPitcherData: Bool = false {
+        didSet {
+            DispatchQueue.main.async {
+                self.updatePitcherUI()
+            }
+        }
+    }
+    
+    private enum DataSource {
+        case playerRecommend
+        case defaultFood
+    }
+
+    private var currentDataSource: DataSource = .playerRecommend
     
     private let pitcherTitle: UILabel = {
         let label = UILabel()
@@ -112,20 +127,13 @@ class MainInfoViewController: UIViewController {
         return openMenuButton
     }()
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.navigationController?.isNavigationBarHidden = true
-        
-        updateStadiumInfo()
-        updateUIAfterStadiumChange()
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         
         setupTitle() // 타이틀 설정
         setupPitcherUI() // 오늘의 선발 투수 부분 ui
+        updatePitcherUI()
         setupFoodList() // 먹거리 검색 부분 ui
         setupWeatherUI() // 날씨 정보 부분 ui
         // sidemenu
@@ -134,6 +142,14 @@ class MainInfoViewController: UIViewController {
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         titleLabel.addGestureRecognizer(tapGesture)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.isNavigationBarHidden = true
+        
+        updateStadiumInfo()
+        updateUIAfterStadiumChange()
     }
     
     @objc func logoTapped() {
@@ -153,10 +169,12 @@ class MainInfoViewController: UIViewController {
     
     private func updateStadiumInfo() {
         if let stadium = DataManager.shared.selectedStadium {
+            stadiumlyId = stadium.id
             teamName = stadium.team
             stadiumName = stadium.name
             lat = stadium.latitude
             lon = stadium.longitude
+            playerRecommed(stadiumlyId: "\(stadiumlyId)")
         }
     }
     
@@ -181,7 +199,7 @@ class MainInfoViewController: UIViewController {
                 print(decodedData.first)
                 
                 if let pitcherData = decodedData.first {
-                    self.isLoading = true
+                    self.hasPitcherData = true
                     // 홈팀
                     self.homePitcherName = pitcherData.homePitcher
                     self.homeTeamName = pitcherData.homeTeam
@@ -193,13 +211,13 @@ class MainInfoViewController: UIViewController {
                     // 날씨 이미지
                     self.imgURL = URL(string: pitcherData.weatherImage)
                     
-                    DispatchQueue.main.async {
-                        self.updatePitcherUI()
-                    }
                 } else {
-                    self.isLoading = false
+                    self.hasPitcherData = false
                 }
                 
+                DispatchQueue.main.async {
+                    self.updatePitcherUI()
+                }
             case .failure(let error):
                 print("네트워크 또는 디코딩 에러: \(error)")
                 if let data = response.data,
@@ -336,6 +354,7 @@ class MainInfoViewController: UIViewController {
         
         return container
     }
+    
     //캐러셀 참고
     private func setupFoodList() {
         view.addSubview(foodTitle)
@@ -346,7 +365,7 @@ class MainInfoViewController: UIViewController {
         
         // 먹거리 검색 컬렉션 뷰
         view.addSubview(carouselView)
-        carouselView.register(FoodCollectionCell.self, forCellWithReuseIdentifier: "FoodCollection")
+        carouselView.register(FoodCollectionCell.self, forCellWithReuseIdentifier: FoodCollectionCell.identifier)
         carouselView.dataSource = self
         carouselView.delegate = self
         
@@ -355,14 +374,6 @@ class MainInfoViewController: UIViewController {
             make.top.equalTo(foodTitle.snp.bottom)
             make.leading.trailing.equalToSuperview().inset(10)
             make.height.equalTo(200)
-        }
-        
-        // 초기 위치 설정
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            let middleIndex = self.foodImages.count * 100
-            self.carouselView.scrollToItem(at: IndexPath(item: middleIndex, section: 0), at: .centeredHorizontally, animated: false)
-            self.startAutoScroll()
         }
     }
     
@@ -415,25 +426,44 @@ class MainInfoViewController: UIViewController {
             view.removeFromSuperview()
         }
         
-        guard let awayPitcherImage, let  homePitcherImage else { return }
-        // 데이터 기반 새 뷰들 생성
-        let awayPitcher = createPitcherItem(imageURL: awayPitcherImage, pitcherName: awayPitcherName, teamName: awayTeamName)
-        let vsLabel = UILabel()
-        vsLabel.text = "VS"
-        vsLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-        vsLabel.textAlignment = .center
-        vsLabel.textColor = .darkGray
-        
-        let homePitcher = createPitcherItem(imageURL: homePitcherImage, pitcherName: homePitcherName, teamName: homeTeamName)
-        
-        // 새 뷰 추가 (레이아웃 제약은 이미 setupPitcherUI에서 했으니까 안 건드림)
-        pitcherStackView.addArrangedSubview(awayPitcher)
-        pitcherStackView.addArrangedSubview(vsLabel)
-        pitcherStackView.addArrangedSubview(homePitcher)
-        
-        // VS 라벨 너비만 따로 제약
-        vsLabel.snp.makeConstraints { make in
-            make.width.equalTo(40)
+        if hasPitcherData {
+            pitcherStackView.isHidden = false
+            
+            guard let awayPitcherImage, let  homePitcherImage else { return }
+            // 데이터 기반 새 뷰들 생성
+            let awayPitcher = createPitcherItem(imageURL: awayPitcherImage, pitcherName: awayPitcherName, teamName: awayTeamName)
+            let vsLabel = UILabel()
+            vsLabel.text = "VS"
+            vsLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
+            vsLabel.textAlignment = .center
+            vsLabel.textColor = .darkGray
+            
+            let homePitcher = createPitcherItem(imageURL: homePitcherImage, pitcherName: homePitcherName, teamName: homeTeamName)
+            
+            // 새 뷰 추가 (레이아웃 제약은 이미 setupPitcherUI에서 했으니까 안 건드림)
+            pitcherStackView.addArrangedSubview(awayPitcher)
+            pitcherStackView.addArrangedSubview(vsLabel)
+            pitcherStackView.addArrangedSubview(homePitcher)
+            
+            // VS 라벨 너비만 따로 제약
+            vsLabel.snp.makeConstraints { make in
+                make.width.equalTo(40)
+            }
+        } else {
+            pitcherStackView.isHidden = true
+            
+            let noDataLabel = UILabel()
+            noDataLabel.text = "선발투수 정보 준비 중!\n업데이트를 기다려주세요 ⚾️"
+            noDataLabel.numberOfLines = 0
+            noDataLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
+            noDataLabel.textAlignment = .center
+            
+            view.addSubview(noDataLabel)
+            noDataLabel.snp.makeConstraints { make in
+                make.centerX.equalToSuperview()
+                make.top.equalTo(pitcherTitle.snp.bottom).offset(60)
+                make.left.right.equalToSuperview().inset(20)
+            }
         }
     }
     
@@ -503,6 +533,7 @@ class MainInfoViewController: UIViewController {
     }
     
     private func startAutoScroll() {
+        guard !playerRecommand.isEmpty else { return }
         timer?.invalidate()
         timer = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(autoScroll), userInfo: nil, repeats: true)
     }
@@ -514,10 +545,18 @@ class MainInfoViewController: UIViewController {
     
     @objc private func autoScroll() {
         guard let currentIndexPath = carouselView.indexPathsForVisibleItems.first else { return }
-        let nextItem = currentIndexPath.item + 1
-        let nextIndexPath = IndexPath(item: nextItem, section: 0)
+        let count = currentDataSource == .playerRecommend ? playerRecommand.count : foodImages.count
+        guard count > 0 else { return }
         
-        carouselView.scrollToItem(at: nextIndexPath, at: .centeredHorizontally, animated: true)
+        var nextItem = currentIndexPath.item + 1
+        
+        // 마지막 아이템이면 처음으로
+        if nextItem >= count {
+            nextItem = 0
+        }
+        
+        carouselView.scrollToItem(at: IndexPath(item: nextItem, section: 0),
+            at: .centeredHorizontally, animated: true)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -594,13 +633,27 @@ class MainInfoViewController: UIViewController {
 // MARK: - UICollectionView DataSource & Delegate
 extension MainInfoViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return foodImages.count * 200 // 충분히 큰 수로 설정
+        switch currentDataSource {
+        case .playerRecommend:
+            return playerRecommand.count
+        case .defaultFood:
+            return foodImages.count
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FoodCollectionCell.identifier, for: indexPath) as! FoodCollectionCell
-        let imageIndex = indexPath.item % foodImages.count
-        cell.configure(with: foodImages[imageIndex])
+        
+        let imageIndex = indexPath.item % playerRecommand.count
+        print("🖼 cellForItemAt: item = \(indexPath.item), imageIndex = \(imageIndex)")
+        
+        guard playerRecommand.indices.contains(imageIndex) else {
+            print("⚠️ Out of bounds: \(imageIndex) but playerRecommand.count = \(playerRecommand.count)")
+            return cell
+        }
+        
+        let imageUrl = playerRecommand[imageIndex].reco_image
+        cell.configure(with: imageUrl)
         return cell
     }
     
@@ -622,15 +675,75 @@ extension MainInfoViewController: UICollectionViewDataSource, UICollectionViewDe
         startAutoScroll()
     }
     
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard let collectionView = scrollView as? UICollectionView else { return }
+        
+        let count = currentDataSource == .playerRecommend ? playerRecommand.count : foodImages.count
+        guard count > 0 else { return }
+        
+        // 현재 보이는 아이템의 인덱스 계산
+        let visibleItems = collectionView.indexPathsForVisibleItems
+        if let firstVisibleItem = visibleItems.first {
+            // 마지막 아이템에 도달했을 때
+            if firstVisibleItem.item == count - 1 {
+                // 첫 번째 아이템으로 스크롤 (애니메이션 없이)
+                collectionView.scrollToItem(at: IndexPath(item: 0, section: 0),
+                    at: .centeredHorizontally, animated: false)
+            }
+        }
+    }
+    
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         let currentIndex = Int(scrollView.contentOffset.x / scrollView.bounds.width)
-        let imageCount = foodImages.count
+        let imageCount = playerRecommand.count
         
         // 경계에 도달했을 때 중간으로 이동
-        if currentIndex < imageCount || currentIndex > (foodImages.count * 200) - imageCount {
-            let middleIndex = foodImages.count * 100
+        if currentIndex < imageCount || currentIndex > (playerRecommand.count * 200) - imageCount {
+            let middleIndex = playerRecommand.count * 100
             let newIndex = middleIndex + (currentIndex % imageCount)
             scrollView.setContentOffset(CGPoint(x: CGFloat(newIndex) * scrollView.bounds.width, y: 0), animated: false)
         }
+    }
+}
+
+//MARK: - API
+extension MainInfoViewController {
+    func playerRecommed(stadiumlyId: String) {
+        let endPt = "http://20.41.113.4/player-recommand/\(String(stadiumlyId))"
+        AF.request(endPt, method: .get)
+            .validate()
+            .responseDecodable(of: [PlayerRecommand].self) { response in
+                switch response.result {
+                case.success(let decoded):
+                    DispatchQueue.main.async {
+                        if !decoded.isEmpty {
+                            self.currentDataSource = .playerRecommend
+                            self.playerRecommand = decoded
+                        } else {
+                            self.currentDataSource = .defaultFood
+                        }
+                        self.carouselView.reloadData()
+                        
+                        let count = self.currentDataSource == .playerRecommend ? 
+                            self.playerRecommand.count : self.foodImages.count
+                        if count > 0 {
+                            self.carouselView.scrollToItem(at: IndexPath(item: 0, section: 0), 
+                                at: .centeredHorizontally, animated: false)
+                            self.startAutoScroll()
+                        }
+                    }
+                case .failure:
+                    DispatchQueue.main.async {
+                        self.currentDataSource = .defaultFood
+                        self.carouselView.reloadData()
+                        
+                        if self.foodImages.count > 0 {
+                            self.carouselView.scrollToItem(at: IndexPath(item: 0, section: 0), 
+                                at: .centeredHorizontally, animated: false)
+                            self.startAutoScroll()
+                        }
+                    }
+                }
+            }
     }
 }
