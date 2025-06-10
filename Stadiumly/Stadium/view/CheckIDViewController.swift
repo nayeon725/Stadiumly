@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 
 class CheckIDViewController: UIViewController {
+
     var findedID: String = ""
     
     private var findedIDLabel = UILabel()
