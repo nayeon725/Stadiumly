@@ -272,7 +272,7 @@ class SignUpPageViewController: UIViewController {
         emailTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         nickNameTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
         verificationTextField.addTarget(self, action: #selector(textFieldsDidChange), for: .editingChanged)
-//        checkBoxButton.addTarget(self, action: #selector(termsPageMove), for: .touchUpInside)
+        checkBoxButton.addTarget(self, action: #selector(termsPageMove), for: .touchUpInside)
         emailTokenButton.addTarget(self, action: #selector(checkEmailTokenButtonTapped), for: .touchUpInside)
         
         signUpButton.isEnabled = false
@@ -328,7 +328,7 @@ class SignUpPageViewController: UIViewController {
                         print("✅ 아이디 중복 아님")
                         self.showAlert(title: "아이디 중복 확인", message: "사용 가능한 아이디입니다.")
                     }
-                case .failure:
+                case .failure(let error):
                     self.isEmailUniqueConfirmed = false
 
                     print("❌ 중복된 아이디")
@@ -413,6 +413,12 @@ class SignUpPageViewController: UIViewController {
     }
     
     @objc private func signUpButtonTapped() {
+        
+        let trimmedEmail = userEmail.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedID = userID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPW = userPW.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedNick = userNick.trimmingCharacters(in: .whitespacesAndNewlines)
+        
         print(userEmail, userID, userPW, userNick, userTeam)
         guard isEmailUniqueConfirmed else {
             showAlert(title: "이메일 확인 필요", message: "이메일 중복 확인을 먼저 진행해주세요.")
@@ -568,10 +574,10 @@ extension SignUpPageViewController: UITextFieldDelegate{
         navigationController?.popViewController(animated: true)
     }
      
-//    @objc private func termsPageMove() {
-//        let termsVC = TermsOfServiceViewController()
-//        present(termsVC, animated: true)
-//    }
+    @objc private func termsPageMove() {
+        let termsVC = TermsOfServiceViewController()
+        present(termsVC, animated: true)
+    }
     
 }
 
