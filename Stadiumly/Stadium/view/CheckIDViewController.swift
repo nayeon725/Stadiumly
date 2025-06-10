@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 
 class CheckIDViewController: UIViewController {
-    private var userName: String = ""
+
     var findedID: String = ""
     
     private var findedIDLabel = UILabel()
@@ -29,12 +29,13 @@ class CheckIDViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        
+      
         setupCheckID()
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         resetPWLabel.addGestureRecognizer(tapGesture)
     }
+    
     
     @objc func logoTapped() {
         // 화면 전환 동작 (예: pull)
@@ -43,7 +44,7 @@ class CheckIDViewController: UIViewController {
     }
     
     private func setupCheckID() {
-        findedIDLabel.text = "\(userName)님의 아이디는\n\(findedID)입니다."
+        findedIDLabel.text = "찾으시는 아이디는\n\(findedID)입니다."
         findedIDLabel.textAlignment = .center
         findedIDLabel.font = .systemFont(ofSize: 25, weight: .bold)
         findedIDLabel.numberOfLines = 0
