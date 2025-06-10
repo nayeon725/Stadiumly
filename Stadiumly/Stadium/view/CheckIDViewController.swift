@@ -9,8 +9,8 @@ import UIKit
 import SnapKit
 
 class CheckIDViewController: UIViewController {
-    private var userName: String = "가나다"
-    var findedID: String = "abcd1234"
+    private var userName: String = ""
+    var findedID: String = ""
     
     private var findedIDLabel = UILabel()
     private var resetPWLabel = UILabel()

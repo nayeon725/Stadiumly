@@ -22,7 +22,7 @@ class FindIDViewController: UIViewController {
     private var emailValidationTimer: Timer?
     private let emailValidateLabel = UILabel()
     
-    private let changePWButton = UIButton()
+    private let changeIDButton = UIButton()
     
     private let backButton: UIButton = {
         let backButton = UIButton()
@@ -31,6 +31,9 @@ class FindIDViewController: UIViewController {
         backButton.tintColor = .black
         return backButton
     }()
+    
+    private var isValidEmail: Bool = false
+    private var isValidCode: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,7 +48,7 @@ class FindIDViewController: UIViewController {
         setupKeyboardObservers()
         
         emailTF.addTarget(self, action: #selector(emailTFDidChange), for: .editingChanged)
-        changePWButton.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
+        changeIDButton.addTarget(self, action: #selector(changeIDButtonTapped), for: .touchUpInside)
         
         let tapToDismiss = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapToDismiss.cancelsTouchesInView = false
@@ -217,7 +220,6 @@ class FindIDViewController: UIViewController {
         
         codeTF.placeholder = "인증번호 입력"
         codeTF.borderStyle = .roundedRect
-        codeTF.keyboardType = .numberPad
         codeTF.layer.cornerRadius = 20
         codeTF.layer.masksToBounds = true
         codeTF.layer.borderWidth = 0.8
@@ -250,15 +252,15 @@ class FindIDViewController: UIViewController {
     }
     
     private func setupButton() {
-        changePWButton.setTitle("아이디 찾기", for: .normal)
-        changePWButton.titleLabel?.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
-        changePWButton.setTitleColor(.black, for: .normal)
-        changePWButton.backgroundColor = .systemGray4
-        changePWButton.layer.cornerRadius = 10
-        changePWButton.layer.masksToBounds = true
+        changeIDButton.setTitle("아이디 찾기", for: .normal)
+        changeIDButton.titleLabel?.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
+        changeIDButton.setTitleColor(.black, for: .normal)
+        changeIDButton.backgroundColor = .systemGray4
+        changeIDButton.layer.cornerRadius = 10
+        changeIDButton.layer.masksToBounds = true
         
-        contentView.addSubview(changePWButton)
-        changePWButton.snp.makeConstraints { make in
+        contentView.addSubview(changeIDButton)
+        changeIDButton.snp.makeConstraints { make in
             make.top.equalTo(codeTF.snp.bottom).offset(50)
             make.horizontalEdges.equalToSuperview().inset(70)
             make.height.equalTo(50)
@@ -270,9 +272,13 @@ class FindIDViewController: UIViewController {
         view.endEditing(true)
     }
     
-    @objc func buttonTapped() {
-        let checkVC = CheckIDViewController()
-        navigationController?.pushViewController(checkVC, animated: true)
+    @objc func changeIDButtonTapped() {
+        if isValidCode, isValidEmail {
+            let checkVC = CheckIDViewController()
+            navigationController?.pushViewController(checkVC, animated: true)
+        } else {
+            showAlert(title: "오류", message: "이메일 인증을 다시 진행해주세요")
+        }
     }
     
     // MARK: - Keyboard Handling
@@ -315,11 +321,13 @@ extension FindIDViewController: UITextFieldDelegate {
 
 extension FindIDViewController {
     
-    private func showAlert(title: String, message: String) {
+    private func showAlert(title: String, message: String, handler: (() -> Void)? = nil) {
         let alert = UIAlertController(title: title,
                                       message: message,
                                       preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        alert.addAction(UIAlertAction(title: "확인", style: .default) { _ in
+            handler?()
+        })
         present(alert, animated: true)
     }
     
@@ -346,6 +354,7 @@ extension FindIDViewController {
                     let checkIdVC = CheckIDViewController()
                     checkIdVC.findedID = response.user_cus_id
                     self.navigationController?.pushViewController(checkIdVC, animated: true)
+                    self.isValidCode = true
                 } else {
                     self.showAlert(title: "인증번호를 확인해주세요", message: "인증번호가 유효하지 않습니다")
                 }
@@ -364,12 +373,14 @@ extension FindIDViewController {
             showAlert(title: "이메일 확인", message: "이메일 형식이 잘못되었습니다.")
             return
         }
+        
         sendEmailVerificationToken(email: email) { result in
             switch result {
             case .success(let response):
                 if response.status == "success" {
                     print("✅ 인증번호 발송 성공")
                     self.showAlert(title: "인증번호가 발송되었습니다", message: "이메일을 확인해주세요")
+                    self.isValidEmail = true
                 } else {
                     print("❌오류")
                 }
@@ -394,6 +405,7 @@ extension FindIDViewController {
             completion(response.result)
         }
     }
+    
     //유저가 이메일로 받은거 검증
     private func checkEmailToken(email: String, token: String, completion: @escaping (Result<IdCheckResponse, AFError>) -> Void) {
         let url = endpt + "auth/find-id-email-verify"
