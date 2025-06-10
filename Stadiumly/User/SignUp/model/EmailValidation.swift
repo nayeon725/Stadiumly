@@ -18,3 +18,8 @@ struct EmailTokenCheckResponse: Codable {
     let message: String
     let status: String
 } 
+
+struct FindIdEmailVerifyRequest: Codable {
+    let user_email: String
+    let token: String
+}

@@ -89,6 +89,10 @@ class SignUpPageViewController: UIViewController {
         setupProperty()
         
     }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(true, animated: false)
+    }
     
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title,

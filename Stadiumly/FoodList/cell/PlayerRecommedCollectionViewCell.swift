@@ -55,7 +55,7 @@ class PlayerRecommedCollectionViewCell: UICollectionViewCell {
             .font: UIFont.systemFont(ofSize: 20, weight: .bold)
         ]
         nameLabel.attributedText = NSAttributedString(string: "야구 선수 추천", attributes: strokeTextAttributes)
-        imageView.contentMode = .scaleToFill
+        imageView.contentMode = .scaleAspectFill
     }
     
     func configure(with imageName: String) {
