@@ -421,7 +421,7 @@ class FindPWViewController: UIViewController {
             return
         }
         
-        APIService.shared.requestAuthorized("/auth/find-pwd-verify", method: .post, parameters: ["user_email" : insertedEmail, "token" : insertedCode]) { result in
+        APIService.shared.requestAuthorized("/auth/find-pwd-email-verify", method: .post, parameters: ["user_email" : insertedEmail, "token" : insertedCode]) { result in
             switch result {
             case .success:
                 print("✅ 서버에 인증코드 확인 안료")

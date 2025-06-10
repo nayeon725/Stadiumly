@@ -15,13 +15,6 @@ class CheckPWViewController: UIViewController {
     private let completionLabel = UILabel()
     private let singUpButton = UIButton()
     
-    private let backButton: UIButton = {
-        let backButton = UIButton()
-        backButton.setImage(UIImage(named: "back"), for: .normal)
-        backButton.backgroundColor = .clear
-        backButton.tintColor = .black
-        return backButton
-    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,17 +22,6 @@ class CheckPWViewController: UIViewController {
         setupConstraints()
         configureUI()
         
-        view.addSubview(backButton)
-        backButton.snp.makeConstraints { make in
-            make.centerY.equalTo(titleLabel.snp.centerY)
-            make.width.height.equalTo(25)
-            make.left.equalToSuperview().offset(20)
-        }
-        backButton.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
-    }
-    
-    @objc func backButtonTapped() {
-        navigationController?.popViewController(animated: true)
     }
     
     func setupAddSubview() {
