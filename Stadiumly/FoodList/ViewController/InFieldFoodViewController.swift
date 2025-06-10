@@ -238,7 +238,7 @@ extension InFieldFoodViewController {
                 }
                 if let data = response.data,
                    let jsonString = String(data: data, encoding: .utf8) {
-//                    print("받은 응답 JSON: \(jsonString)")
+                    print("받은 응답 JSON: \(jsonString)")
             }
         }
     }

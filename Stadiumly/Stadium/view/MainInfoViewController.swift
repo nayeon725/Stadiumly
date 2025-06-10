@@ -196,7 +196,7 @@ class MainInfoViewController: UIViewController {
         .responseDecodable(of: [PitcherRoot].self) { response in
             switch response.result {
             case .success(let decodedData):
-                print(decodedData.first)
+//                print(decodedData.first)
                 
                 if let pitcherData = decodedData.first {
                     self.hasPitcherData = true

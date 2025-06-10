@@ -144,6 +144,7 @@ class FindIDViewController: UIViewController {
         findIDTitle.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(20)
             make.centerX.equalToSuperview()
+            make.bottom.equalToSuperview().inset(30)
         }
         
         descLabel.text = "가입 시 등록하신 이메일을 입력해주세요."

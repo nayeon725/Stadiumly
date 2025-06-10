@@ -319,7 +319,7 @@ extension OutFieldFoodViewController: FoodSearchDelegate, KakaoMapEventDelegate 
         else { return }
         manager.removeLabelLayer(layerID: "PoiLayer")
         let layerOption = LabelLayerOptions(layerID: "PoiLayer", competitionType: .none, competitionUnit: .symbolFirst, orderType: .rank, zOrder: 0)
-        guard let newLayer = manager.addLabelLayer(option: layerOption) else {
+        guard manager.addLabelLayer(option: layerOption) != nil else {
             print("새 레이어 생성 실패")
             return
         }

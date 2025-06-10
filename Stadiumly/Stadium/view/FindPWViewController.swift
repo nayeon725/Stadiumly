@@ -312,7 +312,7 @@ class FindPWViewController: UIViewController {
             make.top.equalTo(PWStack.snp.bottom).offset(40)
             make.leading.trailing.equalToSuperview().inset(70)
             make.height.equalTo(50)
-            make.bottom.equalToSuperview().inset(10) // 컨텐츠뷰 bottom과 붙도록
+            make.bottom.equalToSuperview().inset(30) // 컨텐츠뷰 bottom과 붙도록
         }
     }
 
@@ -401,7 +401,7 @@ class FindPWViewController: UIViewController {
         
         APIService.shared.requestAuthorized("/auth/find-pwd", method: .post, parameters: ["user_email" : insertedEmail]) { result in
             switch result {
-            case .success(let data):
+            case .success:
                 print("✅ 서버에 이메일 전달 완료")
                 self.showAlert(title: "이메일 확인", message: "이메일로 인증번호가 전송되었습니다.\n확인 후 인증번호를 입력해주세요.")
             case .failure(let error):
@@ -423,7 +423,7 @@ class FindPWViewController: UIViewController {
         
         APIService.shared.requestAuthorized("/auth/find-pwd-verify", method: .post, parameters: ["user_email" : insertedEmail, "token" : insertedCode]) { result in
             switch result {
-            case .success(let data):
+            case .success:
                 print("✅ 서버에 인증코드 확인 안료")
                 self.showAlert(title: "인증코드 확인", message: "이메일로 인증번호가 전송되었습니다.\n확인 후 인증번호를 입력해주세요.")
             case .failure(let error):
@@ -445,9 +445,12 @@ class FindPWViewController: UIViewController {
         
         APIService.shared.requestAuthorized("/auth/find-pwd-update", method: .post, parameters: ["user_email" : insertedEmail, "new_pwd" : newPW]) { result in
             switch result {
-            case .success(let data):
+            case .success:
                 print("✅ 서버에 비밀번호 전달 완료")
-                self.showAlert(title: "비밀번호 확인", message: "비밀번호가 변경되었습니다.")
+                self.showAlert(title: "비밀번호 변경", message: "비밀번호가 변경되었습니다.") {
+                    let checkPWVC = CheckPWViewController()
+                    self.navigationController?.pushViewController(checkPWVC, animated: true)
+                }
             case .failure(let error):
                 print(error.localizedDescription)
                 self.showAlert(title: "오류", message: "서버 에러가 발생했습니다.")
@@ -455,11 +458,13 @@ class FindPWViewController: UIViewController {
         }
     }
     
-    private func showAlert(title: String, message: String) {
+    private func showAlert(title: String, message: String, handler: (() -> Void)? = nil) {
         let alert = UIAlertController(title: title,
                                       message: message,
                                       preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        alert.addAction(UIAlertAction(title: "확인", style: .default) { _ in
+            handler?()
+        })
         present(alert, animated: true)
     }
 }
