@@ -132,7 +132,8 @@ extension SideMenuViewController: UITableViewDelegate, UITableViewDataSource {
             print("✅ Refresh Token: \(KeychainManager.shared.get(KeychainKeys.refreshToken) ?? "없음")")
             if KeychainManager.shared.get(KeychainKeys.accessToken) == nil || KeychainManager.shared.get(KeychainKeys.refreshToken) == nil {
                 self.showAlert(title: "오류", message: "로그인 후 이용해주세요.") {
-                    SideMenuManager.default.leftMenuNavigationController?.dismiss(animated: true)
+                    let loginVC = LoginPageViewController()
+                    self.navigationController?.pushViewController(loginVC, animated: true)
                 }
             } else {
                 let nextVC = MyPageViewController()

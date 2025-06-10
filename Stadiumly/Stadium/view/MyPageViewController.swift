@@ -139,7 +139,10 @@ class MyPageViewController: UIViewController {
                 }
             case .failure(let error):
                 print("로그아웃 실패 \(error)")
-                self.showAlert(title: "오류 발생", message: "로그아웃에 실패하였습니다.")
+                self.showAlert(title: "오류", message: "로그인 후 이용해주세요.") {
+                    let loginVC = LoginPageViewController()
+                    self.navigationController?.pushViewController(loginVC, animated: true)
+                }
             }
         }
     }
