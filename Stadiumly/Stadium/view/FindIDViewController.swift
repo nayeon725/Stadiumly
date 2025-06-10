@@ -5,7 +5,7 @@ import Alamofire
 class FindIDViewController: UIViewController {
     
     // api 관련
-    private let endpt = "http://localhost:3000/"
+    private let endpt = "http://20.41.113.4/"
    
     private var insertedEmail: String = ""
     private var insertedCode: String = ""
@@ -63,6 +63,7 @@ class FindIDViewController: UIViewController {
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         backButton.addGestureRecognizer(tapGesture)
+
     }
     
     @objc func logoTapped() {
@@ -176,6 +177,7 @@ class FindIDViewController: UIViewController {
         emailButton.backgroundColor = .systemGray4
         emailButton.layer.cornerRadius = 20
         emailButton.layer.masksToBounds = true
+        emailButton.addTarget(self, action: #selector(emailButtonTapped), for: .touchUpInside)
         
         contentView.addSubview(emailTF)
         contentView.addSubview(emailButton)
@@ -321,7 +323,7 @@ extension FindIDViewController {
         present(alert, animated: true)
     }
     
-    
+    //이메일 토큰 검증후 아이디받는거
     @objc private func checkToeknButtonTapped() {
         guard let email = emailTF.text,
               let token = codeTF.text,
@@ -339,9 +341,11 @@ extension FindIDViewController {
             case .success(let response):
                 if response.status == "success" {
                     print("✅ 이메일 인증 성공")
+                    let checkId = response.user_cus_id
+                    print("⭐️User ID : \(checkId)")
                     let checkIdVC = CheckIDViewController()
+                    checkIdVC.findedID = response.user_cus_id
                     self.navigationController?.pushViewController(checkIdVC, animated: true)
-                    self.requestFindUserId(email: email)
                 } else {
                     self.showAlert(title: "인증번호를 확인해주세요", message: "인증번호가 유효하지 않습니다")
                 }
@@ -349,30 +353,37 @@ extension FindIDViewController {
                 print("❌서버오류", error)
             }
         }
-    }// auth/find-id
+    }
     
-    private func requestFindUserId(email: String) {
-        let url = endpt + "auth/find-id"
-        let parameters = ["email" : email]
-        AF.request(url, method: .post, parameters: parameters, encoder: URLEncodedFormParameterEncoder.default)
-            .validate()
-            .responseJSON { response in
-                switch response.result {
-                case .success(let value):
-                    if let dict = value as? [String: Any],
-                       let userEmail = dict["user_email"] as? String {
-                    } else {
-                        self.showAlert(title: "아이디를 찾을수 없습니다", message: "아이디를 확인 해주세요")
-                    }
-                case .failure(let error):
-                    print("❌ 아이디 조회실패", error)
+    @objc private func emailButtonTapped() {
+        guard let email = emailTF.text, !email.isEmpty else {
+            showAlert(title: "이메일을 입력", message: "이메일을 입력해주세요.")
+            return
+        }
+        guard validateEmail(email) else {
+            showAlert(title: "이메일 확인", message: "이메일 형식이 잘못되었습니다.")
+            return
+        }
+        sendEmailVerificationToken(email: email) { result in
+            switch result {
+            case .success(let response):
+                if response.status == "success" {
+                    print("✅ 인증번호 발송 성공")
+                    self.showAlert(title: "인증번호가 발송되었습니다", message: "이메일을 확인해주세요")
+                } else {
+                    print("❌오류")
                 }
+            case .failure(let error):
+                print("❌ 인증번호 발송 실패 :\(error)")
+                self.showAlert(title: "인증번호 발송 실패", message: "잠시 후 다시 시도해주세요.")
             }
+        }
     }
 
-    private func checkEmailUnique(email: String, completion: @escaping (Result<EmailUniqueResponse, AFError>) -> Void) {
+    //checkEmailUnique 함수 원래 이름
+    private func sendEmailVerificationToken(email: String, completion: @escaping (Result<EmailUniqueResponse, AFError>) -> Void) {
         let url = endpt + "auth/find-id"
-        let parameters = ["email" : email]
+        let parameters = ["user_email" : email]
         
         AF.request(url,
                    method: .post,
@@ -384,18 +395,17 @@ extension FindIDViewController {
         }
     }
     //유저가 이메일로 받은거 검증
-    private func checkEmailToken(email: String, token: String, completion: @escaping (Result<EmailTokenCheckResponse, AFError>) -> Void) {
-        let url = endpt + "auth/email-token-check"
-        let parameters = EmailTokenCheckRequest(email: email, emailToken: token)
+    private func checkEmailToken(email: String, token: String, completion: @escaping (Result<IdCheckResponse, AFError>) -> Void) {
+        let url = endpt + "auth/find-id-email-verify"
+        let parameters = FindIdEmailVerifyRequest(user_email: email, token: token)
         
         AF.request(url,
                    method: .post,
                    parameters: parameters,
                    encoder: JSONParameterEncoder.default)
         .validate()
-        .responseDecodable(of: EmailTokenCheckResponse.self) { response in
+        .responseDecodable(of: IdCheckResponse.self) { response in
             completion(response.result)
         }
     }
-    
 }

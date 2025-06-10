@@ -49,7 +49,7 @@ class DetailedPlayerViewController: UIViewController {
     func setupConstraints() {
         nameLabel.snp.makeConstraints {
             $0.top.equalToSuperview().offset(30)
-            $0.leading.equalToSuperview().offset(20)
+            $0.centerX.equalToSuperview()
         }
         xmarkButton.snp.makeConstraints {
             $0.top.equalToSuperview().offset(35)
@@ -57,33 +57,33 @@ class DetailedPlayerViewController: UIViewController {
             $0.width.height.equalTo(20)
         }
         imageView.snp.makeConstraints {
-            $0.top.equalTo(nameLabel.snp.bottom).offset(5)
+            $0.top.equalTo(nameLabel.snp.bottom).offset(10)
             $0.centerX.equalToSuperview()
-            $0.width.equalTo(250)
+            $0.width.equalTo(300)
             $0.height.equalTo(200)
         }
         locationButton.snp.makeConstraints {
             $0.top.equalTo(imageView.snp.bottom).offset(20)
-            $0.leading.equalToSuperview().offset(10)
+            $0.leading.equalToSuperview().offset(20)
         }
         locationLabel.snp.makeConstraints {
-            $0.top.equalTo(imageView.snp.bottom).offset(20)
+            $0.top.equalTo(imageView.snp.bottom).offset(23)
             $0.leading.equalTo(locationButton.snp.trailing).offset(5)
         }
         menuButton.snp.makeConstraints {
             $0.top.equalTo(locationLabel.snp.bottom).offset(20)
-            $0.leading.equalToSuperview().offset(10)
+            $0.leading.equalToSuperview().offset(20)
         }
         menuLabel.snp.makeConstraints {
-            $0.top.equalTo(locationLabel.snp.bottom).offset(20)
+            $0.top.equalTo(locationLabel.snp.bottom).offset(23)
             $0.leading.equalTo(menuButton.snp.trailing).offset(5)
         }
         hoursButton.snp.makeConstraints {
             $0.top.equalTo(menuLabel.snp.bottom).offset(20)
-            $0.leading.equalToSuperview().offset(10)
+            $0.leading.equalToSuperview().offset(20)
         }
         phoneNumberLabel.snp.makeConstraints {
-            $0.top.equalTo(menuLabel.snp.bottom).offset(20)
+            $0.top.equalTo(menuLabel.snp.bottom).offset(18)
             $0.leading.equalTo(hoursButton.snp.trailing).offset(5)
         }
     }
@@ -94,14 +94,18 @@ class DetailedPlayerViewController: UIViewController {
         nameLabel.text = foodData.reco_name
         nameLabel.font = UIFont.boldSystemFont(ofSize: 30)
         locationLabel.text = "위치 : \(foodData.reco_add)"
+        locationLabel.font = UIFont.systemFont(ofSize: 15)
         menuLabel.text = "메뉴 : \(foodData.reco_menu)"
+        menuLabel.font = UIFont.systemFont(ofSize: 15)
         phoneNumberLabel.text = "전화번호 : \(foodData.reco_tp)"
+        phoneNumberLabel.font = UIFont.systemFont(ofSize: 15)
 //        operatingHoursLabel.text = "운영시간 : "
         locationButton.setImage(UIImage(named: "location"), for: .normal)
         menuButton.setImage(UIImage(named: "menu"), for: .normal)
-        hoursButton.setImage(UIImage(named: "clock"), for: .normal)
+        hoursButton.setImage(UIImage(named: "phone"), for: .normal)
         xmarkButton.setImage(UIImage(named: "xmark"), for: .normal)
         xmarkButton.addTarget(self, action: #selector(dismissPage), for: .touchUpInside)
+        imageView.contentMode = .scaleAspectFit
     }
     
     @objc private func dismissPage() {

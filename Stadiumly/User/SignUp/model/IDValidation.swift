@@ -12,3 +12,8 @@ struct IDUniqueResponse: Codable {
     let message: String
     let status: String
 } 
+
+struct IdCheckResponse: Codable {
+    let user_cus_id: String
+    let status: String
+}

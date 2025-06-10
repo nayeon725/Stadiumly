@@ -55,6 +55,7 @@ class InFieldCollectionViewCell: UICollectionViewCell {
         ]
 
         nameLabel.attributedText = NSAttributedString(string: "구장 내 먹거리", attributes: strokeTextAttributes)
+        imageView.contentMode = .scaleAspectFill
     }
 
     func configure(with imageName: String) {
