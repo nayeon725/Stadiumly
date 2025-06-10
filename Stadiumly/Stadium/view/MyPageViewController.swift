@@ -14,8 +14,8 @@ class MyPageViewController: UIViewController {
     private var teamID: Int = 0
     private var teamName: String = ""
     private var userNickName: String = ""
-    private var userID: String = "juhong123"
-    private var userEmail: String = "email@mail.com"
+    private var userID: String = ""
+    private var userEmail: String = ""
     
     private let mypageTitle = UILabel()
     private let profileSection = UIStackView()
@@ -79,7 +79,7 @@ class MyPageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
+        delAccButton.addTarget(self, action: #selector(moveDeletePageVC), for: .touchUpInside)
         view.addSubview(delAccButton)
         delAccButton.snp.makeConstraints { make in
             make.bottom.equalToSuperview().inset(35)
@@ -111,11 +111,47 @@ class MyPageViewController: UIViewController {
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
         backButton.addGestureRecognizer(tapGesture)
+        
+        logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
+    }
+    
+    @objc private func moveDeletePageVC() {
+        let deleteVC = DeleteAccountViewController()
+        navigationController?.pushViewController(deleteVC, animated: true)
     }
     
     @objc func logoTapped() {
         // 화면 전환 동작 (예: pull)
         navigationController?.popViewController(animated: true)
+    }
+    
+    @objc func logoutButtonTapped() {
+        APIService.shared.requestAuthorized("/auth/logout", method: .post) { result in
+            switch result {
+            case .success:
+                print("로그아웃 성공")
+                // 토큰 제거 + 사용자 정보 초기화
+                DataManager.shared.logout()
+                self.showAlert(title: "완료", message: "로그아웃 되었습니다.") {
+                    // 화면 이동
+                    let loginVC = LoginPageViewController()
+                    self.navigationController?.pushViewController(loginVC, animated: true)
+                }
+            case .failure(let error):
+                print("로그아웃 실패 \(error)")
+                self.showAlert(title: "오류 발생", message: "로그아웃에 실패하였습니다.")
+            }
+        }
+    }
+    
+    private func showAlert(title: String, message: String, handler: (() -> Void)? = nil) {
+        let alert = UIAlertController(title: title,
+                                      message: message,
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default) { _ in
+            handler?()
+        })
+        present(alert, animated: true)
     }
     
     private func loadUserData() {
@@ -124,6 +160,8 @@ class MyPageViewController: UIViewController {
             teamName = stadium.team
         }
         userNickName = DataManager.shared.userNickname
+        userID = DataManager.shared.userLoginID
+        userEmail = DataManager.shared.userEmail
     }
 
     private func setupTitle() {
@@ -222,7 +260,19 @@ class MyPageViewController: UIViewController {
     private func updateProfileNickname(_ nickname: String) {
         userNickName = nickname
         nicknameLabel.text = nickname
-        DataManager.shared.updateNickname(nickname)
+        DataManager.shared.updateNickname(nickname) { success, message in
+            DispatchQueue.main.async {
+                if success {
+                    print("✅ 닉네임 변경 성공:", message ?? "")
+                    self.dismiss(animated: true)
+                } else {
+                    print("❌ 실패:", message ?? "")
+                    let alert = UIAlertController(title: "오류", message: message ?? "닉네임 변경에 실패했습니다.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "확인", style: .default))
+                    self.present(alert, animated: true)
+                }
+            }
+        }
     }
 
     private func updateProfileTeam(id: Int, name: String) {

@@ -15,7 +15,7 @@ class DetailedPlayerViewController: UIViewController {
 
     var operatingHoursText: String? = nil
     
-    var detailData: Cafeteria?
+    var detailData: PlayerRecommand?
     
     private let imageView = UIImageView()
     private let nameLabel = UILabel()
@@ -25,6 +25,7 @@ class DetailedPlayerViewController: UIViewController {
     private let menuButton = UIButton()
     private let operatingHoursLabel = UILabel()
     private let hoursButton = UIButton()
+    private let phoneNumberLabel = UILabel()
     private let xmarkButton = UIButton()
     
     
@@ -40,7 +41,7 @@ class DetailedPlayerViewController: UIViewController {
     
     
     func setupAddSubview() {
-        [imageView, nameLabel, locationLabel, menuLabel, operatingHoursLabel, locationButton, menuButton, hoursButton, xmarkButton].forEach {
+        [imageView, nameLabel, locationLabel, menuLabel, operatingHoursLabel, locationButton, menuButton, hoursButton, xmarkButton, phoneNumberLabel].forEach {
             view.addSubview($0)
         }
     }
@@ -81,7 +82,7 @@ class DetailedPlayerViewController: UIViewController {
             $0.top.equalTo(menuLabel.snp.bottom).offset(20)
             $0.leading.equalToSuperview().offset(10)
         }
-        operatingHoursLabel.snp.makeConstraints {
+        phoneNumberLabel.snp.makeConstraints {
             $0.top.equalTo(menuLabel.snp.bottom).offset(20)
             $0.leading.equalTo(hoursButton.snp.trailing).offset(5)
         }
@@ -90,11 +91,12 @@ class DetailedPlayerViewController: UIViewController {
     func configureUI() {
         guard let foodData = detailData else { return }
         view.backgroundColor = .white
-        nameLabel.text = foodData.cafe_name
+        nameLabel.text = foodData.reco_name
         nameLabel.font = UIFont.boldSystemFont(ofSize: 30)
-        locationLabel.text = "위치 \(foodData.cafe_location)"
-        menuLabel.text = "메뉴 : "
-        operatingHoursLabel.text = "운영시간 : 구장 운영시간 내"
+        locationLabel.text = "위치 : \(foodData.reco_add)"
+        menuLabel.text = "메뉴 : \(foodData.reco_menu)"
+        phoneNumberLabel.text = "전화번호 : \(foodData.reco_tp)"
+//        operatingHoursLabel.text = "운영시간 : "
         locationButton.setImage(UIImage(named: "location"), for: .normal)
         menuButton.setImage(UIImage(named: "menu"), for: .normal)
         hoursButton.setImage(UIImage(named: "clock"), for: .normal)
@@ -106,8 +108,8 @@ class DetailedPlayerViewController: UIViewController {
         dismiss(animated: true)
     }
     
-    func configureImage(with cafeteria: Cafeteria) {
-        if let url = URL(string: cafeteria.cafe_image) {
+    func configureImage(with recommand: PlayerRecommand) {
+        if let url = URL(string: recommand.reco_image) {
             imageView.kf.setImage(with: url, placeholder: UIImage(systemName: "Photo"))
         }
     }

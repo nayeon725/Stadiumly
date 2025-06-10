@@ -12,7 +12,7 @@ final class APIService {
     static let shared = APIService()
     private init() {}
 
-    private let baseURL = "http://localhost:3000/"
+    private let baseURL = "http://20.41.113.4"
 
     // 로그인 요청
     func login(userID: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
@@ -43,7 +43,7 @@ final class APIService {
             return
         }
 
-        let url = "\(baseURL)\(endpoint)"
+        let url = baseURL + "\(endpoint)"
         let headers: HTTPHeaders = ["Authorization": "Bearer \(accessToken)"]
 
         AF.request(url, method: method, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
@@ -71,7 +71,7 @@ final class APIService {
             return
         }
 
-        let url = "\(baseURL)/auth/refresh"
+        let url = baseURL + "/auth/refresh"
         let parameters = ["refreshToken": refreshToken]
 
         AF.request(url, method: .post, parameters: parameters, encoding: JSONEncoding.default)

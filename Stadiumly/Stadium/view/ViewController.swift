@@ -73,50 +73,34 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
     }
     
     private func findStadium() {
-        let endPt = "http://20.41.113.4/stadium"
-        guard let url = URL(string: endPt) else { return }
-        let request = URLRequest(url: url)
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Network error: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                print("Invalid response")
-                return
-            }
-            
-            print("Status code: \(httpResponse.statusCode)")  // 200 OK인지 확인
-            
-            guard let data = data else {
-                print("데이터 없음")
-                return
-            }
-            print("받은 데이터 크기: \(data.count)")
+        let url = "http://20.41.113.4/stadium"
 
-            do {
-                let stadiums = try JSONDecoder().decode([Stadium].self, from: data)
-                print("디코딩 성공: \(stadiums.count)개")
-                DispatchQueue.main.async {
-                    self.stadiums = stadiums
-                    DataManager.shared.setStadiums(self.stadiums)
-                    self.collectionView.reloadData()
-                }
-            } catch {
-                print("디코딩 에러: \(error)")
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("받은 JSON 문자열: \(jsonString)")
-                } else {
-                    print("JSON 문자열 변환 실패")
+        AF.request(url)
+            .validate(statusCode: 200..<300) // 상태코드 확인
+            .responseDecodable(of: [Stadium].self) { response in
+                switch response.result {
+                case .success(let stadiums):
+                    print("디코딩 성공: \(stadiums.count)개")
+                    DispatchQueue.main.async {
+                        self.stadiums = stadiums
+                        DataManager.shared.setStadiums(self.stadiums)
+                        self.collectionView.reloadData()
+                    }
+
+                case .failure(let error):
+                    print("요청 실패: \(error)")
+                    if let data = response.data,
+                       let jsonString = String(data: data, encoding: .utf8) {
+                        print("받은 JSON 문자열: \(jsonString)")
+                    } else {
+                        print("JSON 문자열 변환 실패")
+                    }
                 }
             }
-        }.resume()
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        stadiums.count
+        return min(stadiums.count, 10)
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {

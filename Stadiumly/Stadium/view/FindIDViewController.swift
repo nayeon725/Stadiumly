@@ -1,8 +1,12 @@
 import UIKit
 import SnapKit
+import Alamofire
 
 class FindIDViewController: UIViewController {
     
+    // api 관련
+    private let endpt = "http://localhost:3000/"
+   
     private var insertedEmail: String = ""
     private var insertedCode: String = ""
     
@@ -79,16 +83,19 @@ class FindIDViewController: UIViewController {
         }
     }
     
-    private func validateEmail(_ text: String) {
-        let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let result = NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: text)
-        
-        emailValidateLabel.textColor = result ? .blue : .red
-        emailValidateLabel.text = result ? "" : "올바른 이메일을 입력해주세요."
-        emailValidateLabel.font = .systemFont(ofSize: 13, weight: .light)
-        emailValidateLabel.isHidden = false
-        emailValidateLabel.textAlignment = .left
-    }
+    
+    private func validateEmail(_ email: String) -> Bool {
+          let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+          return NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: email)
+      }
+    
+      private func undateEmailValidateionUI(isValid: Bool) {
+          emailValidateLabel.textColor = isValid ? .blue : .red
+          emailValidateLabel.text = isValid ? "" : "올바른 이메일을 입력해주세요."
+          emailValidateLabel.font = .systemFont(ofSize: 13, weight: .light)
+          emailValidateLabel.isHidden = false
+          emailValidateLabel.textAlignment = .left
+      }
     
     @objc private func emailTFDidChange() {
         // 입력 중일 때 이전 타이머 무효화
@@ -102,8 +109,11 @@ class FindIDViewController: UIViewController {
             return
         }
         
+        
         emailValidationTimer = Timer.scheduledTimer(withTimeInterval: 0.6, repeats: false, block: { [weak self] _ in
-            self?.validateEmail(text)
+            guard let self = self else { return }
+            let isValid = self.validateEmail(text)
+            self.undateEmailValidateionUI(isValid: isValid)
         })
     }
     
@@ -218,7 +228,7 @@ class FindIDViewController: UIViewController {
         codeButton.backgroundColor = .systemGray4
         codeButton.layer.cornerRadius = 20
         codeButton.layer.masksToBounds = true
-        
+        codeButton.addTarget(self, action: #selector(checkToeknButtonTapped), for: .touchUpInside)
         contentView.addSubview(codeTF)
         contentView.addSubview(codeButton)
         
@@ -298,4 +308,94 @@ extension FindIDViewController: UITextFieldDelegate {
         let frame = textField.convert(textField.bounds, to: scrollView)
         scrollView.scrollRectToVisible(frame.insetBy(dx: 0, dy: -20), animated: true)
     }
+}
+
+
+extension FindIDViewController {
+    
+    private func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title,
+                                      message: message,
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
+    }
+    
+    
+    @objc private func checkToeknButtonTapped() {
+        guard let email = emailTF.text,
+              let token = codeTF.text,
+              !email.isEmpty, !token.isEmpty
+        else {
+            showAlert(title: "인증번호를 입력해주세요.", message: "이메일과 인증번호를 모두 입력해주세요.")
+            return
+        }
+        guard validateEmail(email) else {
+            showAlert(title: "이메일 형식을 입력해주세요.", message: "올바른 이메일 형식을 입력해주세요.")
+            return
+        }
+        checkEmailToken(email: email, token: token) { result in
+            switch result {
+            case .success(let response):
+                if response.status == "success" {
+                    print("✅ 이메일 인증 성공")
+                    let checkIdVC = CheckIDViewController()
+                    self.navigationController?.pushViewController(checkIdVC, animated: true)
+                    self.requestFindUserId(email: email)
+                } else {
+                    self.showAlert(title: "인증번호를 확인해주세요", message: "인증번호가 유효하지 않습니다")
+                }
+            case .failure(let error):
+                print("❌서버오류", error)
+            }
+        }
+    }// auth/find-id
+    
+    private func requestFindUserId(email: String) {
+        let url = endpt + "auth/find-id"
+        let parameters = ["email" : email]
+        AF.request(url, method: .post, parameters: parameters, encoder: URLEncodedFormParameterEncoder.default)
+            .validate()
+            .responseJSON { response in
+                switch response.result {
+                case .success(let value):
+                    if let dict = value as? [String: Any],
+                       let userEmail = dict["user_email"] as? String {
+                    } else {
+                        self.showAlert(title: "아이디를 찾을수 없습니다", message: "아이디를 확인 해주세요")
+                    }
+                case .failure(let error):
+                    print("❌ 아이디 조회실패", error)
+                }
+            }
+    }
+
+    private func checkEmailUnique(email: String, completion: @escaping (Result<EmailUniqueResponse, AFError>) -> Void) {
+        let url = endpt + "auth/find-id"
+        let parameters = ["email" : email]
+        
+        AF.request(url,
+                   method: .post,
+                   parameters: parameters,
+                   encoder: JSONParameterEncoder.default)
+        .validate()
+        .responseDecodable(of: EmailUniqueResponse.self) { response in
+            completion(response.result)
+        }
+    }
+    //유저가 이메일로 받은거 검증
+    private func checkEmailToken(email: String, token: String, completion: @escaping (Result<EmailTokenCheckResponse, AFError>) -> Void) {
+        let url = endpt + "auth/email-token-check"
+        let parameters = EmailTokenCheckRequest(email: email, emailToken: token)
+        
+        AF.request(url,
+                   method: .post,
+                   parameters: parameters,
+                   encoder: JSONParameterEncoder.default)
+        .validate()
+        .responseDecodable(of: EmailTokenCheckResponse.self) { response in
+            completion(response.result)
+        }
+    }
+    
 }
