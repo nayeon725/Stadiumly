@@ -66,6 +66,8 @@ class FindIDViewController: UIViewController {
 
     }
     
+  
+    
     @objc func logoTapped() {
         // 화면 전환 동작 (예: pull)
         navigationController?.popViewController(animated: true)
@@ -83,6 +85,7 @@ class FindIDViewController: UIViewController {
             make.width.equalToSuperview() // 중요!
         }
     }
+    
     
     
     private func validateEmail(_ email: String) -> Bool {
