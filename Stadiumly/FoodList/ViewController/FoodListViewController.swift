@@ -26,8 +26,6 @@ class FoodListViewController: UIViewController {
 
     weak var delegate: FoodSearchDelegate?
     
- 
-    
     var lat: Double = 0.0
     var lon: Double = 0.0
     
@@ -48,6 +46,7 @@ class FoodListViewController: UIViewController {
     private var playerRecommedVC = PlayerRecommedViewController()
     private let containerView = UIView()
     private var currentChildVC: UIViewController?
+    private let backButton = UIButton()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -72,9 +71,7 @@ class FoodListViewController: UIViewController {
             lon = stadium.longitude
         }
     }
-    @objc private func logoTapped() {
-        navigationController?.popViewController(animated: true)
-    }
+
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -82,7 +79,7 @@ class FoodListViewController: UIViewController {
     }
     
     func setupAddSubview() {
-        [searchBar, foodTitleLabel, segmentBackgroundView, searchBarView, containerView].forEach {
+        [searchBar, foodTitleLabel, segmentBackgroundView, searchBarView, containerView, backButton].forEach {
             view.addSubview($0)
         }
         segmentBackgroundView.addSubview(buttonStackView)
@@ -93,6 +90,11 @@ class FoodListViewController: UIViewController {
         foodTitleLabel.snp.makeConstraints {
             $0.top.equalToSuperview().offset(80)
             $0.centerX.equalToSuperview()
+        }
+        backButton.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(80)
+            $0.leading.equalToSuperview().offset(20)
+            $0.width.height.equalTo(25)
         }
         searchBar.snp.makeConstraints {
             $0.top.equalTo(foodTitleLabel.snp.bottom).offset(20)
@@ -148,6 +150,9 @@ class FoodListViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dissmissKeyboard))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
+        let backButtonGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
+        backButton.addGestureRecognizer(backButtonGesture)
+        backButton.setImage(UIImage(named: "back"), for: .normal)
     }
     func setupProperty() {
         searchBar.delegate = self
@@ -157,6 +162,10 @@ class FoodListViewController: UIViewController {
 
     @objc private func dissmissKeyboard() {
         view.endEditing(true)
+    }
+    
+    @objc private func logoTapped() {
+        navigationController?.popViewController(animated: true)
     }
 }
 
