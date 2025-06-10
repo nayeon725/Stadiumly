@@ -28,6 +28,8 @@ class LoginPageViewController: UIViewController {
     private let findPasswordButton = UIButton()
     private let singUpButton = UIButton()
     private let infoButton = UIButton()
+    private let contentScrollView = UIScrollView()
+    private let contentView = UIView()
     
     lazy var carouselCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -49,18 +51,30 @@ class LoginPageViewController: UIViewController {
     }
     
     private func setupAddSubview() {
-        [stadiumlyLogo, idTextField, passwordTextField, loginButton, findIdButton, findPasswordButton, singUpButton, infoButton, carouselCollectionView].forEach {
+        [contentScrollView, stadiumlyLogo].forEach {
             view.addSubview($0)
         }
+        contentScrollView.addSubview(contentView)
+        [idTextField, passwordTextField, loginButton, findIdButton, findPasswordButton, singUpButton, infoButton, carouselCollectionView].forEach {
+            contentView.addSubview($0)
+        }
     }
-    
     private  func setupConstraints() {
         stadiumlyLogo.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(50)
             $0.centerX.equalToSuperview()
         }
-        carouselCollectionView.snp.makeConstraints {
+        contentScrollView.snp.makeConstraints {
             $0.top.equalTo(stadiumlyLogo.snp.bottom).offset(30)
+            $0.leading.trailing.bottom.equalToSuperview()
+        }
+        contentView.snp.makeConstraints {
+            $0.edges.equalTo(contentScrollView.contentLayoutGuide)
+            $0.width.equalTo(contentScrollView.frameLayoutGuide)
+            $0.bottom.equalTo(infoButton.snp.bottom).offset(100)
+        }
+        carouselCollectionView.snp.makeConstraints {
+            $0.top.equalTo(contentView.snp.top)
             $0.centerX.equalToSuperview()
             $0.width.equalTo(350)
             $0.height.equalTo(230)
@@ -326,6 +340,7 @@ extension LoginPageViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(true, animated: false)
         startAutoScroll()
     }
     

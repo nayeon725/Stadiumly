@@ -65,6 +65,9 @@ class SignUpPageViewController: UIViewController {
     
     private let contentScrollView = UIScrollView()
     private let contentView = UIView()
+    private let customHeaderView = UIView()
+    private let titleLabel = UILabel()
+    private let backButton = UIButton()
     
     //제약조건 변수
     private var passwordLabelTopConstraint: Constraint?
@@ -96,7 +99,7 @@ class SignUpPageViewController: UIViewController {
     }
     
     private func setupAddSubview() {
-        [contentScrollView,].forEach {
+        [contentScrollView, customHeaderView].forEach {
             view.addSubview($0)
         }
         contentScrollView.addSubview(contentView)
@@ -104,11 +107,27 @@ class SignUpPageViewController: UIViewController {
          , dropdownButton, idUniqueButton, emailUniqueButton, termsofServiceLabel,termsofAgreedLabel, checkBoxButton, signUpButton, verificationLabel, verificationTextField, emailTokenButton].forEach {
             contentView.addSubview($0)
         }
+        customHeaderView.addSubview(backButton)
+        customHeaderView.addSubview(titleLabel)
     }
     
     private func setupConstraints() {
+        customHeaderView.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            $0.horizontalEdges.equalToSuperview()
+            $0.height.equalTo(60)
+        }
+        backButton.snp.makeConstraints {
+            $0.centerY.equalToSuperview()
+            $0.leading.equalToSuperview().offset(30)
+            $0.width.height.equalTo(25)
+        }
+        titleLabel.snp.makeConstraints {
+            $0.center.equalToSuperview()
+        }
         contentScrollView.snp.makeConstraints {
-            $0.edges.equalTo(view.safeAreaLayoutGuide)
+            $0.top.equalTo(customHeaderView.snp.bottom)
+            $0.leading.trailing.bottom.equalToSuperview()
         }
         contentView.snp.makeConstraints {
             $0.edges.equalTo(contentScrollView.contentLayoutGuide)
@@ -260,10 +279,9 @@ class SignUpPageViewController: UIViewController {
         dropdownTableView.backgroundColor = .white
         dropdownTableView.isOpaque = true
         dropdownTableView.tableFooterView = UIView()
-        let titleLabel = UILabel()
         titleLabel.text = "회원가입"
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
-        self.navigationItem.titleView = titleLabel
+        titleLabel.font = UIFont.systemFont(ofSize: 30, weight: .bold)
+        titleLabel.textAlignment = .center
         verificationLabel.isHidden = true
         verificationTextField.isHidden = true
         emailTokenButton.isHidden = true
@@ -279,6 +297,8 @@ class SignUpPageViewController: UIViewController {
         signUpButton.alpha = 0.5
         buttonTypes()
         setPasswordShow()
+        let backButtonGesture = UITapGestureRecognizer(target: self, action: #selector(logoTapped))
+        backButton.addGestureRecognizer(backButtonGesture)
     }
     
     @objc private func textFieldsDidChange(_ textField: UITextField) {
@@ -419,7 +439,7 @@ class SignUpPageViewController: UIViewController {
         let trimmedPW = userPW.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedNick = userNick.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        print(userEmail, userID, userPW, userNick, userTeam)
+//        print(trimmedEmail, trimmedID, trimmedPW, trimmedNick, userTeam)
         guard isEmailUniqueConfirmed else {
             showAlert(title: "이메일 확인 필요", message: "이메일 중복 확인을 먼저 진행해주세요.")
             return
@@ -431,7 +451,7 @@ class SignUpPageViewController: UIViewController {
         }
         
         // 최종 가입 요청
-        signUpRequest(email: userEmail, id: userID, password: userPW, nick: userNick, team: userTeam) { result in
+        signUpRequest(email: trimmedEmail, id: trimmedID, password: trimmedPW, nick: trimmedNick, team: userTeam) { result in
             switch result {
             case .success(let response):
                 self.showAlert(title: "회원가입 완료", message: response.message)
@@ -464,6 +484,10 @@ class SignUpPageViewController: UIViewController {
     private func isValidEmail(_ email: String) -> Bool {
         let emailRegEx = #"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,64}$"#
         return NSPredicate(format: "SELF MATCHES %@", emailRegEx).evaluate(with: email)
+    }
+    
+    @objc private func logoTapped() {
+        navigationController?.popViewController(animated: true)
     }
 }
 
@@ -544,11 +568,7 @@ extension SignUpPageViewController: UITextFieldDelegate{
         checkBoxButton.imageView?.contentMode = .scaleAspectFit
         checkBoxButton.addTarget(self, action: #selector(toggleCheck), for: .touchUpInside)
         signUpButton.addTarget(self, action: #selector(moveToSingUpPageVC), for: .touchUpInside)
-        self.navigationItem.hidesBackButton = true
-        let backImage = UIImage(systemName: "arrow.left")
-        let backButton = UIBarButtonItem(image: backImage, style: .plain, target: self, action: #selector(customBackButton))
-        self.navigationItem.leftBarButtonItem = backButton
-        backButton.tintColor = .black
+        backButton.setImage(UIImage(named: "back"), for: .normal)
         emailUniqueButton.addTarget(self, action: #selector(checkEmailUniqueButtonTapped), for: .touchUpInside)
         idUniqueButton.addTarget(self, action: #selector(checkIdUniqueButtonTapped), for: .touchUpInside)
     }
@@ -570,9 +590,9 @@ extension SignUpPageViewController: UITextFieldDelegate{
         signUpButtonTapped()
     }
     
-    @objc private func customBackButton() {
-        navigationController?.popViewController(animated: true)
-    }
+//    @objc private func customBackButton() {
+//        navigationController?.popViewController(animated: true)
+//    }
      
     @objc private func termsPageMove() {
         let termsVC = TermsOfServiceViewController()
