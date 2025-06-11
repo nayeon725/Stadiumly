@@ -10,7 +10,7 @@ struct SignUpRequest: Codable {
     enum CodingKeys: String, CodingKey {
         case email = "user_email"
         case id = "user_cus_id"
-        case password = "user_pw"
+        case password = "user_pwd"
         case nick = "user_nick"
         case team = "user_like_staId"
     }

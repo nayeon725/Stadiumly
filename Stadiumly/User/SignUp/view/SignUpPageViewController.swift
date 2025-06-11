@@ -445,12 +445,20 @@ class SignUpPageViewController: UIViewController {
     
     @objc private func signUpButtonTapped() {
         
-        let trimmedEmail = userEmail.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedID = userID.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedPW = userPW.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedNick = userNick.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let email = emailTextField.text,
+              let id = idTextField.text,
+              let password = passwordTextField.text,
+              let nick = nickNameTextField.text,
+              var team = userTeam
+        else { return }
         
-//        print(trimmedEmail, trimmedID, trimmedPW, trimmedNick, userTeam)
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedID = id.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPW = password.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedNick = nick.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        team += 1
+
         guard isEmailUniqueConfirmed else {
             showAlert(title: "이메일 확인 필요", message: "이메일 중복 확인을 먼저 진행해주세요.")
             return
@@ -462,13 +470,14 @@ class SignUpPageViewController: UIViewController {
         }
         
         // 최종 가입 요청
-        signUpRequest(email: trimmedEmail, id: trimmedID, password: trimmedPW, nick: trimmedNick, team: userTeam) { result in
+        signUpRequest(email: trimmedEmail, id: trimmedID, password: trimmedPW, nick: trimmedNick, team: team) { result in
             switch result {
             case .success(let response):
                 self.showAlert(title: "회원가입 완료", message: response.message)
                 let singUpVC = SignUpCompletionViewController()
                 self.navigationController?.pushViewController(singUpVC, animated: true)
             case .failure(let error):
+                print(trimmedEmail, trimmedID, trimmedPW,trimmedNick, team)
                 self.showAlert(title: "회원가입 실패", message: error.localizedDescription)
             }
         }

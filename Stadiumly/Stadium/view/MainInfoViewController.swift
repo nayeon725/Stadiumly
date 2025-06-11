@@ -57,6 +57,8 @@ class MainInfoViewController: UIViewController {
 
     private var currentDataSource: DataSource = .playerRecommend
     
+    private let noDataLabel = UILabel()
+    
     private let pitcherTitle: UILabel = {
         let label = UILabel()
         label.text = "⚾️ 오늘의 선발 투수"
@@ -180,25 +182,22 @@ class MainInfoViewController: UIViewController {
     
     private func findStadium() {
         print(teamName)
-        let url = endPt + "/stadium/detail"
         
         let teamShort: String = teamName.components(separatedBy: " ").first ?? ""
         print("팀이름: \(teamName), 자른 팀 이름: \(teamShort)..")
-        
-        let parameters: [String: Any] = ["teamname": teamShort]
+        let url = endPt + "stadium/startpitcher/\(teamShort)"
+        print(url)
         
         AF.request(url,
                    method: .post,
-                   parameters: parameters,
-                   encoding: JSONEncoding.default,
-                   headers: ["Content-Type": "application/json"])
+                   encoding: JSONEncoding.default)
         .validate(statusCode: 200..<300)
-        .responseDecodable(of: [PitcherRoot].self) { response in
+        .responseDecodable(of: PitcherRoot.self) { response in
             switch response.result {
-            case .success(let decodedData):
+            case .success(let pitcherData):
 //                print(decodedData.first)
                 
-                if let pitcherData = decodedData.first {
+                if !pitcherData.homePitcher.isEmpty {
                     self.hasPitcherData = true
                     // 홈팀
                     self.homePitcherName = pitcherData.homePitcher
@@ -428,6 +427,7 @@ class MainInfoViewController: UIViewController {
         
         if hasPitcherData {
             pitcherStackView.isHidden = false
+            noDataLabel.isHidden = true
             
             guard let awayPitcherImage, let  homePitcherImage else { return }
             // 데이터 기반 새 뷰들 생성
@@ -451,8 +451,8 @@ class MainInfoViewController: UIViewController {
             }
         } else {
             pitcherStackView.isHidden = true
+            noDataLabel.isHidden = false
             
-            let noDataLabel = UILabel()
             noDataLabel.text = "선발투수 정보 준비 중!\n업데이트를 기다려주세요 ⚾️"
             noDataLabel.numberOfLines = 0
             noDataLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
